@@ -43,6 +43,11 @@ Singleton {
     property bool goingUp: false
     readonly property bool orbiting: phase === Planet.Phase.Orbit
 
+    // One level above orbit: every planet you could live on
+    property bool inSystem: false
+    property real systemLevel: 0
+    property int systemChoice: 0
+
     property int target: 0
     property int queued: 0
     property var layouts: ({}) // what each page looked like when we last took its photo
@@ -77,11 +82,47 @@ Singleton {
         return Qt.point(Theme.barSide + (page - 1) * (Theme.pageWidth + Theme.pageGap) + Theme.pageWidth / 2, Theme.barGap + Theme.barHeight * 0.6);
     }
 
+    // Going up: ground, then orbit, then the whole system, then back home
     function toggleOrbit() {
         if (phase === Planet.Phase.Idle)
             enterOrbit();
+        else if (orbiting && !inSystem)
+            enterSystem();
+        else if (inSystem)
+            land(Theme.planet.id);
+    }
+
+    // One level down at a time
+    function goDown() {
+        if (inSystem)
+            leaveSystem();
         else if (orbiting)
             leaveOrbit(current);
+    }
+
+    function enterSystem() {
+        systemChoice = Math.max(0, Planets.all.findIndex(planet => planet.id === Theme.planet.id));
+        inSystem = true;
+        systemShift.to = 1;
+        systemShift.restart();
+    }
+
+    function leaveSystem() {
+        inSystem = false;
+        systemShift.to = 0;
+        systemShift.restart();
+    }
+
+    function chooseStep(step) {
+        const count = Planets.all.length;
+        systemChoice = (systemChoice + step + count) % count;
+    }
+
+    // Moving to a new planet: the theme changes and we come down onto it
+    function land(id) {
+        Config.theme = id;
+        leaveSystem();
+        leaveOrbit(current);
     }
 
     // Same trick as a page change: photograph this page, then the stand-ins take over
@@ -254,6 +295,15 @@ Singleton {
 
         interval: 40
         onTriggered: Hyprland.dispatch(`hl.dsp.focus({ workspace = ${root.target} })`)
+    }
+
+    NumberAnimation {
+        id: systemShift
+
+        target: root
+        property: "systemLevel"
+        duration: 620
+        easing.type: Easing.InOutCubic
     }
 
     NumberAnimation {

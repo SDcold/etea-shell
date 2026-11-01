@@ -86,6 +86,7 @@ Variants {
                 radius: stage.planetRadius
                 horizon: stage.planetTop / stage.screenHeight
                 space: Math.min(1, Planet.altitude * 1.6)
+                groundOpacity: 1 - Planet.systemLevel
             }
 
             // Your pages, standing around the planet
@@ -93,6 +94,7 @@ Variants {
                 model: Planet.orbitPages
 
                 StagePage {
+                    opacity: 1 - Planet.systemLevel
                     required property var modelData
                     required property int index
 
@@ -151,13 +153,24 @@ Variants {
             screenY: stage.modelData.y
         }
 
-        // In orbit: Escape goes back down, 1 to 6 land on a page
+        ThemeSystem {
+            anchors.fill: parent
+        }
+
+        // In orbit: Escape goes down a level, 1 to 6 land on a page.
+        // Up in the system: left and right pick a planet, Enter lands on it.
         Item {
             focus: Planet.orbiting
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape)
-                    Planet.leaveOrbit(Planet.current);
-                else if (event.key >= Qt.Key_1 && event.key < Qt.Key_1 + Config.pages)
+                    Planet.goDown();
+                else if (Planet.inSystem && event.key === Qt.Key_Left)
+                    Planet.chooseStep(-1);
+                else if (Planet.inSystem && event.key === Qt.Key_Right)
+                    Planet.chooseStep(1);
+                else if (Planet.inSystem && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter))
+                    Planet.land(Planets.all[Planet.systemChoice].id);
+                else if (!Planet.inSystem && event.key >= Qt.Key_1 && event.key < Qt.Key_1 + Config.pages)
                     Planet.leaveOrbit(event.key - Qt.Key_0);
             }
         }

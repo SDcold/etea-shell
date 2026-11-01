@@ -12,6 +12,7 @@ Item {
     property real radius: Theme.terrainCurve // shrink it and the ground becomes a planet
     property real horizon: 1 - Theme.terrainHeight
     property real space: 0
+    property real groundOpacity: 1
 
     // Four sound levels at a time, the way the shader wants them
     function bands(first) {
@@ -60,6 +61,8 @@ Item {
 
     ShaderEffect {
         anchors.fill: parent
+
+        opacity: root.groundOpacity
 
         // planetAngle is what will spin the planet between pages
         property color layer0: Theme.terrainLayers[0]

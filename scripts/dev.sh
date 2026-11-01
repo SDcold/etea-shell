@@ -66,6 +66,10 @@ take_pages() {
         hl.bind("CTRL + SUPER + Left", hl.dsp.global("etea:pagePrevious"))
         hl.unbind("SUPER + Space")
         hl.bind("SUPER + Space", hl.dsp.global("etea:launcher"))
+        hl.unbind("SUPER + Comma")
+        hl.bind("SUPER + Comma", hl.dsp.global("etea:settings"))
+        hl.unbind("SUPER + SHIFT + Tab")
+        hl.bind("SUPER + SHIFT + Tab", hl.dsp.global("etea:orbitDown"))
         hl.unbind("SUPER + Tab")
         hl.bind("SUPER + Tab", hl.dsp.global("etea:orbit"))
         hl.unbind("SUPER + Q")
@@ -88,7 +92,7 @@ take_pages() {
             hl.dispatch(hl.dsp.global("etea:orbit"))
         end })
         hl.gesture({ fingers = 4, direction = "down", action = function()
-            hl.dispatch(hl.dsp.global("etea:orbit"))
+            hl.dispatch(hl.dsp.global("etea:orbitDown"))
         end })
     ' | grep -v '^ok$' || true
 }

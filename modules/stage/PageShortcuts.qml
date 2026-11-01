@@ -26,11 +26,35 @@ Scope {
         onPressed: Planet.toggleOrbit()
     }
 
+    GlobalShortcut {
+        appid: "etea"
+        name: "orbitDown"
+        onPressed: Planet.goDown()
+    }
+
+    GlobalShortcut {
+        appid: "etea"
+        name: "settings"
+        onPressed: Menus.settingsOpen = !Menus.settingsOpen
+    }
+
+    IpcHandler {
+        target: "settings"
+
+        function toggle(): void {
+            Menus.settingsOpen = !Menus.settingsOpen;
+        }
+    }
+
     IpcHandler {
         target: "planet"
 
         function orbit(): void {
             Planet.toggleOrbit();
+        }
+
+        function down(): void {
+            Planet.goDown();
         }
 
         function land(page: int): void {

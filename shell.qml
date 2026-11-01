@@ -4,6 +4,7 @@ import qs.modules.bar
 import qs.modules.bar.menus
 import qs.modules.launcher
 import qs.modules.notifications
+import qs.modules.settings
 import qs.modules.stage
 
 // Where it all starts: the world in the back, the stage over the windows, the bar on top.
@@ -16,4 +17,5 @@ ShellRoot {
     BarMenus {}
     Launcher {}
     Notifications {}
+    Settings {}
 }

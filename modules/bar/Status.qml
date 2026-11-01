@@ -41,6 +41,8 @@ Row {
                 switch (modelData) {
                 case "notifications":
                     return [Notifs.quiet ? "bell-slash" : "bell", Notifs.count ? String(Notifs.count) : ""];
+                case "settings":
+                    return ["gear-six", ""];
                 case "network":
                     if (root.wifi)
                         return [root.wifi.signalStrength > 0.66 ? "wifi-high" : root.wifi.signalStrength > 0.33 ? "wifi-medium" : "wifi-low", ""];
@@ -97,7 +99,9 @@ Row {
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 cursorShape: Qt.PointingHandCursor
                 onPressed: mouse => {
-                    if (item.modelData === "notifications") {
+                    if (item.modelData === "settings") {
+                        Menus.settingsOpen = !Menus.settingsOpen;
+                    } else if (item.modelData === "notifications") {
                         if (mouse.button === Qt.RightButton)
                             Notifs.quiet = !Notifs.quiet;
                         else

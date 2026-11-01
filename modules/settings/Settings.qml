@@ -1,0 +1,135 @@
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import qs.config
+import qs.modules.bar
+import qs.modules.stage
+import qs.services
+
+// The settings page. It's a real window, so it's born from a star and gets its frame
+// like any other. Sections are a constellation down the side, every change applies live.
+Scope {
+    FloatingWindow {
+        id: window
+
+        property int section: 0
+
+        readonly property var sections: [
+            { label: "Monde", page: "WorldPage.qml" },
+            { label: "Bureau", page: "DesktopPage.qml" },
+            { label: "Barre", page: "BarPage.qml" },
+            { label: "Fenêtres", page: "WindowsPage.qml" },
+            { label: "Mouvement", page: "MotionPage.qml" }
+        ]
+
+        title: "Réglages ETEA"
+        visible: Menus.settingsOpen
+        implicitWidth: 1040
+        implicitHeight: 700
+        color: Theme.cardDeep
+
+        onVisibleChanged: {
+            if (!visible)
+                Menus.settingsOpen = false;
+        }
+
+        HandCard {
+            anchors.fill: parent
+            anchors.margins: -8
+            seed: "settings"
+            radius: 1
+            ink: 0
+            rise: 0.05
+            tint: Theme.windowLit
+            alive: window.visible
+        }
+
+        Item {
+            id: side
+
+            x: 30
+            y: 36
+            width: 190
+            height: parent.height - 60
+
+            Text {
+                text: "Réglages"
+                color: Theme.text
+                font.family: Theme.font
+                font.pixelSize: 26
+                font.weight: Font.Light
+            }
+
+            // The thread running through the sections
+            Rectangle {
+                x: 9
+                y: 76
+                width: 1
+                height: (window.sections.length - 1) * 54
+                color: Qt.alpha(Theme.link, 0.35)
+            }
+
+            Repeater {
+                model: window.sections
+
+                Item {
+                    id: entry
+
+                    required property var modelData
+                    required property int index
+
+                    readonly property bool active: index === window.section
+
+                    y: 58 + index * 54
+                    width: side.width
+                    height: 36
+
+                    Star {
+                        x: 10 - size
+                        y: parent.height / 2 - size
+                        size: entry.active ? 9 : 5
+                        lit: entry.active
+                        animated: false
+
+                        Behavior on size {
+                            NumberAnimation { duration: Theme.fast; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
+                        }
+                    }
+
+                    Text {
+                        x: 32
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: entry.modelData.label
+                        color: entry.active ? Theme.text : Qt.alpha(Theme.text, 0.65)
+                        font.family: Theme.font
+                        font.pixelSize: 15
+                        font.weight: entry.active ? Font.Medium : Font.Normal
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onPressed: window.section = entry.index
+                    }
+                }
+            }
+        }
+
+        Flickable {
+            x: side.x + side.width + 30
+            y: 36
+            width: parent.width - x - 40
+            height: parent.height - 60
+            contentHeight: page.height + 20
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+
+            Loader {
+                id: page
+
+                width: parent.width
+                source: window.sections[window.section].page
+            }
+        }
+    }
+}

@@ -50,6 +50,8 @@ Scope {
         hl.animation({ leaf = "windowsOut", enabled = false })
         hl.animation({ leaf = "windowsIn", enabled = false })
 
+        hl.window_rule({ match = { title = "Réglages ETEA" }, float = true, center = true, size = { 1040, 700 } })
+
         -- A new window waits a beat so ETEA can get the sky in front of it: this curve sits
         -- at zero almost the whole way. It all happens inside Hyprland, so a window can't
         -- get stuck hidden, even if ETEA crashes.
@@ -75,6 +77,16 @@ Scope {
         hl.animation({ leaf = "fadeDim", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeShadow", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
     `
+
+    onSettingsChanged: reapply.restart()
+
+    // Sliders and themes change this quickly, Hyprland only needs the final answer
+    Timer {
+        id: reapply
+
+        interval: 120
+        onTriggered: apply.running = true
+    }
 
     Process {
         id: apply

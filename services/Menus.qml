@@ -10,6 +10,7 @@ Singleton {
     property real anchorX: 0
     property color tint: Theme.windowLit
 
+    property bool settingsOpen: false
     property string lastClosed: ""
     property real closedAt: 0
 

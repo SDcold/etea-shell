@@ -6,7 +6,7 @@ Item {
     id: root
 
     Repeater {
-        model: Config.widgets
+        model: Config.widgets.filter(widget => widget.shown !== false)
 
         Loader {
             required property var modelData
