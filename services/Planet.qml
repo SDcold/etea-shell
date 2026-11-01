@@ -115,8 +115,13 @@ Singleton {
             orbitLanding.restart();
     }
 
+    // The pages stay up until the scene has stepped aside, or the windows would blink out.
+    // From here on the page we landed on is the one at the top of the planet.
     function landed() {
-        orbitPages = [];
+        origin = target;
+        // On an empty page Hyprland has nothing to focus and can drift back, so insist
+        if (current !== target)
+            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${target} })`);
         settle();
     }
 
@@ -176,6 +181,7 @@ Singleton {
     function reset() {
         leaving = [];
         arriving = [];
+        orbitPages = [];
         sceneOpacity = 1;
         phase = Planet.Phase.Idle;
         if (queued && queued !== current) {

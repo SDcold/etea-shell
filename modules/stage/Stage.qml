@@ -49,7 +49,8 @@ Variants {
         // Up in orbit it's the other way round, the whole screen listens.
         property Region passThrough: Region {}
         property Region everything: Region {
-            item: stage.contentItem
+            width: stage.width
+            height: stage.height
         }
 
         mask: Planet.orbiting ? everything : passThrough
@@ -104,6 +105,7 @@ Variants {
                     angle: Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel
                     zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude)
                     lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
+                    orbitCard: true
                     onPicked: Planet.leaveOrbit(index + 1)
                 }
             }
@@ -133,7 +135,7 @@ Variants {
             anchors.fill: parent
             screenX: stage.modelData.x
             screenY: stage.modelData.y
-            active: stage.focused && Planet.phase !== Planet.Phase.Spinning
+            active: stage.focused && Planet.phase !== Planet.Phase.Spinning && Planet.altitude === 0
         }
 
         WindowBirth {

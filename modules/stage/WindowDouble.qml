@@ -43,7 +43,6 @@ Item {
             anchors.fill: parent
             sourceItem: root.photo
             sourceRect: Qt.rect(root.x, root.y, root.width, root.height)
-            live: false
         }
 
         Loader {

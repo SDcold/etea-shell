@@ -14,6 +14,7 @@ Item {
     property Item photo: null
     property real zoom: 1 // how small the page is, seen from above
     property real lift: 0 // how far up it rides with the ground
+    property bool orbitCard: false // the pages around the planet, as opposed to the ones spinning past
 
     signal picked()
 
@@ -37,9 +38,21 @@ Item {
     // Up in orbit every page is a button, even an empty one
     MouseArea {
         anchors.fill: parent
-        enabled: Planet.orbiting
+        enabled: Planet.orbiting && root.orbitCard
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.picked()
+        onPressed: root.picked()
+    }
+
+    // An empty page still needs to be there, so you can see where to land
+    Rectangle {
+        visible: root.orbitCard && root.windows.length === 0
+        anchors.fill: parent
+        anchors.margins: Theme.windowGapOuter
+        anchors.topMargin: Theme.barGap + Theme.barHeight + Theme.windowGapOuter
+        radius: Theme.windowRadius
+        color: Qt.alpha(Theme.windowLit, 0.04)
+        border.width: 6
+        border.color: Qt.alpha(Theme.windowLit, 0.28)
     }
 
     Repeater {
