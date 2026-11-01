@@ -17,7 +17,10 @@ Scope {
     GlobalShortcut {
         appid: "etea"
         name: "launcher"
-        onPressed: Apps.open = !Apps.open
+
+        // Hyprland only reports a lone Super key once it's let go, as a release. It also
+        // skips that release if another key came along, so Super + 1 leaves this alone.
+        onReleased: Apps.open = !Apps.open
     }
 
     IpcHandler {
