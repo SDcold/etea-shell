@@ -11,6 +11,7 @@ Singleton {
     property color tint: Theme.windowLit
 
     property bool settingsOpen: false
+    property bool sessionOpen: false
     property string lastClosed: ""
     property real closedAt: 0
 

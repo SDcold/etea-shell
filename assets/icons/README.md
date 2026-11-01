@@ -1,1 +1,1 @@
-Icônes [Phosphor](https://phosphoricons.com), style Light, recolorées en blanc pour être teintées par le shell. Licence MIT, voir `LICENSE.txt`.
+Icônes [Material Symbols](https://fonts.google.com/icons), style Rounded rempli, recolorées en blanc pour être teintées par le shell. Licence Apache 2.0, voir `LICENSE.txt`.

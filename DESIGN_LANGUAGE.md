@@ -24,7 +24,7 @@ Ce document est la référence pour tout ce qui sera ajouté à ETEA : widgets, 
 | Masque en étoile | `modules/stage/StarMask.qml` | Toute apparition de carte ou de fenêtre |
 | Entrée en scène | `modules/bar/Entrance.qml` | Le contenu arrive de haut en bas, un élément après l'autre |
 | Éclat au clic | `modules/bar/StarRipple.qml` | La réponse à un clic |
-| Icône | `modules/bar/Icon.qml` | Phosphor Light, teintée |
+| Icône | `modules/bar/Icon.qml` | Material Symbols Rounded, teintée |
 | Curseur, interrupteur, ligne | `modules/bar/menus/` | `MenuSlider`, `MenuSwitch`, `MenuRow`, `StarLevel` |
 | Réglages | `modules/settings/` | `SettingRow`, `SettingSlider`, `SettingChoice`, `SettingSwitch` |
 

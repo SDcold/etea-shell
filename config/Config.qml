@@ -19,7 +19,8 @@ Singleton {
         { id: "bluetooth", label: "Bluetooth" },
         { id: "volume", label: "Volume" },
         { id: "battery", label: "Batterie" },
-        { id: "settings", label: "Réglages" }
+        { id: "settings", label: "Réglages" },
+        { id: "session", label: "Session" }
     ]
 
     property alias theme: saved.theme
@@ -69,7 +70,7 @@ Singleton {
 
             property string theme: "aster"
             property string pace: "daily"
-            property var status: ["notifications", "network", "bluetooth", "volume", "battery", "settings"]
+            property var status: ["notifications", "network", "bluetooth", "volume", "battery", "settings", "session"]
 
             // Widgets in the sky, for when a page is empty. x and y are shares of the screen.
             property var widgets: [

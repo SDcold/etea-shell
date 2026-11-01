@@ -43,6 +43,8 @@ Row {
                     return [Notifs.quiet ? "bell-slash" : "bell", Notifs.count ? String(Notifs.count) : ""];
                 case "settings":
                     return ["gear-six", ""];
+                case "session":
+                    return ["power", ""];
                 case "network":
                     if (root.wifi)
                         return [root.wifi.signalStrength > 0.66 ? "wifi-high" : root.wifi.signalStrength > 0.33 ? "wifi-medium" : "wifi-low", ""];
@@ -101,6 +103,8 @@ Row {
                 onPressed: mouse => {
                     if (item.modelData === "settings") {
                         Menus.settingsOpen = !Menus.settingsOpen;
+                    } else if (item.modelData === "session") {
+                        Menus.sessionOpen = !Menus.sessionOpen;
                     } else if (item.modelData === "notifications") {
                         if (mouse.button === Qt.RightButton)
                             Notifs.quiet = !Notifs.quiet;
