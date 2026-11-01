@@ -183,6 +183,7 @@ Singleton {
             return;
         target = page;
         spinShift.stop();
+        rise.stop(); // going back down halfway up, the two movements mustn't fight
         const turn = shortestSteps(origin, page) * step + handTurn;
         distance = Math.atan2(Math.sin(turn), Math.cos(turn));
         // Letting go of the keyboard makes Hyprland refocus the old window, which would
