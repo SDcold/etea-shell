@@ -17,7 +17,9 @@ Item {
         const shapes = [[[0.14, 0.62], [0.36, 0.3], [0.58, 0.68], [0.82, 0.34], [0.5, 0.92], [0.06, 0.2]], [[0.12, 0.3], [0.34, 0.7], [0.6, 0.28], [0.86, 0.64], [0.4, 0.08], [0.1, 0.84]], [[0.18, 0.74], [0.3, 0.28], [0.62, 0.52], [0.84, 0.2], [0.8, 0.82], [0.48, 0.9]]];
         return shapes[(pageId - 1) % shapes.length];
     }
-    readonly property int windows: Math.min(layout.length, Hyprland.toplevels.values.filter(t => t.workspace?.id === pageId).length)
+    readonly property var pageWindows: Hyprland.toplevels.values.filter(t => t.workspace?.id === pageId)
+    readonly property int windows: Math.min(layout.length, pageWindows.length)
+    property var hovered: null
     readonly property bool lit: active || mouse.containsMouse
 
     // Keeps stars low enough that their halo never runs off the top of the screen
@@ -69,6 +71,8 @@ Item {
 
     // And here come the stars, one per window
     Repeater {
+        id: stars
+
         model: root.windows
 
         Star {
@@ -85,6 +89,41 @@ Item {
         }
     }
 
+    // Which window is that star? Point at it and its name shows up just below
+    Row {
+        id: label
+
+        readonly property var app: root.hovered ? DesktopEntries.heuristicLookup(root.hovered.lastIpcObject?.class ?? root.hovered.wayland?.appId ?? "") : null
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: parent.height + 2
+        spacing: 6
+        opacity: root.hovered ? 1 : 0
+
+        Behavior on opacity {
+            NumberAnimation { duration: Theme.fast }
+        }
+
+        Image {
+            visible: source != ""
+            anchors.verticalCenter: parent.verticalCenter
+            width: 18
+            height: 18
+            sourceSize: Qt.size(18, 18)
+            source: label.app?.icon ? Quickshell.iconPath(label.app.icon, true) : ""
+        }
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: label.app?.name ?? root.hovered?.title ?? ""
+            color: Theme.text
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize
+            style: Text.Outline
+            styleColor: Qt.alpha("#000000", 0.25)
+        }
+    }
+
     // One click and you're on this page
     MouseArea {
         id: mouse
@@ -93,5 +132,20 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: Planet.request(root.pageId)
+        onExited: root.hovered = null
+
+        // The closest star wins, and you don't have to land exactly on it
+        onPositionChanged: mouse => {
+            let closest = null, distance = 18;
+            for (let i = 0; i < root.windows; i++) {
+                const dx = mouse.x - root.layout[i][0] * root.width, dy = mouse.y - root.starY(root.layout[i][1]);
+                const here = Math.hypot(dx, dy);
+                if (here < distance) {
+                    distance = here;
+                    closest = root.pageWindows[i];
+                }
+            }
+            root.hovered = closest;
+        }
     }
 }
