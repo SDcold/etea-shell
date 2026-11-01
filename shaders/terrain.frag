@@ -18,6 +18,14 @@ layout(std140, binding = 0) uniform buf {
     float grain;
     float orbit; // 0 on the ground, 1 once the ground has become a whole planet
     vec4 rimColor;
+    vec4 l0;
+    vec4 l1;
+    vec4 l2;
+    vec4 l3;
+    vec4 l4;
+    vec4 l5;
+    vec4 l6;
+    float music; // 0 in silence, 1 while the ground is dancing
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -41,6 +49,21 @@ float ridge(float seed, float a) {
         + 0.11 * sin(211.0 * a + 1.9 + seed)
         + 0.07 * sin(431.0 * a + 3.1 + seed)
         + 0.05 * sin(863.0 * a + 0.4 + seed);
+}
+
+float band(int i) {
+    vec4 rows[7] = vec4[](l0, l1, l2, l3, l4, l5, l6);
+    i = clamp(i, 0, 25);
+    return rows[i / 4][i % 4];
+}
+
+// How loud it is at this spot of the ground: bass in the middle, higher notes out to the sides
+float sound(float t) {
+    float at = clamp(t, 0.0, 1.0) * 25.0;
+    int i = int(floor(at));
+    float f = fract(at);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(band(i), band(i + 1), f);
 }
 
 // Soft random blobs, stacked at a few sizes, for the landmasses
@@ -68,6 +91,15 @@ void main() {
     float depth[4] = float[](0.0, 0.0065, 0.014, 0.023);
     float amp[4] = float[](1.0, 0.8, 0.7, 0.55);
     float maxAmp = min(curve * 0.024, 34.0) * relief * (1.0 - orbit);
+    float dance = music * (1.0 - orbit);
+
+    // Most of the screen is sky, so skip all the work up there
+    if (orbit < 0.001 && r > curve + maxAmp + 8.0 + dance * 250.0) {
+        fragColor = vec4(0.0);
+        return;
+    }
+
+    float across = abs(p.x / 800.0 - 1.0);
     float sampleStep = 2.0 * min(3.14159, asin(min(1.0, 1152.0 / curve)) * 1.15) / 340.0;
 
     // Paint the hills from the farthest to the closest
@@ -79,8 +111,25 @@ void main() {
         float seed = 1.2 + float(l) * 3.3;
         float shape = mix(ridge(seed, floor(cell) * sampleStep), ridge(seed, ceil(cell) * sampleStep), fract(cell));
         float edge = curve * (1.0 - depth[l]) + maxAmp * amp[l] * shape;
+
+        // The music lifts each ridge, the far ones most, each hearing a slightly different note
+        float heard = 0.0;
+        if (dance > 0.001) {
+            float t = across + float(l) * 0.05;
+            heard = (sound(t - 0.025) + sound(t) * 2.0 + sound(t + 0.025)) * 0.25;
+            edge += dance * heard * 230.0 * (1.0 - float(l) * 0.26);
+        }
+
         float inside = smoothstep(edge + 0.6, edge - 0.6, r);
         color = mix(color, vec4(colors[l].rgb, 1.0), inside);
+
+        // A fine thread of light along each ridge, in the terrain's own colours
+        if (dance > 0.001) {
+            float thread = exp(-abs(r - edge) / 1.3) * dance * (0.3 + heard * 1.1);
+            vec3 light = mix(colors[l].rgb, rimColor.rgb, 0.8);
+            color.rgb = mix(color.rgb, light, clamp(thread, 0.0, 1.0));
+            color.a = max(color.a, clamp(thread, 0.0, 1.0));
+        }
     }
 
     // From space it's a real planet: continents, a day side and a night side, and a

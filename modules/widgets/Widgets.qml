@@ -13,13 +13,7 @@ Item {
 
             x: modelData.x * root.width - width / 2
             y: modelData.y * root.height - height / 2
-            // Wide widgets want to know how much screen they have
-            onLoaded: {
-                if ("span" in item)
-                    item.span = Qt.binding(() => root.width);
-            }
             source: ({
-                    visualizer: "VisualizerWidget.qml",
                     clock: "ClockWidget.qml",
                     system: "SystemWidget.qml",
                     media: "MediaWidget.qml"

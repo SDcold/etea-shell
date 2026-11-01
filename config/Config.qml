@@ -9,11 +9,11 @@ Singleton {
     readonly property var status: ["notifications", "network", "bluetooth", "volume", "battery"]
     readonly property string locale: "fr_FR"
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
+    readonly property bool groundDances: true // the terrain moves to the music on empty pages
 
     // Widgets in the sky, for when a page is empty. x and y are shares of the screen.
-    // There's a visualizer, a clock, a system and a media one. Move them or leave any out.
+    // There's a clock, a system and a media one. Move them or leave any out.
     readonly property var widgets: [
-        { type: "visualizer", x: 0.5, y: 0.715 },
         { type: "clock", x: 0.5, y: 0.34 },
         { type: "system", x: 0.14, y: 0.3 },
         { type: "media", x: 0.84, y: 0.3 }
