@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.config
 import qs.modules.bar
 import qs.modules.stage
+import qs.services
 
 // Which planet you live on. Each one is alive, and picking it changes everything at once.
 ColumnLayout {
@@ -105,6 +106,121 @@ ColumnLayout {
                         ripple.burst(mouse.x, mouse.y);
                         Config.theme = choice.modelData.id;
                     }
+                }
+
+                // Planets you made yourself can be let go
+                Icon {
+                    visible: choice.modelData.id.startsWith("forge-")
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 14
+                    name: "close"
+                    size: 18
+
+                    MouseArea {
+                        anchors.fill: parent
+                        anchors.margins: -6
+                        cursorShape: Qt.PointingHandCursor
+                        onPressed: Forge.forget(choice.modelData.id)
+                    }
+                }
+            }
+        }
+    }
+
+    Text {
+        Layout.topMargin: 8
+        text: "Créer ma planète"
+        color: Theme.text
+        font.family: Theme.font
+        font.pixelSize: 20
+    }
+
+    Text {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        text: "Donne une image, ETEA en tire un ciel, un terrain et une lumière."
+        color: Qt.alpha(Theme.text, 0.65)
+        font.family: Theme.font
+        font.pixelSize: 13
+    }
+
+    SettingButton {
+        label: Forge.draft ? "Choisir une autre image" : "Choisir une image"
+        onPicked: Forge.chooseImage()
+    }
+
+    // The new world, waiting for your decision
+    Item {
+        visible: Forge.draft !== null
+        Layout.fillWidth: true
+        Layout.preferredHeight: 190
+
+        HandCard {
+            anchors.fill: parent
+            seed: Forge.draft?.id ?? "forge"
+            tint: Forge.draft?.light ?? Theme.windowLit
+            rise: 0.08
+        }
+
+        Loader {
+            x: -10
+            y: 5
+            width: 180
+            height: 180
+            active: Forge.draft !== null
+
+            sourceComponent: PlanetView {
+                planet: Forge.draft
+            }
+        }
+
+        ColumnLayout {
+            x: 178
+            y: 22
+            width: parent.width - x - 22
+            spacing: 10
+
+            TextInput {
+                id: planetName
+
+                Layout.fillWidth: true
+                text: Forge.draft?.name ?? ""
+                color: Theme.text
+                selectByMouse: true
+                font.family: Theme.font
+                font.pixelSize: 22
+            }
+
+            Row {
+                spacing: 6
+
+                Repeater {
+                    model: Forge.draft ? [Forge.draft.skyTop, Forge.draft.skyMid, Forge.draft.skyLow].concat(Forge.draft.terrain) : []
+
+                    Rectangle {
+                        required property string modelData
+
+                        width: 26
+                        height: 26
+                        radius: 13
+                        color: modelData
+                    }
+                }
+            }
+
+            Row {
+                spacing: 10
+
+                SettingButton {
+                    label: "M'y installer"
+                    onPicked: Forge.keep(planetName.text)
+                }
+
+                SettingButton {
+                    label: "Laisser filer"
+                    quiet: true
+                    onPicked: Forge.draft = null
                 }
             }
         }

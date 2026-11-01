@@ -25,6 +25,7 @@ Singleton {
     ]
 
     property alias theme: saved.theme
+    property alias customPlanets: saved.customPlanets
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
     property alias status: saved.status
     property alias widgets: saved.widgets
@@ -71,6 +72,7 @@ Singleton {
             id: saved
 
             property string theme: "aster"
+            property var customPlanets: []
             property string pace: "daily"
             property var status: ["tray", "notifications", "network", "bluetooth", "volume", "battery", "settings", "session"]
 

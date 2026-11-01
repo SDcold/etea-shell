@@ -6,7 +6,9 @@ import Quickshell
 // The worlds you can live on. A theme is a planet, and a planet is just these few values,
 // so adding one means adding one entry here.
 Singleton {
-    readonly property var all: [
+    readonly property var all: builtIn.concat(Config.customPlanets)
+
+    readonly property var builtIn: [
         {
             id: "aster",
             name: "Aster",
