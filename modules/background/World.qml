@@ -15,7 +15,7 @@ Item {
 
     // Four sound levels at a time, the way the shader wants them
     function bands(first) {
-        const levels = Beat.levels;
+        const levels = Beat.shown;
         return Qt.vector4d(levels[first] ?? 0, levels[first + 1] ?? 0, levels[first + 2] ?? 0, levels[first + 3] ?? 0);
     }
 
@@ -80,10 +80,11 @@ Item {
         property vector4d l4: root.bands(16)
         property vector4d l5: root.bands(20)
         property vector4d l6: root.bands(24)
-        property real music: Beat.dancing && Beat.levels.length ? 1 : 0
+        property real music: Beat.dancing && Beat.shown.length ? 1 : 0
+        property real lift: Theme.groundLift
 
         Behavior on music {
-            NumberAnimation { duration: 700; easing.type: Easing.InOutSine }
+            NumberAnimation { duration: 1800; easing.type: Easing.InOutSine }
         }
         property real grain: Theme.grain
 

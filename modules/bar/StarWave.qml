@@ -25,7 +25,7 @@ Canvas {
     Connections {
         target: Beat
 
-        function onLevelsChanged() {
+        function onShownChanged() {
             root.requestPaint();
         }
     }
@@ -33,7 +33,7 @@ Canvas {
     onPaint: {
         const g = getContext("2d");
         g.reset();
-        const levels = Beat.levels, count = levels.length;
+        const levels = Beat.shown, count = levels.length;
         if (count < 2)
             return;
         const point = i => [i / (count - 1) * width, height - 3 - levels[i] * (height - 6)];

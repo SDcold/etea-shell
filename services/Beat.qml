@@ -12,7 +12,8 @@ Singleton {
     id: root
 
     property int listeners: 0
-    property var levels: []
+    property var levels: [] // exactly what cava hears
+    property var shown: [] // what we actually draw: quick to rise, slow to settle
 
     readonly property bool dancing: Config.groundDances && Planet.pageEmpty && Mpris.players.values.some(player => player.isPlaying)
     readonly property bool wanted: listeners > 0 || dancing
@@ -28,6 +29,27 @@ Singleton {
 
     function leave() {
         listeners = Math.max(0, listeners - 1);
+    }
+
+    // Sound jumps around, but nothing on screen should. When the music stops,
+    // everything sinks back down slowly, like a breath being let out.
+    Timer {
+        running: root.wanted || root.shown.length > 0
+        repeat: true
+        interval: 25
+        onTriggered: {
+            const count = Math.max(root.levels.length, root.shown.length);
+            const next = [];
+            let highest = 0;
+            for (let i = 0; i < count; i++) {
+                const target = root.levels[i] ?? 0, now = root.shown[i] ?? 0;
+                const speed = target > now ? 0.45 : root.wanted ? 0.2 : Theme.groundSettle;
+                const value = now + (target - now) * speed;
+                next.push(value);
+                highest = Math.max(highest, value);
+            }
+            root.shown = !root.wanted && highest < 0.004 ? [] : next;
+        }
     }
 
     Process {

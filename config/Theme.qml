@@ -108,6 +108,10 @@ Singleton {
     readonly property int notifOpen: 240
     readonly property int notifLife: 6000 // how long one stays when the app doesn't say
 
+    // The ground moving with the music
+    readonly property real groundLift: 96 // how high the ridges can climb, on a 1600 wide screen
+    readonly property real groundSettle: 0.05 // how fast it calms down when the music stops, lower is slower
+
     // Where things sit in the bar, so stars know where to fly
     readonly property int pageWidth: 66
     readonly property int pageGap: 8

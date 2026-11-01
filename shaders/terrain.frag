@@ -26,6 +26,7 @@ layout(std140, binding = 0) uniform buf {
     vec4 l5;
     vec4 l6;
     float music; // 0 in silence, 1 while the ground is dancing
+    float lift; // how high the ridges can climb
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -57,7 +58,7 @@ float band(int i) {
     return rows[i / 4][i % 4];
 }
 
-// How loud it is at this spot of the ground: bass in the middle, higher notes out to the sides
+// How loud a given note is
 float sound(float t) {
     float at = clamp(t, 0.0, 1.0) * 25.0;
     int i = int(floor(at));
@@ -94,12 +95,15 @@ void main() {
     float dance = music * (1.0 - orbit);
 
     // Most of the screen is sky, so skip all the work up there
-    if (orbit < 0.001 && r > curve + maxAmp + 8.0 + dance * 250.0) {
+    if (orbit < 0.001 && r > curve + maxAmp + 8.0 + dance * lift) {
         fragColor = vec4(0.0);
         return;
     }
 
-    float across = abs(p.x / 800.0 - 1.0);
+    // Each ridge reads the sound in its own order, sweeping back and forth across the screen.
+    // Nothing mirrors, and the turns are rounded, so loud notes make wide swells, not spikes.
+    float frequency[4] = float[](1.3, 1.9, 1.1, 1.6);
+    float phase[4] = float[](0.17, 0.61, 1.34, 0.86);
     float sampleStep = 2.0 * min(3.14159, asin(min(1.0, 1152.0 / curve)) * 1.15) / 340.0;
 
     // Paint the hills from the farthest to the closest
@@ -115,9 +119,12 @@ void main() {
         // The music lifts each ridge, the far ones most, each hearing a slightly different note
         float heard = 0.0;
         if (dance > 0.001) {
-            float t = across + float(l) * 0.05;
-            heard = (sound(t - 0.025) + sound(t) * 2.0 + sound(t + 0.025)) * 0.25;
-            edge += dance * heard * 230.0 * (1.0 - float(l) * 0.26);
+            float t = 0.5 - 0.5 * cos(3.14159 * (p.x / 1600.0 * frequency[l] + phase[l]));
+            heard = (sound(t - 0.06) + sound(t - 0.03) + sound(t) * 2.0 + sound(t + 0.03) + sound(t + 0.06)) / 6.0;
+            // Bass is always the loudest, so hold it back, then squash whatever is left at the top
+            heard *= 0.55 + 0.75 * t;
+            heard = 1.0 - exp(-heard * 1.9);
+            edge += dance * heard * lift * (1.0 - float(l) * 0.2);
         }
 
         float inside = smoothstep(edge + 0.6, edge - 0.6, r);
