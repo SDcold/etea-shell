@@ -64,6 +64,8 @@ take_pages() {
         hl.unbind("CTRL + SUPER + Left")
         hl.bind("CTRL + SUPER + Right", hl.dsp.global("etea:pageNext"))
         hl.bind("CTRL + SUPER + Left", hl.dsp.global("etea:pagePrevious"))
+        hl.unbind("SUPER + Q")
+        hl.bind("SUPER + Q", hl.dsp.global("etea:closeWindow"))
     ' | grep -v '^ok$' || true
 
     # The four finger swipe would switch pages without us, so it goes through ETEA too.

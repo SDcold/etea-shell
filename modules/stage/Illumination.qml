@@ -46,6 +46,9 @@ Scope {
         end
         -- A slow, even curve: the usual ones do most of the change in the first few frames
         hl.curve("eteaFocus", { type = "bezier", points = { { 0.42, 0 }, { 0.58, 1 } } })
+        -- ETEA plays closing windows itself. Apps that quit on their own still fade out quickly.
+        hl.animation({ leaf = "windowsOut", enabled = false })
+        hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.5, bezier = "eteaFocus" })
         hl.animation({ leaf = "border", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeSwitch", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeDim", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })

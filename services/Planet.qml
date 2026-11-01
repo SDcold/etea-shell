@@ -63,6 +63,11 @@ Singleton {
         geometryDelay.restart();
     }
 
+    // The middle of a page's constellation in the bar
+    function pagePoint(page) {
+        return Qt.point(Theme.barSide + (page - 1) * (Theme.pageWidth + Theme.pageGap) + Theme.pageWidth / 2, Theme.barGap + Theme.barHeight * 0.6);
+    }
+
     function requestNext(direction) {
         request((current - 1 + direction + Config.pages) % Config.pages + 1);
     }

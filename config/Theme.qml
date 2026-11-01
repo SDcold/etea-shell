@@ -71,6 +71,15 @@ Singleton {
     readonly property int traceSpacing: 420 // roughly one star every this many pixels
     readonly property int frameSlide: 300 // matches how long Hyprland takes to slide windows
 
+    // A window closing: it folds into a star, then the star flies back to the bar
+    readonly property int closeFold: 280
+    readonly property int closeFlight: 340
+    readonly property real closeStarSize: 16
+
+    // Where things sit in the bar, so stars know where to fly
+    readonly property int pageWidth: 66
+    readonly property int pageGap: 8
+
     // We bring our own font so nobody has to install anything
     property FontLoader fontLoader: FontLoader {
         source: "file://" + Quickshell.shellPath("assets/fonts/Federo.ttf")

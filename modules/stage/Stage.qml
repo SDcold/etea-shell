@@ -95,6 +95,13 @@ Variants {
             active: stage.focused && Planet.phase !== Planet.Phase.Spinning
         }
 
+        WindowExit {
+            anchors.fill: parent
+            output: stage.modelData
+            screenX: stage.modelData.x
+            screenY: stage.modelData.y
+        }
+
         // Counts the frames of each spin, so we know if it's really smooth
         FrameAnimation {
             id: meter

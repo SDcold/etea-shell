@@ -9,7 +9,7 @@ Row {
 
     required property string monitorName
 
-    spacing: 8
+    spacing: Theme.pageGap
 
     Repeater {
         model: Config.pages

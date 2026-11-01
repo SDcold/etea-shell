@@ -25,7 +25,7 @@ Item {
         return (0.3 + 0.62 * position) * height;
     }
 
-    implicitWidth: 66
+    implicitWidth: Theme.pageWidth
     implicitHeight: Theme.barHeight
     anchors.verticalCenter: parent.verticalCenter
 
