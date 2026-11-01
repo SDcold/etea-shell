@@ -1,17 +1,14 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Services.Mpris
 import qs.config
 import qs.modules.bar
+import qs.services
 
 // What's playing, with the controls that belong to it.
 ColumnLayout {
     id: root
 
-    readonly property var player: {
-        const players = Mpris.players.values;
-        return players.find(p => p.isPlaying) ?? players[0] ?? null;
-    }
+    readonly property var player: Music.player
 
     // The whole card takes on the colour of the cover
     readonly property color cardTint: colour.color
@@ -25,14 +22,6 @@ ColumnLayout {
 
         image: root.player?.trackArtUrl ?? ""
         name: root.player?.trackTitle ?? "etea"
-    }
-
-    // Players don't announce every second, so we ask
-    Timer {
-        running: root.player?.isPlaying ?? false
-        repeat: true
-        interval: 1000
-        onTriggered: root.player.positionChanged()
     }
 
     Text {
@@ -88,39 +77,14 @@ ColumnLayout {
         tint: colour.color
     }
 
-    MenuSlider {
-        visible: (root.player?.lengthSupported ?? false) && root.player.length > 0
+    MediaProgress {
         Layout.fillWidth: true
-        value: root.player?.position ?? 0
-        maximum: root.player?.length || 1
-        onMoved: value => root.player.position = value
+        tint: colour.color
     }
 
-    Row {
+    MediaControls {
         visible: root.player !== null
         Layout.alignment: Qt.AlignHCenter
-        spacing: 30
-
-        Repeater {
-            model: [
-                { icon: "skip-back", run: () => root.player.previous() },
-                { icon: root.player?.isPlaying ? "pause" : "play", run: () => root.player.togglePlaying() },
-                { icon: "skip-forward", run: () => root.player.next() }
-            ]
-
-            Icon {
-                required property var modelData
-
-                name: modelData.icon
-                size: 28
-
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -8
-                    cursorShape: Qt.PointingHandCursor
-                    onPressed: parent.modelData.run()
-                }
-            }
-        }
+        tint: colour.color
     }
 }

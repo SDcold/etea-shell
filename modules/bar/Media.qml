@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell.Services.Mpris
 import qs.config
 import qs.services
 
@@ -8,10 +7,7 @@ Text {
     id: root
 
     // Go for the player that's actually playing, or else the first one around
-    readonly property var player: {
-        const players = Mpris.players.values;
-        return players.find(p => p.isPlaying) ?? players[0] ?? null;
-    }
+    readonly property var player: Music.player
 
     visible: player !== null && (player.trackTitle ?? "") !== ""
     width: Math.min(implicitWidth, 300)

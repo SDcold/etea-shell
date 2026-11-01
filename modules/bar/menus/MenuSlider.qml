@@ -9,6 +9,7 @@ Item {
 
     property real value: 0
     property real maximum: 1
+    property color tint: Menus.tint
     readonly property real ratio: Math.max(0, Math.min(1, value / maximum))
 
     signal moved(real value)
@@ -25,7 +26,7 @@ Item {
         width: parent.width
         height: 2
         radius: 1
-        color: Qt.alpha(Menus.tint, 0.22)
+        color: Qt.alpha(root.tint, 0.22)
     }
 
     Rectangle {
@@ -33,7 +34,7 @@ Item {
         width: parent.width * root.ratio
         height: 2
         radius: 1
-        color: Menus.tint
+        color: root.tint
     }
 
     Star {
