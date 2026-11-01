@@ -57,6 +57,11 @@ Scope {
             Planet.goDown();
         }
 
+        // Where the planet is up to, handy when something looks wrong
+        function state(): string {
+            return `phase ${Planet.phase}, page ${Planet.current}, resting ${Planet.resting.toFixed(2)}, altitude ${Planet.altitude}`;
+        }
+
         function land(page: int): void {
             Planet.leaveOrbit(page);
         }

@@ -82,7 +82,7 @@ Variants {
 
             World {
                 anchors.fill: parent
-                angle: Planet.resting + Planet.travel - Planet.spin
+                angle: Planet.resting + Planet.travel - Planet.handTurn
                 radius: stage.planetRadius
                 horizon: stage.planetTop / stage.screenHeight
                 space: Math.min(1, Planet.altitude * 1.6)
@@ -104,7 +104,7 @@ Variants {
                     pivotY: (stage.planetTop + stage.planetRadius) * stage.unit
                     screenX: stage.modelData.x
                     screenY: stage.modelData.y
-                    angle: Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel + Planet.spin
+                    angle: Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel + Planet.handTurn
                     zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude)
                     lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
                     orbitCard: true

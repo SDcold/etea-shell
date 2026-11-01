@@ -21,6 +21,18 @@ ShaderEffect {
     property real orbit: 1
     property color rimColor: planet.skyLow
 
+    // The music and its bars only exist on the ground, but the shader asks for them
+    property vector4d l0: Qt.vector4d(0, 0, 0, 0)
+    property vector4d l1: l0
+    property vector4d l2: l0
+    property vector4d l3: l0
+    property vector4d l4: l0
+    property vector4d l5: l0
+    property vector4d l6: l0
+    property real music: 0
+    property real lift: 0
+    property real bars: 0
+
     fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
 
     NumberAnimation on planetAngle {

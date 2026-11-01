@@ -14,7 +14,7 @@ Item {
     property real rise: 0.16 // how high the horizon sits inside the card
     property bool alive: visible // the sky stops moving when nobody can see it
 
-    readonly property alias hovered: pointer.hovered
+    readonly property alias hovered: hoverWatch.hovered
 
     readonly property real phase: {
         let total = 7;
@@ -92,7 +92,7 @@ Item {
     onTintChanged: drawing.requestPaint()
 
     HoverHandler {
-        id: pointer
+        id: hoverWatch
     }
 
     ShaderEffect {
@@ -108,7 +108,7 @@ Item {
         property real rise: root.rise
         property real radius: root.radius
 
-        readonly property var handler: pointer
+        readonly property var handler: hoverWatch
 
         anchors.fill: parent
         fragmentShader: Qt.resolvedUrl("../../shaders/porthole.frag.qsb")

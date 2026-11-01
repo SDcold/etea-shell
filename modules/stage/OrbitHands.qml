@@ -25,7 +25,7 @@ MouseArea {
     property point pointer: Qt.point(0, 0)
 
     function cardAngle(index) {
-        return Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel + Planet.spin;
+        return Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel + Planet.handTurn;
     }
 
     function pointerAngle(x, y) {
@@ -110,7 +110,7 @@ MouseArea {
         if (mode === "spin") {
             const angle = pointerAngle(mouse.x, mouse.y), now = Date.now();
             const delta = wrap(angle - lastAngle);
-            Planet.spin += delta;
+            Planet.handTurn += delta;
             velocity = delta / Math.max(1, now - lastTime) * 1000;
             lastAngle = angle;
             lastTime = now;

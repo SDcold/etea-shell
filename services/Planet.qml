@@ -49,10 +49,10 @@ Singleton {
     property int systemChoice: 0
 
     // Turning the planet by hand, up in orbit
-    property real spin: 0
+    property real handTurn: 0
     property int hoveredPage: -1
     property bool landing: false // on the way down to a new world
-    readonly property int topPage: ((origin - 1 - Math.round(spin / step)) % Config.pages + Config.pages) % Config.pages + 1
+    readonly property int topPage: ((origin - 1 - Math.round(handTurn / step)) % Config.pages + Config.pages) % Config.pages + 1
 
     property int target: 0
     property int queued: 0
@@ -112,11 +112,11 @@ Singleton {
 
     // Let go and the planet keeps going a little, then settles on the nearest page
     function fling(speed) {
-        spinTo(Math.round((spin + speed * 0.28) / step) * step);
+        spinTo(Math.round((handTurn + speed * 0.28) / step) * step);
     }
 
     function nudge(steps) {
-        spinTo((Math.round(spin / step) + steps) * step);
+        spinTo((Math.round(handTurn / step) + steps) * step);
     }
 
     function spinTo(angle) {
@@ -183,7 +183,7 @@ Singleton {
             return;
         target = page;
         spinShift.stop();
-        const turn = shortestSteps(origin, page) * step + spin;
+        const turn = shortestSteps(origin, page) * step + handTurn;
         distance = Math.atan2(Math.sin(turn), Math.cos(turn));
         // Letting go of the keyboard makes Hyprland refocus the old window, which would
         // pull us straight back to the old page. So let go first, then change page.
@@ -246,8 +246,8 @@ Singleton {
         // The old page has left the screen. Drop it now, or it snaps back to the
         // centre once the counters reset, and an empty page wouldn't hide it.
         leaving = [];
-        resting += distance - spin;
-        spin = 0;
+        resting += distance - handTurn;
+        handTurn = 0;
         landing = false;
         hoveredPage = -1;
         distance = 0;
@@ -257,6 +257,26 @@ Singleton {
         // Pulling the scene away before that shows the windows flickering as they catch up.
         revealDelay.interval = Math.max(24, Theme.windowFocusSpeed * 100 + 40 - Math.max(spin.duration, 0));
         revealDelay.restart();
+    }
+
+    function recover() {
+        for (const animation of [spin, rise, descent, fade, spinShift, systemShift])
+            animation.stop();
+        for (const timer of [geometryDelay, orbitDelay, orbitLanding, captureTimeout, coverDelay, revealDelay])
+            timer.stop();
+        queued = 0;
+        travel = 0;
+        distance = 0;
+        handTurn = 0;
+        altitude = 0;
+        systemLevel = 0;
+        inSystem = false;
+        landing = false;
+        goingUp = false;
+        hoveredPage = -1;
+        Config.preview = "";
+        resting = (current - 1) * step;
+        reset();
     }
 
     function reset() {
@@ -336,11 +356,22 @@ Singleton {
         onTriggered: Hyprland.dispatch(`hl.dsp.focus({ workspace = ${root.target} })`)
     }
 
+    // The scene covers every window while a transition runs, so a transition that gets
+    // stuck would hide the whole desktop. However it went wrong, this gives the screen back.
+    Timer {
+        running: root.phase !== Planet.Phase.Idle && root.phase !== Planet.Phase.Orbit
+        interval: 6000
+        onTriggered: {
+            console.warn("ETEA: transition stuck, giving the screen back");
+            root.recover();
+        }
+    }
+
     NumberAnimation {
         id: spinShift
 
         target: root
-        property: "spin"
+        property: "handTurn"
         duration: 520
         easing.type: Easing.OutCubic
     }
