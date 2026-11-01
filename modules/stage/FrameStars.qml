@@ -59,6 +59,7 @@ Item {
             y: modelData.y - size
             size: modelData.size * Theme.traceStarScale * root.fit
             lit: true
+            animated: false
         }
     }
 }

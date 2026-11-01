@@ -1,18 +1,19 @@
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Widgets
 import qs.config
 import qs.modules.bar
 import qs.services
 
-// Opening a window is a star being born. Hyprland keeps the real window invisible
-// for a moment (see Illumination), and we open a live copy of it through a growing star.
+// Opening a window is a star being born. The new window is still invisible when we
+// hear about it, so we photograph the screen as it is and lay that piece over the spot.
+// A star then opens a hole in the photo, onto the real window. Nothing ever has to swap
+// places, and whatever was already there stays put until the star reaches it.
 Item {
     id: root
 
+    required property var output
     required property real screenX
     required property real screenY
     property bool active: true
@@ -21,6 +22,7 @@ Item {
     property string waitingFor: ""
     property int tries: 0
     property bool playing: false
+    property bool photoReady: false
 
     // A new window often gets resized while it settles in, so this follows it live
     readonly property rect area: {
@@ -41,15 +43,20 @@ Item {
             }
             return;
         }
-        if (found.workspace?.id === Planet.current && info.fullscreen !== 2)
-            start(found);
+        if (found.workspace?.id !== Planet.current || info.fullscreen === 2) {
+            photo.active = false;
+            return;
+        }
+        window = found;
+        if (photoReady)
+            start();
     }
 
-    function start(found) {
-        window = found;
-        Planet.birthing = found.address;
+    function start() {
+        Planet.birthing = window.address;
         mask.reach = 0;
-        scene.opacity = 1;
+        mask.shine = 0.9;
+        star.opacity = 1;
         playing = true;
         birth.restart();
     }
@@ -57,6 +64,8 @@ Item {
     function finish() {
         playing = false;
         window = null;
+        photoReady = false;
+        photo.active = false;
         Planet.birthing = "";
     }
 
@@ -68,6 +77,8 @@ Item {
                 return;
             root.waitingFor = event.data.split(",")[0];
             root.tries = 0;
+            root.photoReady = false;
+            photo.active = true;
             Hyprland.refreshToplevels();
             searching.restart();
         }
@@ -88,33 +99,42 @@ Item {
     }
 
     Item {
-        id: scene
+        anchors.fill: parent
+        opacity: 0
 
+        Loader {
+            id: photo
+
+            anchors.fill: parent
+            active: false
+
+            sourceComponent: ScreencopyView {
+                captureSource: root.output
+                live: false
+                onHasContentChanged: {
+                    if (!hasContent)
+                        return;
+                    root.photoReady = true;
+                    if (root.window && !root.playing)
+                        root.start();
+                }
+            }
+        }
+    }
+
+    Item {
         anchors.fill: parent
         visible: root.playing
 
-        Item {
-            id: copy
+        ShaderEffectSource {
+            id: patch
 
-            x: root.area.x
-            y: root.area.y
+            sourceItem: photo.item
+            sourceRect: root.area
+            live: false
+            visible: false
             width: root.area.width
             height: root.area.height
-            opacity: 0
-            layer.enabled: true
-
-            ClippingRectangle {
-                anchors.fill: parent
-                radius: Theme.windowRadius + Theme.traceWidth
-                color: "transparent"
-
-                ScreencopyView {
-                    anchors.fill: parent
-                    anchors.margins: Theme.traceWidth
-                    captureSource: root.window?.wayland ?? null
-                    live: true
-                }
-            }
         }
 
         StarMask {
@@ -124,7 +144,8 @@ Item {
             y: root.area.y
             width: root.area.width
             height: root.area.height
-            source: copy
+            source: patch
+            flipped: 1
         }
 
         Star {
@@ -140,12 +161,6 @@ Item {
 
     SequentialAnimation {
         id: birth
-
-        PropertyAction {
-            target: mask
-            property: "shine"
-            value: 0.9
-        }
 
         // The star flares up first, then opens onto the window
         PauseAnimation { duration: Theme.openSpark }
@@ -168,28 +183,13 @@ Item {
             NumberAnimation {
                 target: star
                 property: "opacity"
-                from: 1
                 to: 0
                 duration: Theme.openReveal * 0.6
             }
         }
 
-        // Hyprland's fade only really starts at the very end, so let go right as it does.
-        // Fading together keeps a see-through window from doubling up with its copy.
-        PauseAnimation { duration: Math.max(0, Theme.openHold - Theme.openSpark - Theme.openReveal) }
-
-        NumberAnimation {
-            target: scene
-            property: "opacity"
-            to: 0
-            duration: 130
-        }
-
         ScriptAction {
-            script: {
-                star.opacity = 1;
-                root.finish();
-            }
+            script: root.finish()
         }
     }
 }

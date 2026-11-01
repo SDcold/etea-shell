@@ -50,11 +50,11 @@ Scope {
         hl.animation({ leaf = "windowsOut", enabled = false })
         hl.animation({ leaf = "windowsIn", enabled = false })
 
-        -- A new window stays invisible while ETEA plays its birth: this curve sits at zero
-        -- almost the whole way. It all happens inside Hyprland, so a window can't get stuck
-        -- hidden, even if ETEA crashes.
+        -- A new window waits a beat so ETEA can get the sky in front of it: this curve sits
+        -- at zero almost the whole way. It all happens inside Hyprland, so a window can't
+        -- get stuck hidden, even if ETEA crashes.
         hl.curve("eteaHold", { type = "bezier", points = { { 1, 0 }, { 1, 0 } } })
-        hl.animation({ leaf = "fadeIn", enabled = true, speed = ${(Theme.openHold + 120) / 100}, bezier = "eteaHold" })
+        hl.animation({ leaf = "fadeIn", enabled = true, speed = ${Theme.openCover / 100}, bezier = "eteaHold" })
         hl.animation({ leaf = "border", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeSwitch", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeDim", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })

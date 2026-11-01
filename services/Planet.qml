@@ -112,6 +112,9 @@ Singleton {
         distance = 0;
         travel = 0;
         phase = Planet.Phase.Settling;
+        // Focus just moved behind the scene and takes a while to fade in.
+        // Pulling the scene away before that shows the windows flickering as they catch up.
+        revealDelay.interval = arriving.length ? Math.max(24, Theme.windowFocusSpeed * 100 + 40 - spin.duration) : 24;
         revealDelay.restart();
     }
 

@@ -9,12 +9,15 @@ Item {
     property real size: 8
     property bool lit: false
     property bool appear: true
+    property bool animated: true // false for stars that are simply there, like on a frame
 
     width: size * 2
     height: size * 2
-    scale: 0
+    scale: animated ? 0 : 1
 
     onAppearChanged: {
+        if (!animated)
+            return;
         birth.stop();
         if (appear)
             birth.start();
@@ -23,7 +26,7 @@ Item {
     }
 
     Component.onCompleted: {
-        if (appear)
+        if (appear && animated)
             birth.start();
     }
 

@@ -8,6 +8,7 @@ ShaderEffect {
     required property var source
     property real reach: 0
     property real shine: 0
+    property real flipped: 0
 
     // How big the star must get before it has swallowed the corners too
     readonly property real fullReach: {
