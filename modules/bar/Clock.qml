@@ -27,7 +27,8 @@ Item {
             text: Qt.formatTime(clock.date, "HH:mm")
             color: Theme.text
             font.family: Theme.font
-            font.pixelSize: Theme.textSize + 8
+            font.pixelSize: Theme.textSize + 6
+            font.weight: Font.Medium
         }
 
         Text {

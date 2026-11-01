@@ -41,7 +41,7 @@ Item {
         text: "Silence radio."
         color: Qt.alpha(Theme.text, 0.7)
         font.family: Theme.font
-        font.pixelSize: 20
+        font.pixelSize: 17
     }
 
     ColumnLayout {
@@ -86,7 +86,7 @@ Item {
                     wrapMode: Text.Wrap
                     color: Theme.text
                     font.family: Theme.font
-                    font.pixelSize: 19
+                    font.pixelSize: 16
                 }
 
                 Text {
@@ -95,7 +95,7 @@ Item {
                     elide: Text.ElideRight
                     color: Qt.alpha(Theme.text, 0.7)
                     font.family: Theme.font
-                    font.pixelSize: 14
+                    font.pixelSize: 12
                 }
 
                 StarWave {

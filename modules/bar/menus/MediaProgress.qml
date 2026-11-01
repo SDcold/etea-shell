@@ -33,14 +33,14 @@ ColumnLayout {
             text: Music.clockTime(root.player?.position)
             color: Qt.alpha(Theme.text, 0.7)
             font.family: Theme.font
-            font.pixelSize: 12
+            font.pixelSize: 10
         }
 
         Text {
             text: Music.clockTime(root.player?.length)
             color: Qt.alpha(Theme.text, 0.7)
             font.family: Theme.font
-            font.pixelSize: 12
+            font.pixelSize: 10
         }
     }
 }

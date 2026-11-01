@@ -65,7 +65,7 @@ Ce sont les règles communes à tout le shell.
 
 - **F06 · Palette :** couleurs principales, couleurs d'accent, couleurs d'état (succès, alerte, erreur).
 - **F07 · Variantes de couleurs :** une seule ambiance, un mode clair et sombre, ou des couleurs tirées du fond d'écran ?
-- **F08 · Typographie :** Federo pour tout le texte du shell.
+- **F08 · Typographie :** Poppins pour tout le texte du shell.
 - **F09 · Formes :** géométriques, organiques, angulaires, arrondies, irrégulières ?
 - **F10 · Matières :** verre, papier, métal, encre, lumière pure, autre ?
 - **F11 · Lumière et ombres :** d'où vient la lumière ? Les éléments brillent-ils, projettent-ils une ombre ?

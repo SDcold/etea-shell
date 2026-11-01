@@ -35,8 +35,8 @@ Singleton {
     readonly property color textGlow: "#ffe2a8"
 
     // One font for the whole shell, icons on the side
-    readonly property string font: fontLoader.name
-    readonly property int textSize: 16
+    readonly property string font: "Poppins"
+    readonly property int textSize: 14
 
     // The everyday pace: quick enough to never keep you waiting
     readonly property int fast: 160
@@ -117,7 +117,13 @@ Singleton {
     readonly property int pageGap: 8
 
     // We bring our own font so nobody has to install anything
-    property FontLoader fontLoader: FontLoader {
-        source: "file://" + Quickshell.shellPath("assets/fonts/Federo.ttf")
+    Instantiator {
+        model: ["Light", "Regular", "Medium", "SemiBold"]
+
+        FontLoader {
+            required property string modelData
+
+            source: "file://" + Quickshell.shellPath(`assets/fonts/Poppins-${modelData}.ttf`)
+        }
     }
 }

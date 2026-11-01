@@ -61,7 +61,7 @@ ColumnLayout {
             text: root.locale.toString(root.shown, "MMMM yyyy")
             color: Theme.text
             font.family: Theme.font
-            font.pixelSize: 18
+            font.pixelSize: 15
         }
 
         Icon {
@@ -108,7 +108,7 @@ ColumnLayout {
             text: root.moonName
             color: Qt.alpha(Theme.text, 0.75)
             font.family: Theme.font
-            font.pixelSize: 15
+            font.pixelSize: 13
         }
     }
 
@@ -131,7 +131,7 @@ ColumnLayout {
                 text: modelData
                 color: Menus.tint
                 font.family: Theme.font
-                font.pixelSize: 12
+                font.pixelSize: 10
             }
         }
 
@@ -162,7 +162,7 @@ ColumnLayout {
                     text: cell.modelData.getDate()
                     color: cell.isToday ? "#1c1208" : Qt.alpha(Theme.text, cell.modelData.getMonth() === root.shown.getMonth() ? 0.9 : 0.3)
                     font.family: Theme.font
-                    font.pixelSize: 15
+                    font.pixelSize: 13
                 }
             }
         }

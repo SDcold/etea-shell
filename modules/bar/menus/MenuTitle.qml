@@ -8,7 +8,7 @@ Text {
 
     color: Menus.tint
     font.family: Theme.font
-    font.pixelSize: 13
+    font.pixelSize: 11
     font.letterSpacing: 0.5
 
     Entrance {

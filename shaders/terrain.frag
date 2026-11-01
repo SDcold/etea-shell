@@ -27,6 +27,7 @@ layout(std140, binding = 0) uniform buf {
     vec4 l6;
     float music; // 0 in silence, 1 while the ground is dancing
     float lift; // how high the ridges can climb
+    float bars; // 1 draws bars behind the ground, 0 draws contour lines
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -95,7 +96,7 @@ void main() {
     float dance = music * (1.0 - orbit);
 
     // Most of the screen is sky, so skip all the work up there
-    if (orbit < 0.001 && r > curve + maxAmp + 72.0 + dance * lift) {
+    if (orbit < 0.001 && r > curve + maxAmp + 72.0 + dance * lift * 1.6) {
         fragColor = vec4(0.0);
         return;
     }
@@ -106,7 +107,22 @@ void main() {
     // like a seismograph drawn over the landscape. They stay in order and never cross:
     // the louder it gets, the further they spread apart, and each softens as it climbs.
     vec4 color = vec4(0.0);
-    if (dance > 0.001) {
+    if (dance > 0.001 && bars > 0.5) {
+        // The other style: plain bars standing behind the hills, rounded at the top
+        float count = 58.0;
+        float cell = floor(p.x / 1600.0 * count);
+        float wide = 1600.0 / count;
+        float offset = abs(p.x - (cell + 0.5) * wide);
+        float t = 0.5 - 0.5 * cos(3.14159 * ((cell + 0.5) / count * 1.3 + 0.17));
+        float heard = (sound(t - 0.03) + sound(t) * 2.0 + sound(t + 0.03)) * 0.25;
+        heard = 1.0 - exp(-heard * (0.55 + 0.75 * t) * 1.9);
+        float half_ = wide * 0.3;
+        float top = curve + maxAmp + 2.0 + heard * lift * 1.5;
+        float above = max(r - (top - half_), 0.0);
+        float shape = smoothstep(half_ + 0.7, half_ - 0.7, length(vec2(offset, above)));
+        float rise = clamp((r - curve) / (lift * 1.5), 0.0, 1.0);
+        color = vec4(mix(rimColor.rgb, vec3(1.0, 0.97, 0.92), rise * 0.75), shape * (0.55 + 0.4 * rise) * dance);
+    } else if (dance > 0.001) {
         float ridgeCell = (angle + planetAngle) / sampleStep;
         float ridgeShape = mix(ridge(1.2, floor(ridgeCell) * sampleStep), ridge(1.2, ceil(ridgeCell) * sampleStep), fract(ridgeCell));
         float glow = 0.0;

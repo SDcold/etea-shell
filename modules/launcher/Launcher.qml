@@ -254,7 +254,7 @@ Scope {
                         text: node.modelData.name
                         color: Theme.text
                         font.family: Theme.font
-                        font.pixelSize: 24
+                        font.pixelSize: 21
                     }
 
                     MouseArea {
@@ -277,7 +277,7 @@ Scope {
                 text: "Rien dans ce ciel."
                 color: Qt.alpha(Theme.text, 0.6)
                 font.family: Theme.font
-                font.pixelSize: 22
+                font.pixelSize: 19
             }
         }
     }

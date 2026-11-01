@@ -57,7 +57,7 @@ Item {
             elide: Text.ElideRight
             color: root.active ? Theme.text : Qt.alpha(Theme.text, 0.75)
             font.family: Theme.font
-            font.pixelSize: 15
+            font.pixelSize: 13
         }
 
         StarLevel {
@@ -69,7 +69,7 @@ Item {
             text: root.detail
             color: Qt.alpha(Theme.text, 0.5)
             font.family: Theme.font
-            font.pixelSize: 13
+            font.pixelSize: 11
         }
     }
 

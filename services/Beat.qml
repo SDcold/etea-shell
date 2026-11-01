@@ -15,7 +15,7 @@ Singleton {
     property var levels: [] // exactly what cava hears
     property var shown: [] // what we actually draw: quick to rise, slow to settle
 
-    readonly property bool dancing: Config.groundDances && Planet.pageEmpty && Mpris.players.values.some(player => player.isPlaying)
+    readonly property bool dancing: Config.groundMusic !== "off" && Planet.pageEmpty && Mpris.players.values.some(player => player.isPlaying)
     readonly property bool wanted: listeners > 0 || dancing
 
     onWantedChanged: {

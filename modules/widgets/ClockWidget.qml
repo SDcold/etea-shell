@@ -208,7 +208,8 @@ Item {
             text: Qt.formatTime(clock.date, "HH:mm")
             color: Theme.text
             font.family: Theme.font
-            font.pixelSize: 62
+            font.pixelSize: 54
+            font.weight: Font.Light
         }
 
         Text {
@@ -216,7 +217,7 @@ Item {
             text: Qt.locale(Config.locale).toString(clock.date, "ddd d MMM")
             color: Qt.alpha(Theme.text, 0.8)
             font.family: Theme.font
-            font.pixelSize: 17
+            font.pixelSize: 15
         }
     }
 }

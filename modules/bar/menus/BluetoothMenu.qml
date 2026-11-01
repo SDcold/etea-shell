@@ -24,7 +24,7 @@ ColumnLayout {
             text: "Bluetooth"
             color: Theme.text
             font.family: Theme.font
-            font.pixelSize: 18
+            font.pixelSize: 15
         }
 
         MenuSwitch {
@@ -52,6 +52,6 @@ ColumnLayout {
         text: "Aucun appareil connu."
         color: Qt.alpha(Theme.text, 0.6)
         font.family: Theme.font
-        font.pixelSize: 14
+        font.pixelSize: 12
     }
 }

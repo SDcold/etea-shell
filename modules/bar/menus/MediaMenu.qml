@@ -29,7 +29,7 @@ ColumnLayout {
         text: "Rien en cours de lecture."
         color: Qt.alpha(Theme.text, 0.7)
         font.family: Theme.font
-        font.pixelSize: 16
+        font.pixelSize: 14
     }
 
     RowLayout {
@@ -57,7 +57,7 @@ ColumnLayout {
                 elide: Text.ElideRight
                 color: Theme.text
                 font.family: Theme.font
-                font.pixelSize: 18
+                font.pixelSize: 15
             }
 
             Text {
@@ -66,7 +66,7 @@ ColumnLayout {
                 elide: Text.ElideRight
                 color: Qt.alpha(Theme.text, 0.65)
                 font.family: Theme.font
-                font.pixelSize: 14
+                font.pixelSize: 12
             }
         }
     }

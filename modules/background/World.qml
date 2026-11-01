@@ -82,6 +82,7 @@ Item {
         property vector4d l6: root.bands(24)
         property real music: Beat.dancing && Beat.shown.length ? 1 : 0
         property real lift: Theme.groundLift
+        property real bars: Config.groundMusic === "bars" ? 1 : 0
 
         Behavior on music {
             NumberAnimation { duration: 1800; easing.type: Easing.InOutSine }

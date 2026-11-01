@@ -34,7 +34,7 @@ ColumnLayout {
             text: "Wi-Fi"
             color: Theme.text
             font.family: Theme.font
-            font.pixelSize: 18
+            font.pixelSize: 15
         }
 
         MenuSwitch {

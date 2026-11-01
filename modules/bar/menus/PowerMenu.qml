@@ -61,7 +61,7 @@ ColumnLayout {
             text: root.battery?.isLaptopBattery ? root.timeLeft() : ""
             color: Qt.alpha(Theme.text, 0.6)
             font.family: Theme.font
-            font.pixelSize: 14
+            font.pixelSize: 12
         }
     }
 

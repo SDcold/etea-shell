@@ -203,7 +203,7 @@ Item {
                         elide: Text.ElideRight
                         color: colour.color
                         font.family: Theme.font
-                        font.pixelSize: 13
+                        font.pixelSize: 11
                         font.letterSpacing: 0.4
                     }
 
@@ -211,7 +211,7 @@ Item {
                         text: root.when()
                         color: Qt.alpha(Theme.text, 0.55)
                         font.family: Theme.font
-                        font.pixelSize: 12
+                        font.pixelSize: 10
                     }
                 }
 
@@ -223,7 +223,7 @@ Item {
                     elide: Text.ElideRight
                     color: Theme.text
                     font.family: Theme.font
-                    font.pixelSize: 19
+                    font.pixelSize: 16
                 }
 
                 Text {
@@ -236,7 +236,7 @@ Item {
                     elide: Text.ElideRight
                     color: Qt.alpha(Theme.text, 0.78)
                     font.family: Theme.font
-                    font.pixelSize: 14
+                    font.pixelSize: 12
                 }
 
                 Row {
@@ -253,7 +253,7 @@ Item {
                             text: modelData.text
                             color: colour.color
                             font.family: Theme.font
-                            font.pixelSize: 15
+                            font.pixelSize: 13
 
                             MouseArea {
                                 anchors.fill: parent

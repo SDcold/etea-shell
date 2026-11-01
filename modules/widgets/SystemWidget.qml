@@ -85,7 +85,7 @@ Item {
                         text: Math.round(gauge.modelData.value * 100)
                         color: Theme.text
                         font.family: Theme.font
-                        font.pixelSize: 26
+                        font.pixelSize: 22
                     }
                 }
 
@@ -95,7 +95,7 @@ Item {
                     text: gauge.modelData.label
                     color: Qt.alpha(Theme.text, 0.72)
                     font.family: Theme.font
-                    font.pixelSize: 13
+                    font.pixelSize: 11
                 }
             }
         }
