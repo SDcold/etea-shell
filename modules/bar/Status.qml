@@ -5,6 +5,7 @@ import Quickshell.Networking
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 import qs.config
+import qs.services
 
 // System info. Config.status picks what stays and in which order.
 Row {
@@ -42,6 +43,8 @@ Row {
             // Each item boils down to an icon and sometimes a value
             readonly property var info: {
                 switch (modelData) {
+                case "notifications":
+                    return [root.glyph(Notifs.quiet ? 0xf009b : 0xf009a), Notifs.count ? String(Notifs.count) : ""];
                 case "network":
                     if (root.wifi)
                         return [root.glyph(root.wifi.signalStrength > 0.66 ? 0xf0928 : root.wifi.signalStrength > 0.33 ? 0xf0925 : 0xf091f), ""];
@@ -94,8 +97,16 @@ Row {
             // On the volume: click to mute, scroll to adjust
             MouseArea {
                 anchors.fill: parent
-                enabled: item.modelData === "volume"
-                onClicked: root.sink.audio.muted = !root.sink.audio.muted
+                enabled: item.modelData === "volume" || item.modelData === "notifications"
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onPressed: mouse => {
+                    if (item.modelData === "volume")
+                        root.sink.audio.muted = !root.sink.audio.muted;
+                    else if (mouse.button === Qt.RightButton)
+                        Notifs.quiet = !Notifs.quiet;
+                    else
+                        Notifs.journalOpen = !Notifs.journalOpen;
+                }
                 onWheel: wheel => root.sink.audio.volume = Math.max(0, Math.min(1.5, root.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05)))
             }
         }

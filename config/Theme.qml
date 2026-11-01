@@ -95,6 +95,13 @@ Singleton {
     readonly property int launcherFade: 180
     readonly property int launcherSpacing: 170 // distance between two stars
 
+    // Notifications: comets that land and open up
+    readonly property color notifCard: "#e60b0d17"
+    readonly property int notifWidth: 380
+    readonly property int notifComet: 360
+    readonly property int notifOpen: 240
+    readonly property int notifLife: 6000 // how long one stays when the app doesn't say
+
     // Where things sit in the bar, so stars know where to fly
     readonly property int pageWidth: 66
     readonly property int pageGap: 8

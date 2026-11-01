@@ -103,6 +103,8 @@ start)
     fi
     qs kill -c "$SHELL_NAME" 2>/dev/null || true
     stop_etea
+    # ETEA shows notifications itself now, and only one program can
+    pkill -x mako 2>/dev/null || true
     qs -p "$ROOT" -d
     take_pages
     ;;

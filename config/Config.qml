@@ -6,7 +6,7 @@ import Quickshell
 // What people can tweak. Until we have a settings page, it happens here.
 Singleton {
     readonly property int pages: 6
-    readonly property var status: ["network", "bluetooth", "volume", "battery"]
+    readonly property var status: ["notifications", "network", "bluetooth", "volume", "battery"]
     readonly property string locale: "fr_FR"
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
 
