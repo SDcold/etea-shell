@@ -1,26 +1,28 @@
 import QtQuick
-import QtQuick.Layouts
 import qs.config
 import qs.modules.bar
 import qs.services
 
-// The machine's vital signs, each one a star riding along its line.
+// The ship's instruments: each reading is a star orbiting a little world, and the
+// further round it has gone, the harder the machine is working.
 Item {
-    implicitWidth: 250
-    implicitHeight: readings.implicitHeight + 40
+    id: root
+
+    implicitWidth: 300
+    implicitHeight: 182
 
     HandCard {
         anchors.fill: parent
         seed: "system"
+        tint: Machine.cpu > 0.8 ? "#f0705f" : "#8fc7e8"
+        rise: 0.07 + Machine.cpu * 0.16
+        alive: Planet.pageEmpty
     }
 
-    ColumnLayout {
-        id: readings
-
-        x: 20
-        y: 20
-        width: parent.width - 40
-        spacing: 12
+    Row {
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 16
+        spacing: 26
 
         Repeater {
             model: [
@@ -28,59 +30,72 @@ Item {
                 { label: "Mémoire", value: Machine.memory }
             ]
 
-            ColumnLayout {
-                id: reading
+            Item {
+                id: gauge
 
                 required property var modelData
 
-                spacing: 2
+                property real shown: modelData.value
 
-                RowLayout {
-                    Text {
-                        Layout.fillWidth: true
-                        text: reading.modelData.label
-                        color: Theme.text
-                        font.family: Theme.font
-                        font.pixelSize: 15
-                    }
+                width: 110
+                height: 128
 
-                    Text {
-                        text: `${Math.round(reading.modelData.value * 100)} %`
-                        color: Theme.windowLit
-                        font.family: Theme.font
-                        font.pixelSize: 15
-                    }
+                Behavior on shown {
+                    NumberAnimation { duration: 900; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
                 }
 
-                Item {
-                    Layout.fillWidth: true
-                    implicitHeight: 14
+                onShownChanged: ring.requestPaint()
 
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width
-                        height: 1
-                        color: Qt.alpha(Theme.windowLit, 0.25)
-                    }
+                Canvas {
+                    id: ring
 
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width * reading.modelData.value
-                        height: 1
-                        color: Theme.windowLit
+                    width: 100
+                    height: 100
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    renderStrategy: Canvas.Immediate
+                    onPaint: {
+                        const g = getContext("2d"), c = 50, r = 42, start = -Math.PI / 2;
+                        g.reset();
+                        g.lineCap = "round";
+                        g.strokeStyle = String(Theme.windowLit);
+                        g.globalAlpha = 0.18;
+                        g.lineWidth = 1;
+                        g.beginPath();
+                        g.arc(c, c, r, 0, Math.PI * 2);
+                        g.stroke();
+                        g.globalAlpha = 0.95;
+                        g.lineWidth = 2;
+                        g.beginPath();
+                        g.arc(c, c, r, start, start + gauge.shown * Math.PI * 2);
+                        g.stroke();
                     }
 
                     Star {
-                        x: parent.width * reading.modelData.value - size
-                        y: parent.height / 2 - size
-                        size: 5
+                        readonly property real angle: gauge.shown * Math.PI * 2 - Math.PI / 2
+
+                        x: 50 + 42 * Math.cos(angle) - size
+                        y: 50 + 42 * Math.sin(angle) - size
+                        size: 7
                         lit: true
                         animated: false
-
-                        Behavior on x {
-                            NumberAnimation { duration: 600; easing.type: Easing.OutCubic }
-                        }
                     }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: Math.round(gauge.modelData.value * 100)
+                        color: Theme.text
+                        font.family: Theme.font
+                        font.pixelSize: 26
+                    }
+                }
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottom: parent.bottom
+                    text: gauge.modelData.label
+                    color: Qt.alpha(Theme.text, 0.72)
+                    font.family: Theme.font
+                    font.pixelSize: 13
                 }
             }
         }

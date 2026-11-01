@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.config
+import qs.modules.bar
+import qs.services
 
 // One line in a list: something you can pick, with a detail on the right.
 Item {
@@ -9,24 +11,45 @@ Item {
     property string label: ""
     property string detail: ""
     property bool active: false
+    property real level: -1 // shown as a row of stars, when there is one
 
     signal picked()
 
     implicitWidth: 280
-    implicitHeight: 32
+    implicitHeight: 34
+
+    Entrance {
+        item: root
+    }
 
     Rectangle {
         anchors.fill: parent
         anchors.margins: -2
-        radius: 9
-        color: Theme.windowLit
-        opacity: root.active ? 0.14 : pointer.containsMouse ? 0.07 : 0
+        radius: 11
+        color: Menus.tint
+        opacity: root.active ? 0.18 : pointer.containsMouse ? 0.09 : 0
+
+        Behavior on opacity {
+            NumberAnimation { duration: Theme.fast }
+        }
+    }
+
+    StarRipple {
+        id: ripple
     }
 
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: 8
         anchors.rightMargin: 8
+
+        Star {
+            visible: root.active
+            Layout.alignment: Qt.AlignVCenter
+            size: 6
+            lit: true
+            animated: false
+        }
 
         Text {
             Layout.fillWidth: true
@@ -35,6 +58,11 @@ Item {
             color: root.active ? Theme.text : Qt.alpha(Theme.text, 0.75)
             font.family: Theme.font
             font.pixelSize: 15
+        }
+
+        StarLevel {
+            visible: root.level >= 0
+            level: root.level
         }
 
         Text {
@@ -51,6 +79,9 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onPressed: root.picked()
+        onPressed: mouse => {
+            ripple.burst(mouse.x, mouse.y);
+            root.picked();
+        }
     }
 }

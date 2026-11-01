@@ -1,6 +1,7 @@
 import QtQuick
 import qs.config
 import qs.modules.bar
+import qs.services
 
 // On or off. The star slides across and lights up.
 Item {
@@ -18,7 +19,7 @@ Item {
         width: parent.width
         height: 2
         radius: 1
-        color: Qt.alpha(Theme.windowLit, root.on ? 0.7 : 0.22)
+        color: Qt.alpha(Menus.tint, root.on ? 0.8 : 0.22)
     }
 
     Star {

@@ -11,6 +11,10 @@ ColumnLayout {
     readonly property var source: Pipewire.defaultAudioSource
     readonly property var outputs: Pipewire.nodes.values.filter(node => node.isSink && !node.isStream && node.audio)
 
+    // The horizon climbs with the volume
+    readonly property color cardTint: "#e98fb0"
+    readonly property real cardRise: 0.05 + Math.min(1, (sink?.audio.volume ?? 0)) * 0.3
+
     spacing: 6
     width: 320
 

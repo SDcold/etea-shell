@@ -5,7 +5,7 @@ import qs.config
 ShaderEffect {
     id: root
 
-    required property var source
+    property var source
     property real reach: 0
     property real shine: 0
     property real flipped: 0
@@ -18,7 +18,7 @@ ShaderEffect {
         return Math.pow(Math.pow(across, curve) + Math.pow(down, curve), 1 / curve) + 6;
     }
 
-    readonly property color tint: Theme.windowLit
+    property color tint: Theme.windowLit
     readonly property vector2d resolution: Qt.vector2d(width, height)
 
     fragmentShader: Qt.resolvedUrl("../../shaders/starmask.frag.qsb")

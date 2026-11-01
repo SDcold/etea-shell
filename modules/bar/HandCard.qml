@@ -1,15 +1,20 @@
 import QtQuick
 import qs.config
 
-// A card that looks drawn by hand: a wobbly double line like a pencil going over itself,
-// broken around the stars the way a star chart is, with a bit of ink speckle inside.
-// The seed makes each one a little different, and redrawing it gives the same drawing.
+// Every card in ETEA: a porthole onto a living sky, framed by a wobbly double ink line
+// that breaks around its stars. The seed makes each one a little different, the tint
+// and the rise are how a card takes on the colour and the mood of what it's showing.
 Item {
     id: root
 
     property string seed: "etea"
     property real radius: 18
     property real ink: 0.72 // how strong the line is
+    property color tint: Theme.windowLit
+    property real rise: 0.16 // how high the horizon sits inside the card
+    property bool alive: visible // the sky stops moving when nobody can see it
+
+    readonly property alias hovered: pointer.hovered
 
     readonly property real phase: {
         let total = 7;
@@ -84,6 +89,47 @@ Item {
     onWidthChanged: drawing.requestPaint()
     onHeightChanged: drawing.requestPaint()
     onInkChanged: drawing.requestPaint()
+    onTintChanged: drawing.requestPaint()
+
+    HoverHandler {
+        id: pointer
+    }
+
+    ShaderEffect {
+        id: sky
+
+        property color deep: Theme.cardDeep
+        property color tint: root.tint
+        property vector2d resolution: Qt.vector2d(width, height)
+        property vector2d pointer: Qt.vector2d(handler.point.position.x, handler.point.position.y)
+        property real time: 0
+        property real seed: root.phase
+        property real hover: root.hovered ? 1 : 0
+        property real rise: root.rise
+        property real radius: root.radius
+
+        readonly property var handler: pointer
+
+        anchors.fill: parent
+        fragmentShader: Qt.resolvedUrl("../../shaders/porthole.frag.qsb")
+
+        Behavior on hover {
+            NumberAnimation { duration: Theme.normal; easing.type: Easing.OutCubic }
+        }
+        Behavior on rise {
+            NumberAnimation { duration: 700; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
+        }
+        Behavior on tint {
+            ColorAnimation { duration: 600 }
+        }
+
+        Timer {
+            running: root.alive
+            repeat: true
+            interval: 33
+            onTriggered: sky.time += 0.033
+        }
+    }
 
     Canvas {
         id: drawing
@@ -102,30 +148,12 @@ Item {
             g.translate(bleed, bleed);
 
             const shape = root.outline(0, root.phase);
-            g.beginPath();
-            shape.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
-            g.closePath();
-            const paper = g.createLinearGradient(0, 0, root.width * 0.4, root.height);
-            paper.addColorStop(0, String(Theme.cardPaperTop));
-            paper.addColorStop(1, String(Theme.cardPaperBottom));
-            g.fillStyle = paper;
-            g.fill();
-
-            // Ink speckle, more of it towards the edges like an old print
-            const random = root.randomFrom(root.phase + 3);
-            g.fillStyle = String(Theme.windowLit);
-            for (let i = 0; i < root.width * root.height / 520; i++) {
-                const x = random() * root.width, y = random() * root.height;
-                const edge = Math.min(x, y, root.width - x, root.height - y);
-                g.globalAlpha = (0.03 + random() * 0.07) * (edge < 24 ? 1.6 : 1);
-                g.fillRect(x, y, 0.8 + random() * 0.9, 0.8 + random() * 0.9);
-            }
 
             // Two passes of the line, and it lifts off the paper around each star
             const stroke = (points, width, alpha) => {
                 g.globalAlpha = alpha;
                 g.lineWidth = width;
-                g.strokeStyle = String(Theme.windowLit);
+                g.strokeStyle = String(root.tint);
                 g.lineCap = "round";
                 g.beginPath();
                 let pen = false;

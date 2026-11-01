@@ -20,6 +20,11 @@ ColumnLayout {
         return UPower.onBattery ? `${left} restantes` : `Pleine dans ${left}`;
     }
 
+    // The battery is the sun in this card: it sinks as the charge runs out, and turns red
+    readonly property real level: battery?.percentage ?? 0
+    readonly property color cardTint: !UPower.onBattery ? "#8fd6b4" : level < 0.2 ? "#f0705f" : "#ffc98a"
+    readonly property real cardRise: 0.06 + level * 0.36
+
     spacing: 6
     width: 320
 
@@ -47,7 +52,7 @@ ColumnLayout {
             text: `${Math.round((root.battery?.percentage ?? 0) * 100)} %`
             color: Theme.text
             font.family: Theme.font
-            font.pixelSize: 26
+            font.pixelSize: 44
         }
 
         Text {

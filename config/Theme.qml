@@ -95,8 +95,14 @@ Singleton {
     readonly property int launcherSpacing: 170 // distance between two stars
 
     // Notifications: comets that land and open up
-    readonly property color cardPaperTop: "#f0151826"
-    readonly property color cardPaperBottom: "#f00b0c16"
+    readonly property color cardDeep: "#0d0f1c"
+
+    // Colours a card can take when its content has none of its own
+    readonly property var tones: ["#ffc98a", "#f59a7a", "#e98fb0", "#b9a2f0", "#8fc7e8", "#8fd6b4"]
+
+    // Motion that overshoots a touch, then settles
+    readonly property var expressive: [0.38, 1.21, 0.22, 1, 1, 1]
+    readonly property int cardOpen: 340
     readonly property int notifWidth: 380
     readonly property int notifComet: 360
     readonly property int notifOpen: 240

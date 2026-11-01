@@ -45,7 +45,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         implicitWidth: Theme.notifWidth + 40
         implicitHeight: screen.height - Theme.barGap - Theme.barHeight
-        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "etea:notifications"
         margins.top: Theme.barGap + Theme.barHeight + 6
 

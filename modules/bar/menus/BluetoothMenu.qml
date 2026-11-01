@@ -10,6 +10,9 @@ ColumnLayout {
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property var known: Bluetooth.devices.values.filter(device => device.paired || device.connected).sort((a, b) => b.connected - a.connected).slice(0, 7)
 
+    readonly property color cardTint: root.adapter?.enabled ? "#b9a2f0" : "#a9a4ad"
+    readonly property real cardRise: root.adapter?.enabled ? 0.12 : 0.05
+
     spacing: 6
     width: 320
 
@@ -38,7 +41,7 @@ ColumnLayout {
 
             Layout.fillWidth: true
             label: modelData.name || modelData.deviceName
-            detail: modelData.batteryAvailable ? `${Math.round(modelData.battery * 100)} %` : modelData.connected ? "connecté" : ""
+            level: modelData.batteryAvailable ? modelData.battery : -1
             active: modelData.connected
             onPicked: modelData.connected ? modelData.disconnect() : modelData.connect()
         }

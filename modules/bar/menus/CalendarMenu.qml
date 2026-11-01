@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.config
 import qs.modules.bar
+import qs.services
 
 // The month at a glance. Today is the one with a star on it.
 ColumnLayout {
@@ -24,6 +25,17 @@ ColumnLayout {
     function shift(months) {
         shown = new Date(shown.getFullYear(), shown.getMonth() + months, 1);
     }
+
+    // How far through its cycle the moon is tonight, from 0 at new moon round to 1
+    readonly property real moon: {
+        const reference = Date.UTC(2000, 0, 6, 18, 14);
+        const days = (Date.now() - reference) / 86400000;
+        return (days / 29.530588 % 1 + 1) % 1;
+    }
+    readonly property string moonName: ["Nouvelle lune", "Premier croissant", "Premier quartier", "Gibbeuse croissante", "Pleine lune", "Gibbeuse décroissante", "Dernier quartier", "Dernier croissant"][Math.round(moon * 8) % 8]
+
+    readonly property color cardTint: "#b9a2f0"
+    readonly property real cardRise: 0.07
 
     spacing: 8
     width: 300
@@ -65,6 +77,41 @@ ColumnLayout {
         }
     }
 
+    // Tonight's moon, drawn from the real date
+    RowLayout {
+        Layout.fillWidth: true
+        Layout.bottomMargin: 2
+        spacing: 10
+
+        Canvas {
+            Layout.preferredWidth: 30
+            Layout.preferredHeight: 30
+            renderStrategy: Canvas.Immediate
+            onPaint: {
+                const g = getContext("2d"), r = 13, cx = 15, cy = 15;
+                const lit = Math.cos(root.moon * Math.PI * 2);
+                g.reset();
+                g.fillStyle = "#2a2c44";
+                g.beginPath();
+                g.arc(cx, cy, r, 0, Math.PI * 2);
+                g.fill();
+                g.fillStyle = "#f4ead8";
+                g.beginPath();
+                const waxing = root.moon < 0.5;
+                g.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, !waxing);
+                g.ellipse(cx - Math.abs(lit) * r, cy - r, Math.abs(lit) * r * 2, r * 2);
+                g.fill();
+            }
+        }
+
+        Text {
+            text: root.moonName
+            color: Qt.alpha(Theme.text, 0.75)
+            font.family: Theme.font
+            font.pixelSize: 15
+        }
+    }
+
     GridLayout {
         columns: 7
         rowSpacing: 0
@@ -82,7 +129,7 @@ ColumnLayout {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 text: modelData
-                color: Theme.windowLit
+                color: Menus.tint
                 font.family: Theme.font
                 font.pixelSize: 12
             }

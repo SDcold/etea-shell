@@ -2,11 +2,13 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import qs.config
 
 // Which bar menu is open, and where it should hang from.
 Singleton {
     property string open: ""
     property real anchorX: 0
+    property color tint: Theme.windowLit
 
     property string lastClosed: ""
     property real closedAt: 0

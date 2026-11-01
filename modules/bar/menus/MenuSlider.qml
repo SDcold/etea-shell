@@ -1,6 +1,7 @@
 import QtQuick
 import qs.config
 import qs.modules.bar
+import qs.services
 
 // A fine line with a star riding on it, so it matches everything else up here.
 Item {
@@ -15,12 +16,16 @@ Item {
     implicitHeight: 26
     implicitWidth: 240
 
+    Entrance {
+        item: root
+    }
+
     Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width
         height: 2
         radius: 1
-        color: Qt.alpha(Theme.windowLit, 0.2)
+        color: Qt.alpha(Menus.tint, 0.22)
     }
 
     Rectangle {
@@ -28,7 +33,7 @@ Item {
         width: parent.width * root.ratio
         height: 2
         radius: 1
-        color: Theme.windowLit
+        color: Menus.tint
     }
 
     Star {

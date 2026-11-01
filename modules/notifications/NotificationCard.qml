@@ -2,12 +2,14 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Notifications
+import Quickshell.Widgets
 import qs.config
 import qs.modules.bar
+import qs.modules.stage
 import qs.services
 
-// One message from far away. Up on screen it arrives as a comet, in the journal
-// it just sits there, and a click either way sends it off.
+// One message from far away. It arrives as a comet and opens where it lands, and a star
+// creeping along its bottom edge shows how long it has left. Point at it and time stops.
 Item {
     id: root
 
@@ -24,7 +26,9 @@ Item {
         return "";
     }
 
-    property real arrival: inJournal ? 1 : 0
+    property real opened: inJournal ? 1 : 0
+    property real life: 1
+    property bool counting: false
 
     width: Theme.notifWidth
     height: card.height
@@ -39,22 +43,18 @@ Item {
     }
 
     Component.onCompleted: {
-        if (!inJournal) {
+        if (!inJournal)
             comet.start();
-            if (!critical)
-                lifetime.start();
-        }
     }
 
-    // Time up: off it goes, and it stays in the journal
-    Timer {
-        id: lifetime
+    ContentTint {
+        id: colour
 
-        interval: root.notification?.expireTimeout > 0 ? root.notification.expireTimeout : Theme.notifLife
-        onTriggered: Notifs.hide(root.entry)
+        image: root.notification?.image ?? ""
+        forced: root.critical ? "#f0705f" : ""
+        name: root.notification?.appName ?? "etea"
     }
 
-    // The comet crosses in from the edge of the screen, then the card opens where it lands
     SequentialAnimation {
         id: comet
 
@@ -63,7 +63,7 @@ Item {
                 target: head
                 property: "x"
                 from: Theme.notifWidth + 220
-                to: 14
+                to: 30
                 duration: Theme.notifComet
                 easing.type: Easing.OutCubic
             }
@@ -71,36 +71,63 @@ Item {
                 target: head
                 property: "y"
                 from: -46
-                to: 26
+                to: 40
                 duration: Theme.notifComet
                 easing.type: Easing.OutCubic
             }
         }
         NumberAnimation {
             target: root
-            property: "arrival"
+            property: "opened"
             from: 0
             to: 1
             duration: Theme.notifOpen
             easing.type: Easing.OutCubic
         }
+        ScriptAction {
+            script: {
+                if (!root.critical)
+                    root.counting = true;
+            }
+        }
+    }
+
+    NumberAnimation {
+        id: countdown
+
+        target: root
+        property: "life"
+        from: 1
+        to: 0
+        duration: root.notification?.expireTimeout > 0 ? root.notification.expireTimeout * 1000 : Theme.notifLife // the app gives seconds
+        running: root.counting
+        paused: root.counting && sky.hovered
+        onFinished: Notifs.hide(root.entry)
     }
 
     Item {
         id: card
 
         width: parent.width
-        height: content.implicitHeight + 36
-        opacity: root.arrival
+        height: Math.max(content.implicitHeight + 50, 112)
 
-        transform: Translate {
-            x: (1 - root.arrival) * 34
+        // Opens through the same star as a window
+        layer.enabled: root.opened < 1
+        layer.effect: StarMask {
+            center: Qt.point(30, 40)
+            reach: fullReach * root.opened
+            shine: (1 - root.opened) * 0.9
+            tint: colour.color
         }
 
         HandCard {
+            id: sky
+
             anchors.fill: parent
             seed: `${root.notification?.id ?? 0}${root.notification?.summary ?? ""}`
+            tint: colour.color
             ink: root.critical ? 1 : 0.72
+            rise: root.critical ? 0.2 : 0.11
         }
 
         MouseArea {
@@ -116,16 +143,51 @@ Item {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.margins: 18
-            spacing: 12
+            spacing: 14
 
-            Image {
+            // The app's picture, with a tiny star going round it like a moon
+            Item {
                 visible: root.picture !== ""
                 Layout.alignment: Qt.AlignTop
-                Layout.preferredWidth: 46
-                Layout.preferredHeight: 46
-                sourceSize: Qt.size(92, 92)
-                fillMode: Image.PreserveAspectCrop
-                source: root.picture
+                Layout.preferredWidth: 58
+                Layout.preferredHeight: 58
+
+                ClippingRectangle {
+                    anchors.centerIn: parent
+                    width: 48
+                    height: 48
+                    radius: 24
+                    color: Qt.alpha(colour.color, 0.14)
+
+                    Image {
+                        anchors.fill: parent
+                        sourceSize: Qt.size(96, 96)
+                        fillMode: Image.PreserveAspectCrop
+                        source: root.picture
+                    }
+                }
+
+                Item {
+                    id: moon
+
+                    anchors.fill: parent
+
+                    Star {
+                        x: parent.width / 2 - size
+                        y: -size + 2
+                        size: 5
+                        lit: true
+                        animated: false
+                    }
+
+                    NumberAnimation on rotation {
+                        from: 0
+                        to: 360
+                        duration: 5200
+                        loops: Animation.Infinite
+                        running: sky.alive
+                    }
+                }
             }
 
             ColumnLayout {
@@ -139,15 +201,15 @@ Item {
                         Layout.fillWidth: true
                         text: root.notification?.appName ?? ""
                         elide: Text.ElideRight
-                        color: Theme.windowLit
+                        color: colour.color
                         font.family: Theme.font
-                        font.pixelSize: 12
+                        font.pixelSize: 13
                         font.letterSpacing: 0.4
                     }
 
                     Text {
                         text: root.when()
-                        color: Qt.alpha(Theme.text, 0.5)
+                        color: Qt.alpha(Theme.text, 0.55)
                         font.family: Theme.font
                         font.pixelSize: 12
                     }
@@ -161,7 +223,7 @@ Item {
                     elide: Text.ElideRight
                     color: Theme.text
                     font.family: Theme.font
-                    font.pixelSize: 17
+                    font.pixelSize: 19
                 }
 
                 Text {
@@ -172,7 +234,7 @@ Item {
                     wrapMode: Text.Wrap
                     maximumLineCount: 3
                     elide: Text.ElideRight
-                    color: Qt.alpha(Theme.text, 0.72)
+                    color: Qt.alpha(Theme.text, 0.78)
                     font.family: Theme.font
                     font.pixelSize: 14
                 }
@@ -180,7 +242,7 @@ Item {
                 Row {
                     visible: (root.notification?.actions.length ?? 0) > 0
                     Layout.topMargin: 6
-                    spacing: 14
+                    spacing: 16
 
                     Repeater {
                         model: root.notification?.actions ?? []
@@ -189,9 +251,9 @@ Item {
                             required property var modelData
 
                             text: modelData.text
-                            color: Theme.windowLit
+                            color: colour.color
                             font.family: Theme.font
-                            font.pixelSize: 14
+                            font.pixelSize: 15
 
                             MouseArea {
                                 anchors.fill: parent
@@ -204,33 +266,42 @@ Item {
                 }
             }
         }
+
+        // The time left, a star walking the bottom edge
+        Star {
+            visible: !root.inJournal && !root.critical && root.opened === 1
+            x: parent.width * root.life - size
+            y: parent.height - size
+            size: 7
+            lit: true
+            animated: false
+        }
     }
 
     // The head of the comet, trailing light behind it
     Item {
         id: head
 
-        visible: !root.inJournal && root.arrival < 1
-        opacity: 1 - root.arrival
+        visible: !root.inJournal && root.opened < 1
+        opacity: 1 - root.opened
 
         Rectangle {
-            x: 0
             y: -1
-            width: 150
+            width: 170
             height: 2
             rotation: -18
             transformOrigin: Item.Left
             gradient: Gradient {
                 orientation: Gradient.Horizontal
-                GradientStop { position: 0; color: Qt.alpha(Theme.starGlow, 0.85) }
-                GradientStop { position: 1; color: Qt.alpha(Theme.starGlow, 0) }
+                GradientStop { position: 0; color: Qt.alpha(colour.color, 0.9) }
+                GradientStop { position: 1; color: Qt.alpha(colour.color, 0) }
             }
         }
 
         Star {
             x: -size
             y: -size
-            size: 13
+            size: 15
             lit: true
             animated: false
         }

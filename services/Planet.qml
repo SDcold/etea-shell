@@ -20,6 +20,7 @@ Singleton {
 
     readonly property real step: Math.PI * 2 / Config.pages
     readonly property int current: Hyprland.focusedWorkspace?.id ?? 1
+    readonly property bool pageEmpty: Hyprland.toplevels.values.every(t => t.workspace?.id !== current)
 
     property int phase: Planet.Phase.Idle
     property real resting: 0 // where the planet sits between two transitions

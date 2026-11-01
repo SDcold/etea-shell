@@ -13,8 +13,19 @@ ColumnLayout {
         return players.find(p => p.isPlaying) ?? players[0] ?? null;
     }
 
+    // The whole card takes on the colour of the cover
+    readonly property color cardTint: colour.color
+    readonly property real cardRise: 0.07
+
     spacing: 12
-    width: 340
+    width: 360
+
+    ContentTint {
+        id: colour
+
+        image: root.player?.trackArtUrl ?? ""
+        name: root.player?.trackTitle ?? "etea"
+    }
 
     // Players don't announce every second, so we ask
     Timer {
@@ -38,8 +49,8 @@ ColumnLayout {
 
         Image {
             visible: status === Image.Ready
-            Layout.preferredWidth: 84
-            Layout.preferredHeight: 84
+            Layout.preferredWidth: 96
+            Layout.preferredHeight: 96
             fillMode: Image.PreserveAspectCrop
             sourceSize: Qt.size(168, 168)
             source: root.player?.trackArtUrl ?? ""
@@ -69,6 +80,12 @@ ColumnLayout {
                 font.pixelSize: 14
             }
         }
+    }
+
+    StarWave {
+        visible: root.player !== null
+        Layout.fillWidth: true
+        tint: colour.color
     }
 
     MenuSlider {
