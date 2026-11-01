@@ -49,27 +49,12 @@ Scope {
         -- ETEA plays closing windows itself. Apps that quit on their own still fade out quickly.
         hl.animation({ leaf = "windowsOut", enabled = false })
         hl.animation({ leaf = "windowsIn", enabled = false })
-        hl.animation({ leaf = "fadeIn", enabled = false })
 
-        -- A new window stays invisible while ETEA plays its birth. Hyprland brings it back
-        -- on its own timer, so nothing can ever get stuck hidden, even if ETEA crashes.
-        ETEA_HOLD = ${Theme.openHold}
-        if not ETEA_BIRTHS then
-            ETEA_BIRTHS = true
-            hl.on("window.open_early", function(window)
-                if window.xwayland and window.floating then
-                    return
-                end
-                local target = "address:" .. window.address
-                hl.dispatch(hl.dsp.window.set_prop({ prop = "opacity", value = "0", window = target }))
-                hl.timer(function()
-                    pcall(function()
-                        hl.dispatch(hl.dsp.window.set_prop({ prop = "opacity", value = "1", window = target }))
-                    end)
-                end, { timeout = ETEA_HOLD, type = "oneshot" })
-            end)
-        end
-        hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.5, bezier = "eteaFocus" })
+        -- A new window stays invisible while ETEA plays its birth: this curve sits at zero
+        -- almost the whole way. It all happens inside Hyprland, so a window can't get stuck
+        -- hidden, even if ETEA crashes.
+        hl.curve("eteaHold", { type = "bezier", points = { { 1, 0 }, { 1, 0 } } })
+        hl.animation({ leaf = "fadeIn", enabled = true, speed = ${(Theme.openHold + 120) / 100}, bezier = "eteaHold" })
         hl.animation({ leaf = "border", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeSwitch", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeDim", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })

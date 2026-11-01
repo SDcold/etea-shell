@@ -174,15 +174,15 @@ Item {
             }
         }
 
-        // The real window comes back through Hyprland's focus fade. Stay in front of it
-        // until it's fully there, so nobody sees it arrive twice.
-        PauseAnimation { duration: Math.max(0, Theme.openHold - Theme.openSpark - Theme.openReveal) + Theme.windowFocusSpeed * 100 }
+        // Hyprland's fade only really starts at the very end, so let go right as it does.
+        // Fading together keeps a see-through window from doubling up with its copy.
+        PauseAnimation { duration: Math.max(0, Theme.openHold - Theme.openSpark - Theme.openReveal) }
 
         NumberAnimation {
             target: scene
             property: "opacity"
             to: 0
-            duration: 90
+            duration: 130
         }
 
         ScriptAction {
