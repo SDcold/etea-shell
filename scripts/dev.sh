@@ -64,8 +64,13 @@ take_pages() {
         hl.unbind("CTRL + SUPER + Left")
         hl.bind("CTRL + SUPER + Right", hl.dsp.global("etea:pageNext"))
         hl.bind("CTRL + SUPER + Left", hl.dsp.global("etea:pagePrevious"))
+        -- The Super key alone opens the launcher. It fires on release, and only if
+        -- no other key came in between, so Super + anything still works normally.
         hl.unbind("SUPER + Space")
-        hl.bind("SUPER + Space", hl.dsp.global("etea:launcher"))
+        hl.unbind("SUPER + SUPER_L")
+        hl.unbind("SUPER + SUPER_R")
+        hl.bind("SUPER + SUPER_L", hl.dsp.global("etea:launcher"), { release = true })
+        hl.bind("SUPER + SUPER_R", hl.dsp.global("etea:launcher"), { release = true })
         hl.unbind("SUPER + V")
         hl.bind("SUPER + V", hl.dsp.global("etea:clipboard"))
         hl.unbind("SUPER + SHIFT + S")
