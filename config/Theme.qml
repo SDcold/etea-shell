@@ -5,7 +5,7 @@ import Quickshell
 
 // The whole look of ETEA lives here. Later on, every planet gets its own.
 Singleton {
-    readonly property var planet: Planets.find(Config.theme)
+    readonly property var planet: Planets.find(Config.preview || Config.theme)
     readonly property real pace: Config.pace === "ceremony" ? 1.7 : 1 // stretches the big movements
 
     // That sunset from the mockup, plus the grain that gives it some texture

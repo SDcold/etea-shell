@@ -24,6 +24,7 @@ Singleton {
         { id: "session", label: "Session" }
     ]
 
+    property string preview: "" // a world being tried on, never saved
     property alias theme: saved.theme
     property alias customPlanets: saved.customPlanets
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time

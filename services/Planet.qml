@@ -48,6 +48,12 @@ Singleton {
     property real systemLevel: 0
     property int systemChoice: 0
 
+    // Turning the planet by hand, up in orbit
+    property real spin: 0
+    property int hoveredPage: -1
+    property bool landing: false // on the way down to a new world
+    readonly property int topPage: ((origin - 1 - Math.round(spin / step)) % Config.pages + Config.pages) % Config.pages + 1
+
     property int target: 0
     property int queued: 0
     property var layouts: ({}) // what each page looked like when we last took its photo
@@ -100,14 +106,40 @@ Singleton {
             leaveOrbit(current);
     }
 
+    function holdSpin() {
+        spinShift.stop();
+    }
+
+    // Let go and the planet keeps going a little, then settles on the nearest page
+    function fling(speed) {
+        spinTo(Math.round((spin + speed * 0.28) / step) * step);
+    }
+
+    function nudge(steps) {
+        spinTo((Math.round(spin / step) + steps) * step);
+    }
+
+    function spinTo(angle) {
+        spinShift.stop();
+        spinShift.to = angle;
+        spinShift.start();
+    }
+
+    function refreshOrbit() {
+        Hyprland.refreshToplevels();
+        orbitRefresh.restart();
+    }
+
     function enterSystem() {
         systemChoice = Math.max(0, Planets.all.findIndex(planet => planet.id === Theme.planet.id));
+        Config.preview = Planets.all[systemChoice].id;
         inSystem = true;
         systemShift.to = 1;
         systemShift.restart();
     }
 
     function leaveSystem() {
+        Config.preview = "";
         inSystem = false;
         systemShift.to = 0;
         systemShift.restart();
@@ -116,10 +148,12 @@ Singleton {
     function chooseStep(step) {
         const count = Planets.all.length;
         systemChoice = (systemChoice + step + count) % count;
+        Config.preview = Planets.all[systemChoice].id; // the whole shell tries it on
     }
 
     // Moving to a new planet: the theme changes and we come down onto it
     function land(id) {
+        landing = id !== Config.theme;
         Config.theme = id;
         leaveSystem();
         leaveOrbit(current);
@@ -148,7 +182,9 @@ Singleton {
         if (!orbiting || descent.running)
             return;
         target = page;
-        distance = shortestSteps(current, page) * step;
+        spinShift.stop();
+        const turn = shortestSteps(origin, page) * step + spin;
+        distance = Math.atan2(Math.sin(turn), Math.cos(turn));
         // Letting go of the keyboard makes Hyprland refocus the old window, which would
         // pull us straight back to the old page. So let go first, then change page.
         phase = Planet.Phase.Spinning;
@@ -210,7 +246,10 @@ Singleton {
         // The old page has left the screen. Drop it now, or it snaps back to the
         // centre once the counters reset, and an empty page wouldn't hide it.
         leaving = [];
-        resting += distance;
+        resting += distance - spin;
+        spin = 0;
+        landing = false;
+        hoveredPage = -1;
         distance = 0;
         travel = 0;
         phase = Planet.Phase.Settling;
@@ -298,6 +337,27 @@ Singleton {
     }
 
     NumberAnimation {
+        id: spinShift
+
+        target: root
+        property: "spin"
+        duration: 520
+        easing.type: Easing.OutCubic
+    }
+
+    Timer {
+        id: orbitRefresh
+
+        interval: 160
+        onTriggered: {
+            const pages = [];
+            for (let page = 1; page <= Config.pages; page++)
+                pages.push(root.windowsOn(page));
+            root.orbitPages = pages;
+        }
+    }
+
+    NumberAnimation {
         id: systemShift
 
         target: root
@@ -324,7 +384,7 @@ Singleton {
             target: root
             property: "altitude"
             to: 0
-            duration: Theme.orbitRise
+            duration: Theme.orbitRise * (root.landing ? 2.2 : 1)
             easing.type: Easing.InOutCubic
         }
         NumberAnimation {
@@ -332,7 +392,7 @@ Singleton {
             property: "travel"
             from: 0
             to: root.distance
-            duration: Theme.orbitRise
+            duration: Theme.orbitRise * (root.landing ? 2.2 : 1)
             easing.type: Easing.InOutCubic
         }
         onFinished: root.landed()

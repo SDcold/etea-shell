@@ -16,14 +16,19 @@ Item {
     property real lift: 0 // how far up it rides with the ground
     property bool orbitCard: false // the pages around the planet, as opposed to the ones spinning past
 
-    signal picked()
+    property bool pointedAt: false
+    property real boost: pointedAt ? 1.16 : 1
+
+    Behavior on boost {
+        NumberAnimation { duration: 260; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
+    }
 
     transform: [
         Scale {
             origin.x: root.width / 2
             origin.y: root.height
-            xScale: root.zoom
-            yScale: root.zoom
+            xScale: root.zoom * root.boost
+            yScale: root.zoom * root.boost
         },
         Translate {
             y: root.lift
@@ -34,14 +39,6 @@ Item {
             angle: root.angle * 180 / Math.PI
         }
     ]
-
-    // Up in orbit every page is a button, even an empty one
-    MouseArea {
-        anchors.fill: parent
-        enabled: Planet.orbiting && root.orbitCard
-        cursorShape: Qt.PointingHandCursor
-        onPressed: root.picked()
-    }
 
     // An empty page still needs to be there, so you can see where to land
     Rectangle {

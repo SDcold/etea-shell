@@ -82,7 +82,7 @@ Variants {
 
             World {
                 anchors.fill: parent
-                angle: Planet.resting + Planet.travel
+                angle: Planet.resting + Planet.travel - Planet.spin
                 radius: stage.planetRadius
                 horizon: stage.planetTop / stage.screenHeight
                 space: Math.min(1, Planet.altitude * 1.6)
@@ -104,11 +104,11 @@ Variants {
                     pivotY: (stage.planetTop + stage.planetRadius) * stage.unit
                     screenX: stage.modelData.x
                     screenY: stage.modelData.y
-                    angle: Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel
+                    angle: Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel + Planet.spin
                     zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude)
                     lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
                     orbitCard: true
-                    onPicked: Planet.leaveOrbit(index + 1)
+                    pointedAt: Planet.hoveredPage === index
                 }
             }
 
@@ -153,7 +153,20 @@ Variants {
             screenY: stage.modelData.y
         }
 
+        OrbitHands {
+            anchors.fill: parent
+            pivotY: (stage.planetTop + stage.planetRadius) * stage.unit
+            zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude)
+            lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
+            screenX: stage.modelData.x
+            screenY: stage.modelData.y
+        }
+
         ThemeSystem {
+            anchors.fill: parent
+        }
+
+        AtmosphereEntry {
             anchors.fill: parent
         }
 
@@ -170,6 +183,12 @@ Variants {
                     Planet.chooseStep(1);
                 else if (Planet.inSystem && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter))
                     Planet.land(Planets.all[Planet.systemChoice].id);
+                else if (!Planet.inSystem && event.key === Qt.Key_Left)
+                    Planet.nudge(1);
+                else if (!Planet.inSystem && event.key === Qt.Key_Right)
+                    Planet.nudge(-1);
+                else if (!Planet.inSystem && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter))
+                    Planet.leaveOrbit(Planet.topPage);
                 else if (!Planet.inSystem && event.key >= Qt.Key_1 && event.key < Qt.Key_1 + Config.pages)
                     Planet.leaveOrbit(event.key - Qt.Key_0);
             }
