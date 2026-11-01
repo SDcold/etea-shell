@@ -1,8 +1,9 @@
 import QtQuick
 import Quickshell
 import qs.config
+import qs.modules.widgets
 
-// Stack the sky, then the decorations, then the terrain so it sits in front.
+// Stack the sky, the decorations, the widgets, then the terrain so it sits in front.
 Item {
     id: root
 
@@ -42,6 +43,12 @@ Item {
             rotation: modelData.rotation ?? 0
             smooth: true
         }
+    }
+
+    Widgets {
+        anchors.fill: parent
+        opacity: 1 - root.space * 3
+        visible: opacity > 0
     }
 
     ShaderEffect {
