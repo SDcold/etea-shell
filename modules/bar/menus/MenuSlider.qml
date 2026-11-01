@@ -14,33 +14,38 @@ Item {
 
     signal moved(real value)
 
-    implicitHeight: 26
+    implicitHeight: 28
     implicitWidth: 240
 
     Entrance {
         item: root
     }
 
+    // A proper track you can see from across the room, not just a line
     Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width
-        height: 2
-        radius: 1
-        color: Qt.alpha(root.tint, 0.22)
+        height: Theme.barThickness
+        radius: height / 2
+        color: Qt.alpha(root.tint, 0.18)
     }
 
     Rectangle {
         anchors.verticalCenter: parent.verticalCenter
-        width: parent.width * root.ratio
-        height: 2
-        radius: 1
-        color: root.tint
+        width: Math.max(height, parent.width * root.ratio)
+        height: Theme.barThickness
+        radius: height / 2
+        gradient: Gradient {
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0; color: Qt.alpha(root.tint, 0.5) }
+            GradientStop { position: 1; color: root.tint }
+        }
     }
 
     Star {
         x: parent.width * root.ratio - size
         y: parent.height / 2 - size
-        size: 8
+        size: 9
         lit: true
         animated: false
     }

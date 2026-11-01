@@ -57,6 +57,7 @@ Variants {
             anchors.rightMargin: Theme.barSide
             y: Theme.barGap
 
+            Tray {}
             Status {}
         }
     }

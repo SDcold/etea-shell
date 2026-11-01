@@ -14,6 +14,7 @@ Singleton {
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
 
     readonly property var statusChoices: [
+        { id: "tray", label: "Applis en arrière-plan" },
         { id: "notifications", label: "Notifications" },
         { id: "network", label: "Réseau" },
         { id: "bluetooth", label: "Bluetooth" },
@@ -70,7 +71,7 @@ Singleton {
 
             property string theme: "aster"
             property string pace: "daily"
-            property var status: ["notifications", "network", "bluetooth", "volume", "battery", "settings", "session"]
+            property var status: ["tray", "notifications", "network", "bluetooth", "volume", "battery", "settings", "session"]
 
             // Widgets in the sky, for when a page is empty. x and y are shares of the screen.
             property var widgets: [

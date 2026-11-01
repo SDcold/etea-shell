@@ -59,12 +59,12 @@ Item {
                         g.lineCap = "round";
                         g.strokeStyle = String(Theme.windowLit);
                         g.globalAlpha = 0.18;
-                        g.lineWidth = 1;
+                        g.lineWidth = Theme.ringThickness;
                         g.beginPath();
                         g.arc(c, c, r, 0, Math.PI * 2);
                         g.stroke();
                         g.globalAlpha = 0.95;
-                        g.lineWidth = 2;
+                        g.lineWidth = Theme.ringThickness;
                         g.beginPath();
                         g.arc(c, c, r, start, start + gauge.shown * Math.PI * 2);
                         g.stroke();

@@ -1,5 +1,7 @@
 import Quickshell
 import qs.modules.background
+import qs.modules.capture
+import qs.modules.clipboard
 import qs.modules.bar
 import qs.modules.bar.menus
 import qs.modules.launcher
@@ -22,4 +24,6 @@ ShellRoot {
     Settings {}
     Session {}
     Osd {}
+    Clipboard {}
+    Capture {}
 }

@@ -81,13 +81,13 @@ Item {
 
             // The minute track, and how far round this hour has come
             const start = -Math.PI / 2, reach = 118;
-            g.globalAlpha = 0.2;
-            g.lineWidth = 1;
+            g.globalAlpha = 0.18;
+            g.lineWidth = Theme.ringThickness;
             g.beginPath();
             g.arc(c, c, reach, 0, Math.PI * 2);
             g.stroke();
             g.globalAlpha = 0.9;
-            g.lineWidth = 2;
+            g.lineWidth = Theme.ringThickness;
             g.beginPath();
             g.arc(c, c, reach, start, start + root.minute / 60 * Math.PI * 2);
             g.stroke();
@@ -137,9 +137,9 @@ Item {
             id: planet
 
             anchors.centerIn: parent
-            width: 13
-            height: 13
-            radius: 7
+            width: 16
+            height: 16
+            radius: 8
             color: root.skyTone
         }
 

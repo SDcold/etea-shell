@@ -28,6 +28,7 @@ Scope {
         implicitHeight: 640
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "etea:menu"
+        WlrLayershell.keyboardFocus: Menus.open === "network" ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         margins.top: Theme.barGap + Theme.barHeight + 6
 
         anchors {
