@@ -55,6 +55,21 @@ Scope {
         -- get stuck hidden, even if ETEA crashes.
         hl.curve("eteaHold", { type = "bezier", points = { { 1, 0 }, { 1, 0 } } })
         hl.animation({ leaf = "fadeIn", enabled = true, speed = ${Theme.openCover / 100}, bezier = "eteaHold" })
+
+        -- When a window opens, its neighbours make room right away, long before ETEA hears
+        -- about it. So for that one move they set off very slowly, which keeps them still
+        -- while the star lights up, and they slide while it opens. Then it's back to normal.
+        hl.curve("eteaSlowStart", { type = "bezier", points = { { 0.7, 0 }, { 0.3, 1 } } })
+        ETEA_MAKE_ROOM = ${Theme.openMakeRoom / 100}
+        if not ETEA_BIRTHS then
+            ETEA_BIRTHS = true
+            hl.on("window.open_early", function()
+                hl.animation({ leaf = "windowsMove", enabled = true, speed = ETEA_MAKE_ROOM, bezier = "eteaSlowStart", style = "slide" })
+                hl.timer(function()
+                    hl.animation({ leaf = "windowsMove", enabled = true, speed = 3, bezier = "${Theme.windowMoveCurve}", style = "slide" })
+                end, { timeout = ETEA_MAKE_ROOM * 100, type = "oneshot" })
+            end)
+        end
         hl.animation({ leaf = "border", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeSwitch", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeDim", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
