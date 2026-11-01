@@ -38,8 +38,12 @@ Item {
         font.pixelSize: root.sky * 0.54
         font.weight: Font.Medium
         font.letterSpacing: -root.sky * 0.01
+        // Qt's usual text gets ragged edges this big, this draws the real letter outlines
+        renderType: Text.CurveRendering
 
         layer.enabled: true
+        layer.smooth: true
+        layer.textureSize: Qt.size(width * 2, height * 2) // drawn at double size so the curves come out smooth
         layer.effect: Dissolve {}
     }
 }

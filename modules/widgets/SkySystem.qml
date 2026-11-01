@@ -60,8 +60,11 @@ Row {
                 font.pixelSize: root.sky * 0.125
                 font.weight: Font.Medium
                 font.letterSpacing: -root.sky * 0.003
+                renderType: Text.CurveRendering
 
                 layer.enabled: true
+                layer.smooth: true
+                layer.textureSize: Qt.size(width * 2, height * 2) // drawn at double size so the curves come out smooth
                 layer.effect: Dissolve {
                     from: 0.34
                     to: 0.92

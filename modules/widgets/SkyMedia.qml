@@ -65,8 +65,11 @@ RowLayout {
             font.family: Theme.font
             font.pixelSize: root.sky * 0.044
             font.weight: Font.Medium
+            renderType: Text.CurveRendering
 
             layer.enabled: true
+            layer.smooth: true
+            layer.textureSize: Qt.size(width * 2, height * 2) // drawn at double size so the curves come out smooth
             layer.effect: Dissolve {
                 from: 0.4
                 to: 1.3

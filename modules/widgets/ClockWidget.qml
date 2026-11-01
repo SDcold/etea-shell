@@ -210,6 +210,7 @@ Item {
             font.family: Theme.font
             font.pixelSize: 54
             font.weight: Font.Light
+            renderType: Text.CurveRendering
         }
 
         Text {
