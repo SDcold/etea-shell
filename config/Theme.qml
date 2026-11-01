@@ -96,6 +96,7 @@ Singleton {
 
     // Notifications: comets that land and open up
     readonly property color cardDeep: "#0d0f1c"
+    readonly property color auroraBase: "#2a1a4a" // the deep end of the aurora, down by the hills
 
     // Colours a card can take when its content has none of its own
     readonly property var tones: ["#ffc98a", "#f59a7a", "#e98fb0", "#b9a2f0", "#8fc7e8", "#8fd6b4"]

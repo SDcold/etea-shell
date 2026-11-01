@@ -14,8 +14,12 @@ Singleton {
 
     readonly property int count: log.length
 
+    // Lists hand their items to QML as copies, so an entry is known by its number, never by itself
+    property int lastId: 0
+
     function add(notification) {
-        const entry = { notification: notification, time: new Date() };
+        lastId += 1;
+        const entry = { id: lastId, notification: notification, time: new Date() };
         notification.closed.connect(() => forget(entry));
         log = [entry].concat(log);
         if (!quiet && !journalOpen)
@@ -23,11 +27,11 @@ Singleton {
     }
 
     function hide(entry) {
-        popups = popups.filter(other => other !== entry);
+        popups = popups.filter(other => other.id !== entry.id);
     }
 
     function forget(entry) {
-        log = log.filter(other => other !== entry);
+        log = log.filter(other => other.id !== entry.id);
         hide(entry);
     }
 

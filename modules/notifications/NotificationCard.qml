@@ -99,7 +99,7 @@ Item {
         property: "life"
         from: 1
         to: 0
-        duration: root.notification?.expireTimeout > 0 ? root.notification.expireTimeout * 1000 : Theme.notifLife // the app gives seconds
+        duration: root.notification?.expireTimeout > 0 ? root.notification.expireTimeout : Theme.notifLife
         running: root.counting
         paused: root.counting && sky.hovered
         onFinished: Notifs.hide(root.entry)
