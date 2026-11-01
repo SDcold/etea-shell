@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Mpris
 import qs.config
+import qs.modules.bar
 
 // What's playing, with the controls that belong to it.
 ColumnLayout {
@@ -10,10 +11,6 @@ ColumnLayout {
     readonly property var player: {
         const players = Mpris.players.values;
         return players.find(p => p.isPlaying) ?? players[0] ?? null;
-    }
-
-    function glyph(code) {
-        return String.fromCodePoint(code);
     }
 
     spacing: 12
@@ -89,18 +86,16 @@ ColumnLayout {
 
         Repeater {
             model: [
-                { code: 0xf04ae, run: () => root.player.previous() },
-                { code: root.player?.isPlaying ? 0xf03e4 : 0xf040a, run: () => root.player.togglePlaying() },
-                { code: 0xf04ad, run: () => root.player.next() }
+                { icon: "skip-back", run: () => root.player.previous() },
+                { icon: root.player?.isPlaying ? "pause" : "play", run: () => root.player.togglePlaying() },
+                { icon: "skip-forward", run: () => root.player.next() }
             ]
 
-            Text {
+            Icon {
                 required property var modelData
 
-                text: root.glyph(modelData.code)
-                color: Theme.text
-                font.family: Theme.iconFont
-                font.pixelSize: 24
+                name: modelData.icon
+                size: 28
 
                 MouseArea {
                     anchors.fill: parent

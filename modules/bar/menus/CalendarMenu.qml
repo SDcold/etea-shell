@@ -31,11 +31,9 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
 
-        Text {
-            text: "‹"
-            color: Theme.text
-            font.pixelSize: 24
-            font.family: Theme.font
+        Icon {
+            name: "caret-left"
+            size: 20
 
             MouseArea {
                 anchors.fill: parent
@@ -54,11 +52,9 @@ ColumnLayout {
             font.pixelSize: 18
         }
 
-        Text {
-            text: "›"
-            color: Theme.text
-            font.pixelSize: 24
-            font.family: Theme.font
+        Icon {
+            name: "caret-right"
+            size: 20
 
             MouseArea {
                 anchors.fill: parent

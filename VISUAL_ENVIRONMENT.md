@@ -22,6 +22,12 @@ ETEA SHELL doit aussi réunir une **communauté**. Il n'est donc pas conçu pour
 - **Rythme :** Quotidien par défaut, configurable.
 - **Terrain :** généré, avec hauteur et relief réglables, sans décorations. Les calques pour le parallaxe et les widgets viendront en v1.1.
 - **Ciel :** le dégradé et le grain de la maquette. Un widget affiche des PNG ou SVG dans le ciel, pour que chacun le décore sans limite.
+- **Cadre commun :** les notifications, menus et widgets partagent un trait à la main doublé, interrompu par des étoiles, avec un grain d'encre.
+- **Lanceur :** `Super + Espace`. Le ciel s'assombrit, la question « Où veux-tu aller ? » apparaît et les applis forment une constellation.
+- **Notifications :** comètes qui arrivent du bord de l'écran, se posent et s'ouvrent. Le journal s'ouvre depuis la cloche, un clic droit active Ne pas déranger.
+- **Menus de la barre :** calendrier, média, son, réseau, Bluetooth, énergie et luminosité.
+- **Widgets :** horloge, système et média dans le ciel, visibles sur une page vide, choisis dans `Config.widgets`.
+- **Icônes :** Phosphor Light.
 - **Altitude :** l'orbite montre les pages, le système montre les thèmes.
 - **Thèmes :** chaque thème est une planète. Installer un thème, c'est atterrir pour la première fois sur une nouvelle planète.
 

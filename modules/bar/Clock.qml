@@ -3,11 +3,12 @@ import Quickshell
 import qs.config
 import qs.services
 
-// The time up front, the date right next to it.
-Row {
+// The time up front, the date right next to it. A click opens the calendar.
+Item {
     id: root
 
-    spacing: 12
+    implicitWidth: row.implicitWidth
+    implicitHeight: row.implicitHeight
     anchors.verticalCenter: parent.verticalCenter
 
     SystemClock {
@@ -16,34 +17,32 @@ Row {
         precision: SystemClock.Minutes
     }
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: Qt.formatTime(clock.date, "HH:mm")
-        color: Theme.text
-        font.family: Theme.font
-        font.pixelSize: Theme.textSize + 8
-    }
+    Row {
+        id: row
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: Qt.locale(Config.locale).toString(clock.date, "dddd d MMMM")
-        color: Theme.textSoft
-        font.family: Theme.font
-        font.pixelSize: Theme.textSize
-    }
+        spacing: 12
 
-    // The whole clock opens the calendar
-    Item {
-        width: 0
-        height: 0
-
-        MouseArea {
-            x: -root.width
-            y: -root.height / 2
-            width: root.width
-            height: root.height
-            cursorShape: Qt.PointingHandCursor
-            onPressed: Menus.toggle("calendar", root.mapToItem(null, root.width / 2, 0).x)
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: Qt.formatTime(clock.date, "HH:mm")
+            color: Theme.text
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize + 8
         }
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: Qt.locale(Config.locale).toString(clock.date, "dddd d MMMM")
+            color: Theme.textSoft
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize
+            font.letterSpacing: 0.3
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onPressed: Menus.toggle("calendar", root.mapToItem(null, root.width / 2, 0).x)
     }
 }

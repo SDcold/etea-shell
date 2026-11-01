@@ -36,7 +36,6 @@ Singleton {
 
     // One font for the whole shell, icons on the side
     readonly property string font: fontLoader.name
-    readonly property string iconFont: "JetBrainsMono Nerd Font"
     readonly property int textSize: 16
 
     // The everyday pace: quick enough to never keep you waiting

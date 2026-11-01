@@ -42,7 +42,7 @@ Scope {
         HyprlandFocusGrab {
             windows: [panel]
             active: Menus.open !== ""
-            onCleared: Menus.open = ""
+            onCleared: Menus.close()
         }
 
         Item {
