@@ -63,8 +63,8 @@ Scope {
             id: stack
 
             x: 20
-            y: 4
-            spacing: 10
+            y: 10
+            spacing: 16
 
             // The journal: every message still waiting for you
             Text {

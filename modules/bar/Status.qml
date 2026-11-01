@@ -97,17 +97,21 @@ Row {
             // On the volume: click to mute, scroll to adjust
             MouseArea {
                 anchors.fill: parent
-                enabled: item.modelData === "volume" || item.modelData === "notifications"
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
+                cursorShape: Qt.PointingHandCursor
                 onPressed: mouse => {
-                    if (item.modelData === "volume")
+                    if (item.modelData === "notifications") {
+                        if (mouse.button === Qt.RightButton)
+                            Notifs.quiet = !Notifs.quiet;
+                        else
+                            Notifs.journalOpen = !Notifs.journalOpen;
+                    } else if (item.modelData === "volume" && mouse.button === Qt.RightButton) {
                         root.sink.audio.muted = !root.sink.audio.muted;
-                    else if (mouse.button === Qt.RightButton)
-                        Notifs.quiet = !Notifs.quiet;
-                    else
-                        Notifs.journalOpen = !Notifs.journalOpen;
+                    } else {
+                        Menus.toggle({ volume: "sound", network: "network", bluetooth: "bluetooth", battery: "power" }[item.modelData], item.mapToItem(null, item.width / 2, 0).x);
+                    }
                 }
-                onWheel: wheel => root.sink.audio.volume = Math.max(0, Math.min(1.5, root.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05)))
+                onWheel: wheel => item.modelData === "volume" && (root.sink.audio.volume = Math.max(0, Math.min(1.5, root.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))))
             }
         }
     }

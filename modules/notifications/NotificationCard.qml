@@ -86,20 +86,21 @@ Item {
         }
     }
 
-    Rectangle {
+    Item {
         id: card
 
         width: parent.width
-        height: content.implicitHeight + 28
-        radius: 18
-        color: Theme.notifCard
-        border.width: 1
-        border.color: Qt.alpha(Theme.windowLit, root.critical ? 0.8 : 0.26)
+        height: content.implicitHeight + 36
         opacity: root.arrival
-        clip: true
 
         transform: Translate {
             x: (1 - root.arrival) * 34
+        }
+
+        HandCard {
+            anchors.fill: parent
+            seed: `${root.notification?.id ?? 0}${root.notification?.summary ?? ""}`
+            ink: root.critical ? 1 : 0.72
         }
 
         MouseArea {
@@ -114,7 +115,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: 14
+            anchors.margins: 18
             spacing: 12
 
             Image {

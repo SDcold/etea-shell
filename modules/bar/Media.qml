@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell.Services.Mpris
 import qs.config
+import qs.services
 
 // Whatever is playing right now. Click to pause or resume.
 Text {
@@ -29,7 +30,13 @@ Text {
 
     MouseArea {
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.player?.togglePlaying()
+        onPressed: mouse => {
+            if (mouse.button === Qt.RightButton)
+                root.player?.togglePlaying();
+            else
+                Menus.toggle("media", root.mapToItem(null, root.width / 2, 0).x);
+        }
     }
 }

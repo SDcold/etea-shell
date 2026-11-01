@@ -1,6 +1,7 @@
 import Quickshell
 import qs.modules.background
 import qs.modules.bar
+import qs.modules.bar.menus
 import qs.modules.launcher
 import qs.modules.notifications
 import qs.modules.stage
@@ -12,6 +13,7 @@ ShellRoot {
     PageShortcuts {}
     Illumination {}
     Bar {}
+    BarMenus {}
     Launcher {}
     Notifications {}
 }

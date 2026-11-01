@@ -96,7 +96,8 @@ Singleton {
     readonly property int launcherSpacing: 170 // distance between two stars
 
     // Notifications: comets that land and open up
-    readonly property color notifCard: "#e60b0d17"
+    readonly property color cardPaperTop: "#f0151826"
+    readonly property color cardPaperBottom: "#f00b0c16"
     readonly property int notifWidth: 380
     readonly property int notifComet: 360
     readonly property int notifOpen: 240
