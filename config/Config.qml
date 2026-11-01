@@ -28,6 +28,7 @@ Singleton {
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
     property alias status: saved.status
     property alias widgets: saved.widgets
+    property alias clockStyle: saved.clockStyle // "giant" or "dial"
     property alias decorations: saved.decorations
     property alias groundMusic: saved.groundMusic // "lines", "bars" or "off"
     property alias groundLift: saved.groundLift
@@ -85,6 +86,7 @@ Singleton {
             // Example: { file: "comet.svg", x: 0.2, y: 0.3, width: 0.1, opacity: 0.8, rotation: -12 }
             property var decorations: []
 
+            property string clockStyle: "giant"
             property string groundMusic: "lines"
             property real groundLift: 96
             property real terrainHeight: 0.089

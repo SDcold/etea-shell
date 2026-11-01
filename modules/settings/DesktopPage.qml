@@ -58,8 +58,15 @@ ColumnLayout {
         onMoved: value => Config.terrainRelief = value
     }
 
+    SettingChoice {
+        label: "Style de l'horloge"
+        options: [{ id: "giant", label: "Géante" }, { id: "dial", label: "Cadran céleste" }]
+        current: Config.clockStyle
+        onPicked: id => Config.clockStyle = id
+    }
+
     SettingSwitch {
-        label: "Cadran céleste"
+        label: "Horloge"
         on: root.shown("clock")
         onToggled: root.toggle("clock")
     }
