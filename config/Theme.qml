@@ -89,6 +89,12 @@ Singleton {
     readonly property real orbitRadius: 190 // size of the planet, on a 1600 wide screen
     readonly property real orbitCard: 0.145 // how small a page gets up there
 
+    // The launcher: a dimmed sky, a question and a constellation of apps
+    readonly property color launcherShade: "#05060e"
+    readonly property real launcherDim: 0.72
+    readonly property int launcherFade: 180
+    readonly property int launcherSpacing: 170 // distance between two stars
+
     // Where things sit in the bar, so stars know where to fly
     readonly property int pageWidth: 66
     readonly property int pageGap: 8

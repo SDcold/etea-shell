@@ -8,6 +8,7 @@ Singleton {
     readonly property int pages: 6
     readonly property var status: ["network", "bluetooth", "volume", "battery"]
     readonly property string locale: "fr_FR"
+    readonly property int launcherStars: 7 // how many apps the launcher shows at once
 
     // Decorate the sky: drop a PNG or SVG in decorations/ and describe it here.
     // x, y and width are shares of the screen, opacity and rotation are optional.

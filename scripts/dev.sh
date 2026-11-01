@@ -64,6 +64,8 @@ take_pages() {
         hl.unbind("CTRL + SUPER + Left")
         hl.bind("CTRL + SUPER + Right", hl.dsp.global("etea:pageNext"))
         hl.bind("CTRL + SUPER + Left", hl.dsp.global("etea:pagePrevious"))
+        hl.unbind("SUPER + Space")
+        hl.bind("SUPER + Space", hl.dsp.global("etea:launcher"))
         hl.unbind("SUPER + Tab")
         hl.bind("SUPER + Tab", hl.dsp.global("etea:orbit"))
         hl.unbind("SUPER + Q")
