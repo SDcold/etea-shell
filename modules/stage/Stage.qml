@@ -95,6 +95,13 @@ Variants {
             active: stage.focused && Planet.phase !== Planet.Phase.Spinning
         }
 
+        WindowBirth {
+            anchors.fill: parent
+            screenX: stage.modelData.x
+            screenY: stage.modelData.y
+            active: stage.focused
+        }
+
         WindowExit {
             anchors.fill: parent
             output: stage.modelData

@@ -28,6 +28,7 @@ Singleton {
 
     property var leaving: []
     property var leavingNext: []
+    property string birthing: "" // the window currently being born, if any
     property var arriving: []
     property int captured: 0
     property int expected: 0

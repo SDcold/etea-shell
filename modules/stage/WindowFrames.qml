@@ -73,7 +73,7 @@ Item {
             readonly property bool known: info?.size !== undefined
             readonly property bool focused: Hyprland.activeToplevel === modelData
             readonly property string shape: known ? `${info.at} ${info.size}` : ""
-            readonly property bool shown: root.active && focused && known && info.fullscreen !== 2
+            readonly property bool shown: root.active && focused && known && info.fullscreen !== 2 && modelData.address !== Planet.birthing
 
             x: known ? info.at[0] - root.screenX : 0
             y: known ? info.at[1] - root.screenY : 0

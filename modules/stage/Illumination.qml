@@ -48,6 +48,27 @@ Scope {
         hl.curve("eteaFocus", { type = "bezier", points = { { 0.42, 0 }, { 0.58, 1 } } })
         -- ETEA plays closing windows itself. Apps that quit on their own still fade out quickly.
         hl.animation({ leaf = "windowsOut", enabled = false })
+        hl.animation({ leaf = "windowsIn", enabled = false })
+        hl.animation({ leaf = "fadeIn", enabled = false })
+
+        -- A new window stays invisible while ETEA plays its birth. Hyprland brings it back
+        -- on its own timer, so nothing can ever get stuck hidden, even if ETEA crashes.
+        ETEA_HOLD = ${Theme.openHold}
+        if not ETEA_BIRTHS then
+            ETEA_BIRTHS = true
+            hl.on("window.open_early", function(window)
+                if window.xwayland and window.floating then
+                    return
+                end
+                local target = "address:" .. window.address
+                hl.dispatch(hl.dsp.window.set_prop({ prop = "opacity", value = "0", window = target }))
+                hl.timer(function()
+                    pcall(function()
+                        hl.dispatch(hl.dsp.window.set_prop({ prop = "opacity", value = "1", window = target }))
+                    end)
+                end, { timeout = ETEA_HOLD, type = "oneshot" })
+            end)
+        end
         hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.5, bezier = "eteaFocus" })
         hl.animation({ leaf = "border", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeSwitch", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })

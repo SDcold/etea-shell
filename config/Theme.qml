@@ -76,6 +76,11 @@ Singleton {
     readonly property int closeFlight: 340
     readonly property real closeStarSize: 16
 
+    // A window opening: a star flares up, then opens onto the window
+    readonly property int openSpark: 90
+    readonly property int openReveal: 340
+    readonly property int openHold: 470 // how long Hyprland keeps the real window hidden
+
     // Where things sit in the bar, so stars know where to fly
     readonly property int pageWidth: 66
     readonly property int pageGap: 8
