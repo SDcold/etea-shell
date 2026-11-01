@@ -59,10 +59,11 @@ ColumnLayout {
     }
 
     SettingChoice {
-        label: "Style de l'horloge"
-        options: [{ id: "giant", label: "Géante" }, { id: "dial", label: "Cadran céleste" }]
-        current: Config.clockStyle
-        onPicked: id => Config.clockStyle = id
+        label: "Style des widgets"
+        hint: "Ciel écrit à même le ciel. Cadran céleste range tout dans des hublots."
+        options: [{ id: "sky", label: "Ciel" }, { id: "celestial", label: "Cadran céleste" }]
+        current: Config.widgetStyle
+        onPicked: id => Config.widgetStyle = id
     }
 
     SettingSwitch {

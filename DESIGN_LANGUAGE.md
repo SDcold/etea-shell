@@ -14,6 +14,11 @@ Ce document est la référence pour tout ce qui sera ajouté à ETEA : widgets, 
 4. **L'étoile à 4 branches est la seule forme signature.** Ouverture, fermeture, sélection, valeur d'un curseur : c'est toujours elle.
 5. **Le quotidien est rapide, les moments rares prennent leur temps.** Une action répétée ne doit jamais faire attendre.
 
+## Les deux styles de widgets
+
+- **Ciel, par défaut :** rien n'est encadré. Le widget est écrit à même le ciel avec `Theme.skyInk`, en grands caractères, et sa matière se dissout vers le bas avec `modules/widgets/Dissolve.qml`. Les commandes restent nettes pour rester faciles à viser. Les tailles viennent de `sky`, la hauteur de l'écran.
+- **Cadran céleste, en option :** le widget est un hublot vivant, construit avec `HandCard`.
+
 ## Les briques
 
 | Brique | Fichier | Rôle |
@@ -36,11 +41,11 @@ Un réglage modifiable va dans `config/Config.qml`, et il apparaît dans la page
 
 ## Ajouter un widget
 
-1. Créer le fichier dans `modules/widgets/`, avec un `HandCard` pour fond.
+1. Créer ses deux versions dans `modules/widgets/` : une écrite sur le ciel et une avec un `HandCard` pour fond.
 2. Passer `alive: Planet.pageEmpty` : rien ne s'anime quand personne ne regarde.
 3. Choisir sa couleur avec `ContentTint` ou un état réel.
 4. Chercher ce que la donnée peut faire bouger, avant d'écrire du texte.
-5. L'ajouter à la table de `modules/widgets/Widgets.qml`, à `Config.widgets` et à la page Bureau des Réglages.
+5. L'ajouter aux tables de `modules/widgets/Widgets.qml`, à `Config.widgets` et à la page Bureau des Réglages.
 
 ## Ajouter un thème
 

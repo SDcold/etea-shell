@@ -119,6 +119,9 @@ Singleton {
     readonly property int barThickness: 7
     readonly property int ringThickness: 6
 
+    // What's written directly on the sky, close to white with a touch of the planet's light
+    readonly property color skyInk: Qt.tint(windowLit, Qt.alpha("#ffffff", 0.7))
+
     // Where things sit in the bar, so stars know where to fly
     readonly property int pageWidth: 66
     readonly property int pageGap: 8

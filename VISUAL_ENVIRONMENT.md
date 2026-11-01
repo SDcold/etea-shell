@@ -26,7 +26,7 @@ ETEA SHELL doit aussi réunir une **communauté**. Il n'est donc pas conçu pour
 - **Lanceur :** `Super + Espace`. Le ciel s'assombrit, la question « Où veux-tu aller ? » apparaît et les applis forment une constellation.
 - **Notifications :** comètes qui arrivent du bord de l'écran, se posent et s'ouvrent. Le journal s'ouvre depuis la cloche, un clic droit active Ne pas déranger.
 - **Menus de la barre :** calendrier, média, son, réseau, Bluetooth, énergie et luminosité.
-- **Widgets :** horloge géante qui se dissout vers les montagnes (par défaut) ou cadran céleste, système et média, visibles sur une page vide. Sur une page vide, la musique dessine des courbes de niveau qui prolongent la crête des montagnes, sans déplacer le terrain, choisis dans `Config.widgets`.
+- **Widgets :** deux styles pour tous. Ciel par défaut : horloge géante, système et média écrits à même le ciel, qui se dissolvent. Cadran céleste en option : cadran, orbites et hublots, visibles sur une page vide. Sur une page vide, la musique dessine des courbes de niveau qui prolongent la crête des montagnes, sans déplacer le terrain, choisis dans `Config.widgets`.
 - **Icônes :** Material Symbols Rounded, version pleine.
 - **Altitude :** l'orbite montre les pages, le système montre les thèmes.
 - **Thèmes :** chaque thème est une planète. Installer un thème, c'est atterrir pour la première fois sur une nouvelle planète.
