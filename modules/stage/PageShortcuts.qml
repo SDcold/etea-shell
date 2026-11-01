@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import qs.config
 import qs.services
 
@@ -16,6 +17,24 @@ Scope {
             appid: "etea"
             name: "page" + (index + 1)
             onPressed: Planet.request(index + 1)
+        }
+    }
+
+    GlobalShortcut {
+        appid: "etea"
+        name: "orbit"
+        onPressed: Planet.toggleOrbit()
+    }
+
+    IpcHandler {
+        target: "planet"
+
+        function orbit(): void {
+            Planet.toggleOrbit();
+        }
+
+        function land(page: int): void {
+            Planet.leaveOrbit(page);
         }
     }
 

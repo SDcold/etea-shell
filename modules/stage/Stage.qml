@@ -21,11 +21,22 @@ Variants {
         // The planet's centre is way below the screen, so everything swings around it
         readonly property real pivotY: height * (1 - Theme.terrainHeight) + Theme.terrainCurve * width / 1600
 
+        // The camera. All of this hangs off Planet.altitude, 0 on the ground and 1 in orbit.
+        readonly property real unit: width / 1600
+        readonly property real screenHeight: height / unit
+        readonly property real planetRadius: Math.exp(Math.log(Theme.terrainCurve) + (Math.log(Theme.orbitRadius) - Math.log(Theme.terrainCurve)) * Planet.altitude)
+        readonly property real planetTop: {
+            const ground = screenHeight * (1 - Theme.terrainHeight);
+            const t = Math.max(0, Math.min(1, (Planet.altitude - 0.3) / 0.7));
+            return ground + (screenHeight / 2 - Theme.orbitRadius - ground) * t * t * (3 - 2 * t);
+        }
+
         screen: modelData
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "etea:stage"
+        WlrLayershell.keyboardFocus: Planet.orbiting ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
         anchors {
             top: true
@@ -34,8 +45,14 @@ Variants {
             right: true
         }
 
-        // Empty region: clicks and keys go straight through, even mid-spin
-        mask: Region {}
+        // Empty region: clicks and keys go straight through, even mid-spin.
+        // Up in orbit it's the other way round, the whole screen listens.
+        property Region passThrough: Region {}
+        property Region everything: Region {
+            item: stage.contentItem
+        }
+
+        mask: Planet.orbiting ? everything : passThrough
 
         // One photo per page, kept around for when we come back
         Item {
@@ -65,6 +82,30 @@ Variants {
             World {
                 anchors.fill: parent
                 angle: Planet.resting + Planet.travel
+                radius: stage.planetRadius
+                horizon: stage.planetTop / stage.screenHeight
+                space: Math.min(1, Planet.altitude * 1.6)
+            }
+
+            // Your pages, standing around the planet
+            Repeater {
+                model: Planet.orbitPages
+
+                StagePage {
+                    required property var modelData
+                    required property int index
+
+                    anchors.fill: parent
+                    windows: stage.focused ? modelData : []
+                    photo: Planet.layouts[index + 1] === Planet.layoutOf(modelData) ? photos.itemAt(index)?.frame ?? null : null
+                    pivotY: (stage.planetTop + stage.planetRadius) * stage.unit
+                    screenX: stage.modelData.x
+                    screenY: stage.modelData.y
+                    angle: Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel
+                    zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude)
+                    lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
+                    onPicked: Planet.leaveOrbit(index + 1)
+                }
             }
 
             StagePage {
@@ -106,6 +147,17 @@ Variants {
             output: stage.modelData
             screenX: stage.modelData.x
             screenY: stage.modelData.y
+        }
+
+        // In orbit: Escape goes back down, 1 to 6 land on a page
+        Item {
+            focus: Planet.orbiting
+            Keys.onPressed: event => {
+                if (event.key === Qt.Key_Escape)
+                    Planet.leaveOrbit(Planet.current);
+                else if (event.key >= Qt.Key_1 && event.key < Qt.Key_1 + Config.pages)
+                    Planet.leaveOrbit(event.key - Qt.Key_0);
+            }
         }
 
         // Counts the frames of each spin, so we know if it's really smooth

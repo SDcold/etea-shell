@@ -11,6 +11,7 @@ layout(std140, binding = 0) uniform buf {
     vec4 colorLow;
     vec2 resolution;
     float grain;
+    float space; // 0 on the ground, 1 once we've left the atmosphere
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -32,5 +33,10 @@ void main() {
 
     float n = mix(0.376, 0.627, hash(floor(qt_TexCoord0 * resolution)));
     color = mix(color, overlay(color, n), grain) + n * 0.022;
+
+    // Above the atmosphere the sky goes dark and the stars come out
+    vec2 cell = floor(qt_TexCoord0 * resolution / 2.0);
+    float star = step(0.9972, hash(cell + 3.7)) * (0.35 + 0.65 * hash(cell + 11.0));
+    color = mix(color, vec3(0.02, 0.024, 0.05) + n * 0.012, space) + star * space;
     fragColor = vec4(color, 1.0) * qt_Opacity;
 }

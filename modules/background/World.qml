@@ -7,6 +7,9 @@ Item {
     id: root
 
     property real angle: 0 // how far the planet has turned
+    property real radius: Theme.terrainCurve // shrink it and the ground becomes a planet
+    property real horizon: 1 - Theme.terrainHeight
+    property real space: 0
 
     ShaderEffect {
         anchors.fill: parent
@@ -16,6 +19,7 @@ Item {
         property color colorLow: Theme.skyLow
         property vector2d resolution: Qt.vector2d(width, height)
         property real grain: Theme.grain
+        property real space: root.space
 
         fragmentShader: Qt.resolvedUrl("../../shaders/sky.frag.qsb")
     }
@@ -49,10 +53,12 @@ Item {
         property color layer2: Theme.terrainLayers[2]
         property color layer3: Theme.terrainLayers[3]
         property vector2d resolution: Qt.vector2d(width, height)
-        property real horizon: 1 - Theme.terrainHeight
+        property real horizon: root.horizon
         property real relief: Theme.terrainRelief
-        property real curve: Theme.terrainCurve
+        property real curve: root.radius
         property real planetAngle: root.angle
+        property real orbit: root.space
+        property color rimColor: Theme.skyLow
         property real grain: Theme.grain
 
         fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")

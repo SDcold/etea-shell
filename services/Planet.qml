@@ -14,7 +14,8 @@ Singleton {
         Idle,
         Preparing,
         Spinning,
-        Settling
+        Settling,
+        Orbit
     }
 
     readonly property real step: Math.PI * 2 / Config.pages
@@ -35,6 +36,12 @@ Singleton {
     property real sceneOpacity: 1
 
     property int origin: 1
+    // Altitude: 0 is the ground, 1 is orbit
+    property real altitude: 0
+    property var orbitPages: []
+    property bool goingUp: false
+    readonly property bool orbiting: phase === Planet.Phase.Orbit
+
     property int target: 0
     property int queued: 0
     property var layouts: ({}) // what each page looked like when we last took its photo
@@ -69,6 +76,50 @@ Singleton {
         return Qt.point(Theme.barSide + (page - 1) * (Theme.pageWidth + Theme.pageGap) + Theme.pageWidth / 2, Theme.barGap + Theme.barHeight * 0.6);
     }
 
+    function toggleOrbit() {
+        if (phase === Planet.Phase.Idle)
+            enterOrbit();
+        else if (orbiting)
+            leaveOrbit(current);
+    }
+
+    // Same trick as a page change: photograph this page, then the stand-ins take over
+    function enterOrbit() {
+        origin = current;
+        target = current;
+        goingUp = true;
+        captured = 0;
+        phase = Planet.Phase.Preparing;
+        Hyprland.refreshToplevels();
+        orbitDelay.restart();
+    }
+
+    function beginOrbit() {
+        captureTimeout.stop();
+        goingUp = false;
+        phase = Planet.Phase.Orbit;
+        rise.restart();
+    }
+
+    // Going back down, turning to the chosen page on the way
+    function leaveOrbit(page) {
+        if (!orbiting || descent.running)
+            return;
+        target = page;
+        distance = shortestSteps(current, page) * step;
+        // Letting go of the keyboard makes Hyprland refocus the old window, which would
+        // pull us straight back to the old page. So let go first, then change page.
+        phase = Planet.Phase.Spinning;
+        descent.restart();
+        if (page !== current)
+            orbitLanding.restart();
+    }
+
+    function landed() {
+        orbitPages = [];
+        settle();
+    }
+
     function requestNext(direction) {
         request((current - 1 + direction + Config.pages) % Config.pages + 1);
     }
@@ -90,13 +141,17 @@ Singleton {
     function noteCaptured() {
         captured += 1;
         if (phase === Planet.Phase.Preparing && captured >= expected)
-            begin();
+            goingUp ? beginOrbit() : begin();
     }
 
     // Stand-ins are ready, so show them, then let Hyprland switch behind them
     function begin() {
         if (phase !== Planet.Phase.Preparing)
             return;
+        if (goingUp) {
+            beginOrbit();
+            return;
+        }
         captureTimeout.stop();
         // The stand-ins leaving are cut from the photo, so they wait until it exists
         leaving = leavingNext;
@@ -114,7 +169,7 @@ Singleton {
         phase = Planet.Phase.Settling;
         // Focus just moved behind the scene and takes a while to fade in.
         // Pulling the scene away before that shows the windows flickering as they catch up.
-        revealDelay.interval = arriving.length ? Math.max(24, Theme.windowFocusSpeed * 100 + 40 - spin.duration) : 24;
+        revealDelay.interval = Math.max(24, Theme.windowFocusSpeed * 100 + 40 - Math.max(spin.duration, 0));
         revealDelay.restart();
     }
 
@@ -163,6 +218,67 @@ Singleton {
             else
                 captureTimeout.restart();
         }
+    }
+
+    Timer {
+        id: orbitDelay
+
+        interval: 12
+        onTriggered: {
+            const pages = [];
+            for (let page = 1; page <= Config.pages; page++)
+                pages.push(root.windowsOn(page));
+            root.orbitPages = pages;
+
+            const here = root.windowsOn(root.origin);
+            root.expected = here.length ? 1 : 0;
+            if (here.length) {
+                root.layouts[root.origin] = root.layoutOf(here);
+                root.photoNeeded(root.origin);
+                captureTimeout.restart();
+            } else {
+                root.beginOrbit();
+            }
+        }
+    }
+
+    Timer {
+        id: orbitLanding
+
+        interval: 40
+        onTriggered: Hyprland.dispatch(`hl.dsp.focus({ workspace = ${root.target} })`)
+    }
+
+    NumberAnimation {
+        id: rise
+
+        target: root
+        property: "altitude"
+        from: 0
+        to: 1
+        duration: Theme.orbitRise
+        easing.type: Easing.InOutCubic
+    }
+
+    ParallelAnimation {
+        id: descent
+
+        NumberAnimation {
+            target: root
+            property: "altitude"
+            to: 0
+            duration: Theme.orbitRise
+            easing.type: Easing.InOutCubic
+        }
+        NumberAnimation {
+            target: root
+            property: "travel"
+            from: 0
+            to: root.distance
+            duration: Theme.orbitRise
+            easing.type: Easing.InOutCubic
+        }
+        onFinished: root.landed()
     }
 
     // A window that refuses to be captured should never hold the page back

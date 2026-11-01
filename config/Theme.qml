@@ -84,6 +84,11 @@ Singleton {
     readonly property string windowMoveCurve: "emphasizedDecel" // Hyprland's usual curve for moving windows
     readonly property int openCover: 200 // how long Hyprland hides a new window while the screen freezes
 
+    // Going up: the ground curves away until it's a planet with your pages around it
+    readonly property int orbitRise: 760
+    readonly property real orbitRadius: 190 // size of the planet, on a 1600 wide screen
+    readonly property real orbitCard: 0.17 // how small a page gets up there
+
     // Where things sit in the bar, so stars know where to fly
     readonly property int pageWidth: 66
     readonly property int pageGap: 8

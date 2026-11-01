@@ -64,13 +64,15 @@ take_pages() {
         hl.unbind("CTRL + SUPER + Left")
         hl.bind("CTRL + SUPER + Right", hl.dsp.global("etea:pageNext"))
         hl.bind("CTRL + SUPER + Left", hl.dsp.global("etea:pagePrevious"))
+        hl.unbind("SUPER + Tab")
+        hl.bind("SUPER + Tab", hl.dsp.global("etea:orbit"))
         hl.unbind("SUPER + Q")
         hl.bind("SUPER + Q", hl.dsp.global("etea:closeWindow"))
     ' | grep -v '^ok$' || true
 
     # The four finger swipe would switch pages without us, so it goes through ETEA too.
     # Hyprland complains when removing a gesture that isn't there, which is fine here.
-    for direction in horizontal left right; do
+    for direction in horizontal left right up down; do
         /usr/bin/hyprctl eval "hl.gesture({ fingers = 4, direction = \"$direction\", action = \"unset\" })" >/dev/null 2>&1 || true
     done
     /usr/bin/hyprctl eval '
@@ -79,6 +81,12 @@ take_pages() {
         end })
         hl.gesture({ fingers = 4, direction = "right", action = function()
             hl.dispatch(hl.dsp.global("etea:pagePrevious"))
+        end })
+        hl.gesture({ fingers = 4, direction = "up", action = function()
+            hl.dispatch(hl.dsp.global("etea:orbit"))
+        end })
+        hl.gesture({ fingers = 4, direction = "down", action = function()
+            hl.dispatch(hl.dsp.global("etea:orbit"))
         end })
     ' | grep -v '^ok$' || true
 }

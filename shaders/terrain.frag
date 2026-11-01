@@ -16,6 +16,8 @@ layout(std140, binding = 0) uniform buf {
     float curve;
     float planetAngle; // how far the planet has turned, for the page transition
     float grain;
+    float orbit; // 0 on the ground, 1 once the ground has become a whole planet
+    vec4 rimColor;
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -41,6 +43,18 @@ float ridge(float seed, float a) {
         + 0.05 * sin(863.0 * a + 0.4 + seed);
 }
 
+// Soft random blobs, stacked at a few sizes, for the landmasses
+float blob(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash(i), b = hash(i + vec2(1.0, 0.0)), c = hash(i + vec2(0.0, 1.0)), d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+float land(vec2 p) {
+    return blob(p) * 0.55 + blob(p * 2.3 + 4.1) * 0.3 + blob(p * 5.1 + 9.7) * 0.15;
+}
+
 void main() {
     // Think in mockup units, 1600 wide, so the hills look the same everywhere
     float k = resolution.x / 1600.0;
@@ -53,7 +67,7 @@ void main() {
     vec4 colors[4] = vec4[](layer0, layer1, layer2, layer3);
     float depth[4] = float[](0.0, 0.0065, 0.014, 0.023);
     float amp[4] = float[](1.0, 0.8, 0.7, 0.55);
-    float maxAmp = min(curve * 0.024, 34.0) * relief;
+    float maxAmp = min(curve * 0.024, 34.0) * relief * (1.0 - orbit);
     float sampleStep = 2.0 * min(3.14159, asin(min(1.0, 1152.0 / curve)) * 1.15) / 340.0;
 
     // Paint the hills from the farthest to the closest
@@ -69,7 +83,33 @@ void main() {
         color = mix(color, vec4(colors[l].rgb, 1.0), inside);
     }
 
+    // From space it's a real planet: continents, a day side and a night side, and a
+    // thin glow of atmosphere catching the light around the edge
+    vec3 sun = normalize(vec3(-0.55, -0.6, 0.58));
+    vec2 q = (p - center) / curve;
+    float edgeDistance = length(q);
+    vec4 rim = vec4(0.0);
+    if (orbit > 0.001) {
+        if (edgeDistance < 1.0) {
+            float depthZ = sqrt(1.0 - edgeDistance * edgeDistance);
+            vec3 normal = vec3(q, depthZ);
+            vec2 surface = vec2(atan(q.x, depthZ) + planetAngle, asin(clamp(q.y, -1.0, 1.0))) * 2.6;
+            float ground = land(surface + 1.7);
+            vec3 tone = mix(layer3.rgb, layer2.rgb, smoothstep(0.34, 0.42, ground));
+            tone = mix(tone, layer1.rgb, smoothstep(0.44, 0.52, ground));
+            tone = mix(tone, layer0.rgb, smoothstep(0.54, 0.62, ground));
+            float day = smoothstep(-0.12, 0.65, dot(normal, sun));
+            vec3 lit = tone * mix(0.1, 1.0, day);
+            float solid = smoothstep(1.0, 1.0 - 2.0 / curve, edgeDistance);
+            color = mix(color, vec4(lit, 1.0), orbit * solid);
+        }
+        float side = 0.25 + 0.75 * max(0.0, dot(normalize(q), normalize(sun.xy)));
+        float glow = exp(-abs(edgeDistance - 1.0) * 26.0) * side * orbit;
+        rim = vec4(rimColor.rgb * glow, glow);
+    }
+
     float n = mix(0.376, 0.627, hash(floor(qt_TexCoord0 * resolution)));
     vec3 rgb = mix(color.rgb, overlay(color.rgb, n), grain);
-    fragColor = vec4(rgb * color.a, color.a) * qt_Opacity;
+    vec4 result = vec4(rgb * color.a, color.a);
+    fragColor = (result + rim * (1.0 - result.a * 0.35)) * qt_Opacity;
 }
