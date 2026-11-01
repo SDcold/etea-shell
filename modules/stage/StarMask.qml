@@ -9,11 +9,13 @@ ShaderEffect {
     property real reach: 0
     property real shine: 0
     property real flipped: 0
+    property point center: Qt.point(width / 2, height / 2)
 
-    // How big the star must get before it has swallowed the corners too
+    // How big the star must get before it has swallowed the farthest corner too
     readonly property real fullReach: {
         const curve = 0.62;
-        return Math.pow(Math.pow(width / 2, curve) + Math.pow(height / 2, curve), 1 / curve) + 6;
+        const across = Math.max(center.x, width - center.x), down = Math.max(center.y, height - center.y);
+        return Math.pow(Math.pow(across, curve) + Math.pow(down, curve), 1 / curve) + 6;
     }
 
     readonly property color tint: Theme.windowLit

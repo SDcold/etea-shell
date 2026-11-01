@@ -8,6 +8,7 @@ layout(std140, binding = 0) uniform buf {
     float qt_Opacity;
     vec4 tint;
     vec2 resolution;
+    vec2 center;
     float reach;
     float shine;
     float flipped; // 1 keeps the outside and cuts a star-shaped hole instead
@@ -19,7 +20,7 @@ layout(binding = 1) uniform sampler2D source;
 // This is the same star as everywhere else in ETEA, written as a distance so it
 // stays sharp at any size.
 void main() {
-    vec2 p = (qt_TexCoord0 - 0.5) * resolution;
+    vec2 p = qt_TexCoord0 * resolution - center;
     float curve = 0.62;
     float d = pow(pow(abs(p.x), curve) + pow(abs(p.y), curve), 1.0 / curve);
 

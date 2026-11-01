@@ -104,7 +104,6 @@ Item {
 
             sourceItem: photo.item
             sourceRect: root.area
-            live: false
             hideSource: false
             visible: false
             width: root.area.width

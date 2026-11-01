@@ -77,11 +77,12 @@ Singleton {
     readonly property real closeStarSize: 16
 
     // A window opening: a star flares up, then opens onto the window
+    readonly property int openPhotoEvery: 300 // how often we refresh the photo that freezes the screen
     readonly property int openSpark: 40
     readonly property int openReveal: 420
-    readonly property int openMakeRoom: 520 // how long neighbours take to slide aside
+    readonly property int openMakeRoom: 340 // how long neighbours take to slide aside, hidden behind the photo
     readonly property string windowMoveCurve: "emphasizedDecel" // Hyprland's usual curve for moving windows
-    readonly property int openCover: 200 // how long Hyprland hides a new window while we cover the spot
+    readonly property int openCover: 200 // how long Hyprland hides a new window while the screen freezes
 
     // Where things sit in the bar, so stars know where to fly
     readonly property int pageWidth: 66

@@ -98,8 +98,6 @@ Variants {
         WindowBirth {
             anchors.fill: parent
             output: stage.modelData
-            screenX: stage.modelData.x
-            screenY: stage.modelData.y
             active: stage.focused
         }
 

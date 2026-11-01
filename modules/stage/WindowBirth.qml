@@ -6,31 +6,45 @@ import qs.config
 import qs.modules.bar
 import qs.services
 
-// Opening a window is a star being born. The new window is still invisible when we
-// hear about it, so we photograph the screen as it is and lay that piece over the spot.
-// A star then opens a hole in the photo, onto the real window. Nothing ever has to swap
-// places, and whatever was already there stays put until the star reaches it.
+// Opening a window is a star being born. A photo taken at that moment would already be
+// too late, apps redraw almost instantly, so we always keep a recent one at hand. When
+// Hyprland warns that a window is coming, that photo freezes the screen on the spot, and
+// behind it windows are free to move and resize however they like. A star then opens from
+// the new window and wipes across the screen, revealing everything in its final place.
 Item {
     id: root
 
     required property var output
-    required property real screenX
-    required property real screenY
     property bool active: true
 
     property var window: null
     property string waitingFor: ""
     property int tries: 0
+    property bool frozen: false
     property bool playing: false
-    property bool photoReady: false
 
-    // A new window often gets resized while it settles in, so this follows it live
-    readonly property rect area: {
-        const info = window?.lastIpcObject;
-        if (!info?.size)
-            return Qt.rect(0, 0, 0, 0);
-        const edge = Theme.traceWidth;
-        return Qt.rect(info.at[0] - screenX - edge, info.at[1] - screenY - edge, info.size[0] + edge * 2, info.size[1] + edge * 2);
+    // The warning and the window can reach us in either order
+    function freeze() {
+        if (!active || playing || !recent.hasContent)
+            return;
+        frozen = true;
+        giveUp.restart();
+        if (window)
+            start();
+    }
+
+    function reset() {
+        birth.stop();
+        giveUp.stop();
+        searching.stop();
+        frozen = false;
+        playing = false;
+        window = null;
+        waitingFor = "";
+        mask.reach = 0;
+        mask.shine = 0;
+        star.opacity = 1;
+        Planet.birthing = "";
     }
 
     function look() {
@@ -43,30 +57,42 @@ Item {
             }
             return;
         }
+        // Opening on another page or in fullscreen: nothing to show here
         if (found.workspace?.id !== Planet.current || info.fullscreen === 2) {
-            photo.active = false;
+            reset();
             return;
         }
         window = found;
-        if (photoReady)
+        if (frozen)
             start();
     }
 
     function start() {
+        if (playing)
+            return;
+        const info = window.lastIpcObject;
+        giveUp.stop();
         Planet.birthing = window.address;
+        mask.center = Qt.point(info.at[0] + info.size[0] / 2 - root.output.x, info.at[1] + info.size[1] / 2 - root.output.y);
         mask.reach = 0;
         mask.shine = 0.9;
-        star.opacity = 1;
         playing = true;
         birth.restart();
     }
 
-    function finish() {
-        playing = false;
-        window = null;
-        photoReady = false;
-        photo.active = false;
-        Planet.birthing = "";
+    // The warning came but no window followed: thaw the screen
+    Timer {
+        id: giveUp
+
+        interval: 900
+        onTriggered: root.reset()
+    }
+
+    Timer {
+        id: searching
+
+        interval: 25
+        onTriggered: root.look()
     }
 
     Connections {
@@ -77,82 +103,65 @@ Item {
                 return;
             root.waitingFor = event.data.split(",")[0];
             root.tries = 0;
-            root.photoReady = false;
-            photo.active = true;
             Hyprland.refreshToplevels();
             searching.restart();
         }
     }
 
-    Timer {
-        running: root.playing
-        repeat: true
-        interval: 32
-        onTriggered: Hyprland.refreshToplevels()
-    }
-
-    Timer {
-        id: searching
-
-        interval: 25
-        onTriggered: root.look()
+    GlobalShortcut {
+        appid: "etea"
+        name: "windowOpening"
+        onPressed: root.freeze()
     }
 
     Item {
         anchors.fill: parent
         opacity: 0
 
-        Loader {
-            id: photo
+        ScreencopyView {
+            id: recent
 
             anchors.fill: parent
-            active: false
-
-            sourceComponent: ScreencopyView {
-                captureSource: root.output
-                live: false
-                onHasContentChanged: {
-                    if (!hasContent)
-                        return;
-                    root.photoReady = true;
-                    if (root.window && !root.playing)
-                        root.start();
-                }
-            }
+            captureSource: root.output
+            live: false
         }
+    }
+
+    // Keeps the photo fresh, but never while something is playing over the screen
+    Timer {
+        running: root.active && !root.frozen && Planet.phase === Planet.Phase.Idle
+        repeat: true
+        interval: Theme.openPhotoEvery
+        onTriggered: recent.captureFrame()
     }
 
     Item {
         anchors.fill: parent
-        visible: root.playing
+        visible: root.frozen
 
         ShaderEffectSource {
-            id: patch
+            id: picture
 
-            sourceItem: photo.item
-            sourceRect: root.area
-            live: false
+            sourceItem: recent
             visible: false
-            width: root.area.width
-            height: root.area.height
+            width: root.width
+            height: root.height
         }
 
         StarMask {
             id: mask
 
-            x: root.area.x
-            y: root.area.y
-            width: root.area.width
-            height: root.area.height
-            source: patch
+            anchors.fill: parent
+            source: picture
             flipped: 1
         }
 
         Star {
             id: star
 
-            x: root.area.x + root.area.width / 2 - width / 2
-            y: root.area.y + root.area.height / 2 - height / 2
+            visible: root.playing
+            x: mask.center.x - width / 2
+            y: mask.center.y - height / 2
             size: Theme.closeStarSize
             lit: true
             appear: root.playing
@@ -162,7 +171,7 @@ Item {
     SequentialAnimation {
         id: birth
 
-        // The star flares up first, then opens onto the window
+        // The star flares up first, then opens across the screen
         PauseAnimation { duration: Theme.openSpark }
 
         ParallelAnimation {
@@ -184,12 +193,12 @@ Item {
                 target: star
                 property: "opacity"
                 to: 0
-                duration: Theme.openReveal * 0.6
+                duration: Theme.openReveal * 0.4
             }
         }
 
         ScriptAction {
-            script: root.finish()
+            script: root.reset()
         }
     }
 }
