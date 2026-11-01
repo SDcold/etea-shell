@@ -46,12 +46,21 @@ Singleton {
     // One level above orbit: every planet you could live on
     property bool inSystem: false
     property real systemLevel: 0
-    property int systemChoice: 0
+    property real systemScroll: 0 // how far along the row of planets we are, between two of them while dragging
+    readonly property int systemChoice: {
+        const count = Planets.all.length;
+        return (Math.round(systemScroll) % count + count) % count;
+    }
+
+    // Whatever comes to the front gets tried on by the whole shell
+    onSystemChoiceChanged: {
+        if (inSystem)
+            Config.preview = Planets.all[systemChoice].id;
+    }
 
     // Turning the planet by hand, up in orbit
     property real handTurn: 0
     property int hoveredPage: -1
-    property bool landing: false // on the way down to a new world
     readonly property int topPage: ((origin - 1 - Math.round(handTurn / step)) % Config.pages + Config.pages) % Config.pages + 1
 
     property int target: 0
@@ -131,7 +140,8 @@ Singleton {
     }
 
     function enterSystem() {
-        systemChoice = Math.max(0, Planets.all.findIndex(planet => planet.id === Theme.planet.id));
+        systemSlide.stop();
+        systemScroll = Math.max(0, Planets.all.findIndex(planet => planet.id === Theme.planet.id));
         Config.preview = Planets.all[systemChoice].id;
         inSystem = true;
         systemShift.to = 1;
@@ -146,14 +156,28 @@ Singleton {
     }
 
     function chooseStep(step) {
-        const count = Planets.all.length;
-        systemChoice = (systemChoice + step + count) % count;
-        Config.preview = Planets.all[systemChoice].id; // the whole shell tries it on
+        slideSystemTo((systemSlide.running ? systemSlide.to : Math.round(systemScroll)) + step);
+    }
+
+    function slideSystemTo(position) {
+        systemSlide.stop();
+        systemSlide.to = position;
+        systemSlide.start();
+    }
+
+    // The row of planets follows the hand, in planets rather than pixels
+    function dragSystem(change) {
+        systemSlide.stop();
+        systemScroll += change;
+    }
+
+    // Let go and it carries on a little, then settles on the nearest planet
+    function releaseSystem(speed) {
+        slideSystemTo(Math.round(systemScroll + speed * 0.22));
     }
 
     // Moving to a new planet: the theme changes and we come down onto it
     function land(id) {
-        landing = id !== Config.theme;
         Config.theme = id;
         leaveSystem();
         leaveOrbit(current);
@@ -249,7 +273,6 @@ Singleton {
         leaving = [];
         resting += distance - handTurn;
         handTurn = 0;
-        landing = false;
         hoveredPage = -1;
         distance = 0;
         travel = 0;
@@ -261,7 +284,7 @@ Singleton {
     }
 
     function recover() {
-        for (const animation of [spin, rise, descent, fade, spinShift, systemShift])
+        for (const animation of [spin, rise, descent, fade, spinShift, systemShift, systemSlide])
             animation.stop();
         for (const timer of [geometryDelay, orbitDelay, orbitLanding, captureTimeout, coverDelay, revealDelay])
             timer.stop();
@@ -272,7 +295,6 @@ Singleton {
         altitude = 0;
         systemLevel = 0;
         inSystem = false;
-        landing = false;
         goingUp = false;
         hoveredPage = -1;
         Config.preview = "";
@@ -390,6 +412,16 @@ Singleton {
     }
 
     NumberAnimation {
+        id: systemSlide
+
+        target: root
+        property: "systemScroll"
+        duration: 520
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Theme.expressive
+    }
+
+    NumberAnimation {
         id: systemShift
 
         target: root
@@ -416,7 +448,7 @@ Singleton {
             target: root
             property: "altitude"
             to: 0
-            duration: Theme.orbitRise * (root.landing ? 2.2 : 1)
+            duration: Theme.orbitRise
             easing.type: Easing.InOutCubic
         }
         NumberAnimation {
@@ -424,7 +456,7 @@ Singleton {
             property: "travel"
             from: 0
             to: root.distance
-            duration: Theme.orbitRise * (root.landing ? 2.2 : 1)
+            duration: Theme.orbitRise
             easing.type: Easing.InOutCubic
         }
         onFinished: root.landed()

@@ -16,7 +16,8 @@ Singleton {
         return players.find(p => p.isPlaying) ?? players.find(p => p === remembered) ?? players.find(p => p.playbackState === MprisPlaybackState.Paused) ?? players[0] ?? null;
     }
 
-    onPlayerChanged: remembered = player
+    // A beat later, so the choice above isn't changing what it depends on
+    onPlayerChanged: Qt.callLater(() => remembered = player)
 
     function clockTime(seconds) {
         const total = Math.max(0, Math.floor(seconds || 0));

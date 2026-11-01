@@ -166,10 +166,6 @@ Variants {
             anchors.fill: parent
         }
 
-        AtmosphereEntry {
-            anchors.fill: parent
-        }
-
         // In orbit: Escape goes down a level, 1 to 6 land on a page.
         // Up in the system: left and right pick a planet, Enter lands on it.
         Item {
