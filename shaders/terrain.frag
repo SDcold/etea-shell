@@ -95,19 +95,34 @@ void main() {
     float dance = music * (1.0 - orbit);
 
     // Most of the screen is sky, so skip all the work up there
-    if (orbit < 0.001 && r > curve + maxAmp + 8.0 + dance * lift) {
+    if (orbit < 0.001 && r > curve + maxAmp + 72.0 + dance * lift) {
         fragColor = vec4(0.0);
         return;
     }
 
-    // Each ridge reads the sound in its own order, sweeping back and forth across the screen.
-    // Nothing mirrors, and the turns are rounded, so loud notes make wide swells, not spikes.
-    float frequency[4] = float[](1.3, 1.9, 1.1, 1.6);
-    float phase[4] = float[](0.17, 0.61, 1.34, 0.86);
     float sampleStep = 2.0 * min(3.14159, asin(min(1.0, 1152.0 / curve)) * 1.15) / 340.0;
 
-    // Paint the hills from the farthest to the closest
+    // The mountains never move. The music lives in fine contour lines echoing the ridge,
+    // like a seismograph drawn over the landscape. They stay in order and never cross:
+    // the louder it gets, the further they spread apart, and each softens as it climbs.
     vec4 color = vec4(0.0);
+    if (dance > 0.001) {
+        float ridgeCell = (angle + planetAngle) / sampleStep;
+        float ridgeShape = mix(ridge(1.2, floor(ridgeCell) * sampleStep), ridge(1.2, ceil(ridgeCell) * sampleStep), fract(ridgeCell));
+        float glow = 0.0;
+        for (int i = 0; i < 6; i++) {
+            float step = float(i);
+            float t = 0.5 - 0.5 * cos(3.14159 * (p.x / 1600.0 * 1.3 + 0.17 + step * 0.012));
+            float heard = (sound(t - 0.05) + sound(t) * 2.0 + sound(t + 0.05)) * 0.25;
+            heard = 1.0 - exp(-heard * (0.55 + 0.75 * t) * 1.9);
+            float line = curve + maxAmp * ridgeShape * (1.0 - step * 0.14) + (step + 1.0) * (5.0 + heard * lift / 6.0);
+            glow += exp(-abs(r - line) / 0.8) * (1.0 - step / 6.5) * (0.22 + heard * 0.8);
+        }
+        float light = clamp(glow * dance, 0.0, 1.0);
+        color = vec4(mix(rimColor.rgb, vec3(1.0, 0.97, 0.92), 0.7), light);
+    }
+
+    // Paint the hills from the farthest to the closest
     for (int l = 0; l < 4; l++) {
         float a = angle + planetAngle * (1.0 - float(l) * 0.012);
         // Reading the ridge in short segments is what gives it that jagged edge
@@ -116,27 +131,8 @@ void main() {
         float shape = mix(ridge(seed, floor(cell) * sampleStep), ridge(seed, ceil(cell) * sampleStep), fract(cell));
         float edge = curve * (1.0 - depth[l]) + maxAmp * amp[l] * shape;
 
-        // The music lifts each ridge, the far ones most, each hearing a slightly different note
-        float heard = 0.0;
-        if (dance > 0.001) {
-            float t = 0.5 - 0.5 * cos(3.14159 * (p.x / 1600.0 * frequency[l] + phase[l]));
-            heard = (sound(t - 0.06) + sound(t - 0.03) + sound(t) * 2.0 + sound(t + 0.03) + sound(t + 0.06)) / 6.0;
-            // Bass is always the loudest, so hold it back, then squash whatever is left at the top
-            heard *= 0.55 + 0.75 * t;
-            heard = 1.0 - exp(-heard * 1.9);
-            edge += dance * heard * lift * (1.0 - float(l) * 0.2);
-        }
-
         float inside = smoothstep(edge + 0.6, edge - 0.6, r);
         color = mix(color, vec4(colors[l].rgb, 1.0), inside);
-
-        // A fine thread of light along each ridge, in the terrain's own colours
-        if (dance > 0.001) {
-            float thread = exp(-abs(r - edge) / 1.3) * dance * (0.3 + heard * 1.1);
-            vec3 light = mix(colors[l].rgb, rimColor.rgb, 0.8);
-            color.rgb = mix(color.rgb, light, clamp(thread, 0.0, 1.0));
-            color.a = max(color.a, clamp(thread, 0.0, 1.0));
-        }
     }
 
     // From space it's a real planet: continents, a day side and a night side, and a
