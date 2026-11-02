@@ -153,7 +153,7 @@ Item {
                         Desk.openMenu(slot.type, at, QsWindow.window?.screen ?? null);
                         return;
                     }
-                    if (!(mouse.modifiers & Qt.MetaModifier) && !Desk.grabbing) {
+                    if (!Desk.takeGrab() && !(mouse.modifiers & Qt.MetaModifier)) {
                         mouse.accepted = false;
                         return;
                     }

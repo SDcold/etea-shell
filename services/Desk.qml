@@ -51,7 +51,9 @@ Singleton {
 
     property string hovered: "" // the widget under the pointer, for Super + wheel
     property bool carrying: false // a widget is being dragged right now
-    property bool grabbing: false // Super + left button is down over a widget, Hyprland says
+    // When Hyprland last said Super + left button went down over a widget. A moment, not a
+    // state: let go of Super before the button and Hyprland never says it's over.
+    property real grabbedAt: 0
     property real lastGesture: 0 // when a Super gesture last landed on a widget
 
     // Hyprland's Super + drag moves windows, and swallows the click even over the empty
@@ -131,6 +133,13 @@ Singleton {
         update(type, { size: Math.round(Math.max(0.5, Math.min(1.6, size(type) + steps * 0.05)) * 100) / 100 });
     }
 
+    // Only the click Hyprland just announced counts, the next plain click must stay plain
+    function takeGrab() {
+        const fresh = Date.now() - grabbedAt < 250;
+        grabbedAt = 0;
+        return fresh;
+    }
+
     function openMenu(type, at, screen) {
         menuAt = at;
         menuScreen = screen;
@@ -154,8 +163,7 @@ Singleton {
     GlobalShortcut {
         appid: "etea"
         name: "deskGrab"
-        onPressed: root.grabbing = true
-        onReleased: root.grabbing = false
+        onPressed: root.grabbedAt = Date.now()
     }
 
     // The pointer can come and go faster than hyprctl answers, so catch up once it's done
