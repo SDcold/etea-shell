@@ -113,6 +113,9 @@ Row {
                     if (!root.sink?.audio)
                         return ["", ""];
                     return [root.sink.audio.muted ? "speaker-x" : root.sink.audio.volume > 0.5 ? "speaker-high" : "speaker-low", Config.barPercent ? Math.round(root.sink.audio.volume * 100) + "%" : ""];
+                case "keyboard":
+                    // Only worth a place with two languages or more
+                    return Keyboard.layouts.length > 1 ? ["keyboard", Keyboard.code.toUpperCase()] : ["", ""];
                 case "battery":
                     if (!root.battery?.isLaptopBattery)
                         return ["", ""];
@@ -153,7 +156,7 @@ Row {
                 }
             }
 
-            // On the volume: click to mute, scroll to adjust
+            // On the volume: right click to mute, scroll to adjust. On the keyboard: click for the next language
             Hover {
                 anchors.margins: -4
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -167,10 +170,12 @@ Row {
                             Notifs.quiet = !Notifs.quiet;
                         else
                             Menus.togglePanel("right");
+                    } else if (item.modelData === "keyboard" && mouse.button === Qt.LeftButton) {
+                        Keyboard.next();
                     } else if (item.modelData === "volume" && mouse.button === Qt.RightButton) {
                         root.sink.audio.muted = !root.sink.audio.muted;
                     } else {
-                        Menus.toggle({ volume: "sound", network: "network", bluetooth: "bluetooth", battery: "power" }[item.modelData], item.mapToItem(null, item.width / 2, 0).x);
+                        Menus.toggle({ volume: "sound", network: "network", bluetooth: "bluetooth", battery: "power", keyboard: "keyboard" }[item.modelData], item.mapToItem(null, item.width / 2, 0).x);
                     }
                 }
                 onWheel: wheel => item.modelData === "volume" && (root.sink.audio.volume = Math.max(0, Math.min(1.5, root.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))))

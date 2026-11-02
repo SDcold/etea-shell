@@ -45,6 +45,7 @@ Singleton {
         { id: "bluetooth", label: "Bluetooth", icon: "bluetooth" },
         { id: "volume", label: "Volume", icon: "speaker-high" },
         { id: "battery", label: Lang.t("Batterie"), icon: "battery-full" },
+        { id: "keyboard", label: Lang.t("Clavier"), icon: "keyboard" },
         { id: "settings", label: Lang.t("Réglages"), icon: "gear-six" },
         { id: "session", label: Lang.t("Session"), icon: "power" }
     ]
@@ -90,6 +91,7 @@ Singleton {
     property alias glassApps: saved.glassApps // windows blurred behind; with an opacity, Hyprland also fades them
     property alias nightWarmth: saved.nightWarmth // the night light's colour, in kelvin
     property alias notifSeconds: saved.notifSeconds // how long a notification stays when its app doesn't say
+    property alias keyboardLayouts: saved.keyboardLayouts // like ["us", "fr"]; empty leaves Hyprland's config alone
 
     // Times written the way the clock setting asks, 12 or 24 hours. The big clocks leave out
     // AM/PM: their numerals are the drawing, the time of day reads from the sky anyway.
@@ -130,7 +132,7 @@ Singleton {
             property string theme: "aster"
             property var customPlanets: []
             property string pace: "daily"
-            property var status: ["notifications", "network", "bluetooth", "volume", "battery", "settings", "session"]
+            property var status: ["notifications", "keyboard", "network", "bluetooth", "volume", "battery", "settings", "session"]
 
             // Widgets in the sky, for when a page is empty. x and y are shares of the screen.
             property var widgets: [
@@ -177,6 +179,7 @@ Singleton {
             property bool trayTint: false
             property int nightWarmth: 4200
             property int notifSeconds: 6
+            property var keyboardLayouts: []
             // kitty and Zen are see-through on their own and only need the blur
             property var glassApps: [
                 { class: "kitty" },

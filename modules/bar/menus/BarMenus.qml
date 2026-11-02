@@ -135,7 +135,8 @@ Scope {
                         sound: "SoundMenu.qml",
                         network: "NetworkMenu.qml",
                         bluetooth: "BluetoothMenu.qml",
-                        power: "PowerMenu.qml"
+                        power: "PowerMenu.qml",
+                        keyboard: "KeyboardMenu.qml"
                     })[panel.shown] ?? ""
             }
         }
