@@ -11,7 +11,9 @@ import qs.config
 Singleton {
     id: root
 
-    readonly property bool wanted: Desk.shown.includes("weather")
+    property int listeners: 0 // others who'd like the weather, like the logbook's sky
+    readonly property bool wanted: Desk.shown.includes("weather") || listeners > 0
+    property real lastAsked: 0
     readonly property string city: Desk.entry("weather").city ?? ""
 
     property string place: "" // the name we show
@@ -22,6 +24,16 @@ Singleton {
     property bool day: true
     property var hours: [] // the next few hours: { time, temperature, code, day }
     property string failed: ""
+    property date sunrise: new Date(new Date().setHours(6, 0, 0, 0)) // until we know better
+    property date sunset: new Date(new Date().setHours(18, 0, 0, 0))
+
+    function join() {
+        listeners += 1;
+    }
+
+    function leave() {
+        listeners = Math.max(0, listeners - 1);
+    }
 
     // What a weather code looks like and how we say it
     function look(code, day) {
@@ -45,8 +57,9 @@ Singleton {
     }
 
     function refresh() {
-        if (!wanted)
+        if (!wanted || locator.running || forecast.running)
             return;
+        lastAsked = Date.now();
         failed = "";
         if (city) {
             locator.command = ["curl", "-sf", "--max-time", "15", "-G", "https://geocoding-api.open-meteo.com/v1/search", "--data-urlencode", `name=${city}`, "-d", "count=1", "-d", `language=${Lang.code}`];
@@ -56,7 +69,11 @@ Singleton {
         locator.running = true;
     }
 
-    onWantedChanged: refresh()
+    // Back after a while: only ask again if what we have is old
+    onWantedChanged: {
+        if (wanted && (!known || Date.now() - lastAsked > 20 * 60 * 1000))
+            refresh();
+    }
     onCityChanged: {
         spot = null;
         refresh();
@@ -92,7 +109,7 @@ Singleton {
     Process {
         id: forecast
 
-        command: root.spot ? ["curl", "-sf", "--max-time", "15", `https://api.open-meteo.com/v1/forecast?latitude=${root.spot.latitude}&longitude=${root.spot.longitude}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&forecast_hours=7&timezone=auto`] : []
+        command: root.spot ? ["curl", "-sf", "--max-time", "15", `https://api.open-meteo.com/v1/forecast?latitude=${root.spot.latitude}&longitude=${root.spot.longitude}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&forecast_hours=7&daily=sunrise,sunset&forecast_days=1&timezone=auto`] : []
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -107,6 +124,11 @@ Singleton {
                         code: hourly.weather_code[i + 1],
                         day: hourly.is_day[i + 1] === 1
                     }));
+                    // Local times without a zone, which is how Date reads them anyway
+                    if (answer.daily?.sunrise?.[0]) {
+                        root.sunrise = new Date(answer.daily.sunrise[0]);
+                        root.sunset = new Date(answer.daily.sunset[0]);
+                    }
                     root.known = true;
                 } catch (error) {
                     root.failed = Lang.t("Pas de réseau.");

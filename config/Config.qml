@@ -92,6 +92,8 @@ Singleton {
     property alias nightWarmth: saved.nightWarmth // the night light's colour, in kelvin
     property alias notifSeconds: saved.notifSeconds // how long a notification stays when its app doesn't say
     property alias keyboardLayouts: saved.keyboardLayouts // like ["us", "fr"]; empty leaves Hyprland's config alone
+    property alias focusMinutes: saved.focusMinutes // the focus timer's work time
+    property alias restMinutes: saved.restMinutes // and its break
 
     // Times written the way the clock setting asks, 12 or 24 hours. The big clocks leave out
     // AM/PM: their numerals are the drawing, the time of day reads from the sky anyway.
@@ -180,6 +182,8 @@ Singleton {
             property int nightWarmth: 4200
             property int notifSeconds: 6
             property var keyboardLayouts: []
+            property int focusMinutes: 25
+            property int restMinutes: 5
             // kitty and Zen are see-through on their own and only need the blur
             property var glassApps: [
                 { class: "kitty" },
