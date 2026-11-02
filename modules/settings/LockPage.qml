@@ -6,7 +6,8 @@ import qs.config
 import qs.modules.bar
 import qs.services
 
-// The lock screen: what greets you before you type. The starry sky comes after, always.
+// The lock screen: who draws it, what greets you before you type, and whether a finger
+// is enough. The starry sky comes after, always.
 ColumnLayout {
     id: root
 
@@ -20,6 +21,23 @@ ColumnLayout {
     }
 
     SettingChoice {
+        label: Lang.t("Verrouiller avec")
+        hint: Lang.t("Super + L, le menu de session, la mise en veille et la fermeture du capot.")
+        options: [{ id: "etea", label: "ETEA" }, { id: "hyprlock", label: "hyprlock" }]
+        current: Config.lockWith
+        onPicked: id => Config.lockWith = id
+    }
+
+    SettingSwitch {
+        visible: Config.lockWith === "etea"
+        label: Lang.t("Empreinte digitale")
+        hint: Lang.t("Pose ton doigt sur le lecteur à tout moment, le mot de passe marche toujours.")
+        on: Config.lockFingerprint
+        onToggled: Config.lockFingerprint = !Config.lockFingerprint
+    }
+
+    SettingChoice {
+        visible: Config.lockWith === "etea"
         label: Lang.t("Premier écran")
         hint: Lang.t("Ce que tu vois avant de taper. Le ciel étoilé vient ensuite.")
         options: [{ id: "world", label: Lang.t("Ton monde") }, { id: "image", label: Lang.t("Une image") }]

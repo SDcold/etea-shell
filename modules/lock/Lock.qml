@@ -9,7 +9,8 @@ import qs.services
 
 // The lock screen. The first page is only the landscape; a key opens the starry sky,
 // where every key typed lights a star and her hand moves to hide it. Enter checks the
-// password. Nothing on screen ever depends on which key was pressed.
+// password. Nothing on screen ever depends on which key was pressed. A finger on the
+// reader unlocks too, whenever it comes. Settings can hand all this over to hyprlock.
 Scope {
     id: root
 
@@ -25,6 +26,11 @@ Scope {
     property string mainScreen: ""
     readonly property bool blocked: blockedUntil > now
     readonly property bool active: Menus.locked || Menus.lockPreview
+
+    // The fingerprint reader, when there is one with a finger enrolled
+    property bool fingerReady: false
+    readonly property bool listening: active && fingerReady && Config.lockFingerprint && !leaving
+    property int fingerMisses: 0 // counts wrong fingers, so the scene can react
 
     // Where the woman, her arm and the stars sit, from assets/lock/scene.json
     readonly property var scene: {
@@ -44,6 +50,69 @@ Scope {
         revealed = false;
         leaving = false;
         readCaps();
+    }
+
+    // Asked for a lock while Settings say hyprlock: hand over straight away
+    Connections {
+        target: Menus
+
+        function onLockedChanged() {
+            if (Menus.locked && Config.lockWith === "hyprlock") {
+                Menus.locked = false;
+                hyprlock.exec(["sh", "-c", "pidof hyprlock || hyprlock"]);
+            }
+        }
+    }
+
+    Process {
+        id: hyprlock
+    }
+
+    onListeningChanged: {
+        if (listening)
+            finger.start();
+        else
+            finger.active = false;
+    }
+
+    // Is there a reader, and a finger it knows?
+    Process {
+        running: true
+        command: ["sh", "-c", 'fprintd-list "$USER" 2>/dev/null']
+        stdout: StdioCollector {
+            onStreamFinished: root.fingerReady = /^\s*-\s*#\d+/m.test(text)
+        }
+    }
+
+    // A finger, at the same time as the password: whichever comes first unlocks
+    PamContext {
+        id: finger
+
+        config: "fingerprint"
+        configDirectory: Quickshell.shellPath("assets/pam")
+        onCompleted: result => {
+            if (result === PamResult.Success && root.active && !root.leaving) {
+                pam.active = false;
+                root.checking = false;
+                root.finish();
+                return;
+            }
+            // A finger it doesn't know: shake, then listen again. A timeout just listens again.
+            if (result === PamResult.Failed || result === PamResult.MaxTries)
+                root.fingerMisses += 1;
+            listenAgain.restart();
+        }
+        onError: listenAgain.restart()
+    }
+
+    Timer {
+        id: listenAgain
+
+        interval: 1200
+        onTriggered: {
+            if (root.listening && !finger.active)
+                finger.start();
+        }
     }
 
     // The key that opens the sky counts too, so nothing typed is ever lost
@@ -91,6 +160,7 @@ Scope {
 
     function finish() {
         leaving = true;
+        finger.active = false;
         letGo.restart();
     }
 
@@ -275,7 +345,7 @@ Scope {
         }
 
         function state(): string {
-            return `locked ${Menus.locked}, preview ${Menus.lockPreview}, revealed ${root.revealed}, stars ${root.stars}, checking ${root.checking}, caps ${root.capsLock}, blocked ${root.blocked}`;
+            return `locked ${Menus.locked}, preview ${Menus.lockPreview}, revealed ${root.revealed}, stars ${root.stars}, checking ${root.checking}, caps ${root.capsLock}, blocked ${root.blocked}, finger ${root.fingerReady ? (finger.active ? "listening" : "ready") : "none"}`;
         }
     }
 }

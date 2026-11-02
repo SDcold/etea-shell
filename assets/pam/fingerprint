@@ -1,0 +1,4 @@
+#%PAM-1.0
+# ETEA's lock listens for a finger with this, next to the password. One try at a time:
+# a wrong finger ends it, the lock shakes, and it listens again.
+auth required pam_fprintd.so max-tries=1 timeout=30

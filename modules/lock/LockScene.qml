@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.UPower
 import qs.config
 import qs.modules.background
 import qs.modules.bar
@@ -86,6 +87,135 @@ Item {
         visible: Config.lockImage !== ""
         source: Config.lockImage ? "file://" + Config.lockImage : ""
         fillMode: Image.PreserveAspectCrop
+    }
+
+    // What you'd glance at before unlocking, kept small in the corners of the first page:
+    // the time and what's playing on one side, the battery, the signals and the reader on
+    // the other. It all steps back as soon as you type.
+    Item {
+        id: glance
+
+        readonly property real size: root.unit
+        readonly property var battery: UPower.displayDevice
+
+        anchors.fill: parent
+        visible: root.main && opacity > 0
+        opacity: 1 - root.reveal
+
+        SystemClock {
+            id: clock
+
+            precision: SystemClock.Minutes
+        }
+
+        Column {
+            x: root.width * 0.044
+            y: root.height * 0.07
+            spacing: glance.size * 0.006
+
+            Text {
+                text: Config.time(clock.date)
+                color: Theme.skyInk
+                font.family: Theme.font
+                font.pixelSize: glance.size * 0.075
+                font.weight: Font.Medium
+                renderType: Text.CurveRendering
+            }
+
+            Text {
+                text: Qt.locale(Config.locale).toString(clock.date, Lang.t("dddd d MMMM"))
+                color: Theme.skyInk
+                font.family: Theme.font
+                font.pixelSize: glance.size * 0.022
+            }
+
+            Text {
+                visible: Music.player !== null
+                topPadding: glance.size * 0.012
+                text: `♪  ${Music.player?.trackTitle ?? ""}${Music.player?.trackArtist ? " · " + Music.player.trackArtist : ""}`
+                color: Qt.alpha(Theme.skyInk, 0.75)
+                font.family: Theme.font
+                font.pixelSize: glance.size * 0.016
+            }
+        }
+
+        Row {
+            anchors.right: parent.right
+            anchors.rightMargin: root.width * 0.044
+            y: root.height * 0.08
+            spacing: glance.size * 0.024
+
+            // The reader is listening; a finger it doesn't know turns it red for a moment
+            Icon {
+                id: reader
+
+                property bool missed: false
+
+                visible: root.lock.listening
+                anchors.verticalCenter: parent.verticalCenter
+                name: "fingerprint"
+                size: Math.round(glance.size * 0.026)
+                tint: missed ? "#f0947c" : Theme.skyInk
+
+                Connections {
+                    target: root.lock
+
+                    function onFingerMissesChanged() {
+                        reader.missed = true;
+                        unmiss.restart();
+                    }
+                }
+
+                Timer {
+                    id: unmiss
+
+                    interval: 900
+                    onTriggered: reader.missed = false
+                }
+            }
+
+            Row {
+                visible: Notifs.count > 0
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: glance.size * 0.006
+
+                Icon {
+                    anchors.verticalCenter: parent.verticalCenter
+                    name: "bell"
+                    size: Math.round(glance.size * 0.022)
+                    tint: Theme.skyInk
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Notifs.count
+                    color: Theme.skyInk
+                    font.family: Theme.font
+                    font.pixelSize: glance.size * 0.018
+                }
+            }
+
+            Row {
+                visible: glance.battery?.isLaptopBattery ?? false
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: glance.size * 0.006
+
+                Icon {
+                    anchors.verticalCenter: parent.verticalCenter
+                    name: !UPower.onBattery ? "battery-charging" : (glance.battery?.percentage ?? 1) < 0.15 ? "battery-low" : "battery-full"
+                    size: Math.round(glance.size * 0.022)
+                    tint: Theme.skyInk
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: `${Math.round((glance.battery?.percentage ?? 0) * 100)} %`
+                    color: Theme.skyInk
+                    font.family: Theme.font
+                    font.pixelSize: glance.size * 0.018
+                }
+            }
+        }
     }
 
     // Second page: the starry sky, opened through a four-pointed star
