@@ -118,6 +118,9 @@ Singleton {
     function search(text) {
         const typed = text.trim(), wanted = typed.toLowerCase(), found = [];
         const asset = name => "file://" + Quickshell.shellPath(`assets/icons/${name}.svg`);
+        // Nothing typed matches every window there is, that's the map's job, not a search
+        if (!typed)
+            return [];
 
         if (typed.startsWith(">") && typed.length > 1)
             return [{ kind: "command", label: Lang.t("Lancer {0}", typed.slice(1).trim()), icon: asset("play"), command: typed.slice(1).trim() }];
@@ -133,7 +136,8 @@ Singleton {
         for (const window of Hyprland.toplevels.values) {
             const title = window.title ?? "", kind = window.lastIpcObject?.class ?? "";
             if (title.toLowerCase().includes(wanted) || kind.toLowerCase().includes(wanted)) {
-                const app = DesktopEntries.heuristicLookup(kind);
+                // Without a class Hyprland can't say which app it is, and a guess goes badly wrong
+                const app = kind ? DesktopEntries.heuristicLookup(kind) : null;
                 found.push({ kind: "window", label: Lang.t("Aller à {0}", app?.name ?? title), icon: Quickshell.iconPath(app?.icon ?? "", "application-x-executable"), window: window });
             }
         }

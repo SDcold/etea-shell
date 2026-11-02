@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
+import qs.services
 
 // The window you're working in lights up, the others step back into the shade.
 // Hyprland does the drawing, we just hand it the values from Theme.
@@ -109,6 +110,36 @@ Scope {
     `
 
     onSettingsChanged: reapply.restart()
+
+    // While a page turns, focus lands at once: the window arriving behind the scene is
+    // already lit when the scene steps aside, instead of fading in right in front of you.
+    // Ordinary focus changes keep their slow fade.
+    readonly property bool focusQuiet: Planet.phase !== Planet.Phase.Idle
+    property bool quieted: false
+    readonly property string fadesOff: 'for _, leaf in ipairs({ "fadeSwitch", "fadeDim", "fadeShadow", "border" }) do hl.animation({ leaf = leaf, enabled = false }) end'
+    readonly property string fadesOn: `
+        hl.animation({ leaf = "border", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
+        hl.animation({ leaf = "fadeSwitch", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
+        hl.animation({ leaf = "fadeDim", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
+        hl.animation({ leaf = "fadeShadow", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
+    `
+
+    function quiet() {
+        if (fades.running || quieted === focusQuiet)
+            return;
+        quieted = focusQuiet;
+        fades.command = ["/usr/bin/hyprctl", "eval", quieted ? fadesOff : fadesOn];
+        fades.running = true;
+    }
+
+    onFocusQuietChanged: quiet()
+
+    // The phase can flip back faster than hyprctl answers, so catch up once it's done
+    Process {
+        id: fades
+
+        onExited: root.quiet()
+    }
 
     // Sliders and themes change this quickly, Hyprland only needs the final answer
     Timer {

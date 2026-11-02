@@ -55,11 +55,10 @@ Scope {
         property int chosen: 0
         property point pointer: Qt.point(width / 2, height / 2)
 
-        readonly property bool mapping: input.text.trim() === ""
-
         // Where the constellations sit, and how much room each has: four across the top, three
         // below with the biggest, the system, in the middle. Each one floats at its own depth.
-        readonly property var homes: [[0.125, 0.47, 4], [0.375, 0.44, 4], [0.625, 0.47, 4], [0.875, 0.44, 4], [0.5, 0.8, 3], [0.167, 0.8, 3], [0.833, 0.8, 3]]
+        // [x, y, share of the width it may take]. The system holds the most apps, so half a row.
+        readonly property var homes: [[0.125, 0.46, 0.25], [0.375, 0.43, 0.25], [0.625, 0.46, 0.25], [0.875, 0.43, 0.25], [0.5, 0.8, 0.5], [0.125, 0.8, 0.25], [0.875, 0.8, 0.25]]
         readonly property var depths: [1, 0.7, 1.25, 0.85, 1.1, 0.8, 1.2]
 
         // Joined like a real constellation: each star to its nearest neighbour, no loops
@@ -87,20 +86,21 @@ Scope {
 
         function refresh() {
             const stars = [], groups = [], wide = screen.width, tall = screen.height;
-            if (mapping) {
+            // Read the box right now: the mapping binding may not have caught up with the text yet
+            if (input.text.trim() === "") {
                 // A sunflower spiral per family: the most used at the heart, the rest winding out
                 Apps.map().forEach((family, group) => {
                     if (!family.stars.length)
                         return;
                     const home = homes[group % homes.length], cx = wide * home[0], cy = tall * home[1];
                     // The spiral fills an ellipse of its slot: spaced so it all fits, never sparse
-                    const rx = wide / home[2] / 2 * 0.82, ry = tall * 0.135, count = family.stars.length;
-                    const step = Math.min(34, Math.sqrt(rx * ry / count));
+                    const rx = wide * home[2] / 2 * 0.85, ry = tall * 0.145, count = family.stars.length;
+                    const step = Math.min(42, Math.sqrt(rx * ry / count));
                     const sx = Math.sqrt(rx / ry), sy = Math.sqrt(ry / rx);
                     const first = stars.length;
                     family.stars.forEach((entry, rank) => {
                         const angle = rank * 2.39996, reach = step * Math.sqrt(rank + (rank ? 0.6 : 0));
-                        stars.push(Object.assign({}, entry, { x: cx + Math.cos(angle) * reach * sx, y: cy + Math.sin(angle) * reach * sy, rank: rank, fit: Math.min(1, step / 30) }));
+                        stars.push(Object.assign({}, entry, { x: cx + Math.cos(angle) * reach * sx, y: cy + Math.sin(angle) * reach * sy, rank: rank, fit: Math.min(1, step / 36) }));
                     });
                     const last = stars.length - 1;
                     groups.push({
@@ -353,7 +353,7 @@ Scope {
                             // Stars swell as the pointer gets close. Your favourites sit at the heart,
                             // bigger; the rest get smaller as they wind out.
                             readonly property real swell: 1 + 0.5 * Math.exp(-reach * reach / 9000)
-                            readonly property real weight: (modelData.rank === 0 ? 1.25 : modelData.rank < 5 ? 1 : Math.max(0.5, 0.8 - modelData.rank * 0.006)) * (modelData.fit ?? 1)
+                            readonly property real weight: (modelData.rank === 0 ? 1.3 : modelData.rank < 5 ? 1.05 : Math.max(0.75, 0.92 - modelData.rank * 0.004)) * (modelData.fit ?? 1)
                             property bool carried: false
 
                             x: carried ? panel.pointer.x - cluster.shiftX : modelData.x
@@ -386,15 +386,39 @@ Scope {
                                 }
 
                                 Image {
-                                    visible: !node.modelData.glyph
+                                    id: picture
+
+                                    visible: !node.modelData.glyph && status === Image.Ready
                                     x: -width / 2
                                     y: -height / 2
-                                    width: 44
-                                    height: 44
+                                    width: 48
+                                    height: 48
                                     sourceSize: Qt.size(96, 96)
                                     smooth: true
                                     source: node.modelData.icon ?? ""
-                                    opacity: node.chosen ? 1 : 0.8
+                                    opacity: node.chosen ? 1 : 0.85
+                                }
+
+                                // No icon to be found anywhere: the app's initial, in a disc of light
+                                Rectangle {
+                                    visible: !node.modelData.glyph && picture.status !== Image.Ready && picture.status !== Image.Loading
+                                    x: -width / 2
+                                    y: -height / 2
+                                    width: 40
+                                    height: 40
+                                    radius: 20
+                                    color: Qt.alpha(Theme.windowLit, 0.28)
+                                    border.width: 1
+                                    border.color: Qt.alpha(Theme.windowLit, 0.6)
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: (node.modelData.label ?? "?").charAt(0).toUpperCase()
+                                        color: Theme.text
+                                        font.family: Theme.font
+                                        font.pixelSize: 18
+                                        font.weight: Font.Medium
+                                    }
                                 }
 
                                 // An emoji is its own icon

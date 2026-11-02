@@ -318,9 +318,9 @@ Singleton {
         distance = 0;
         travel = 0;
         phase = Planet.Phase.Settling;
-        // Focus just moved behind the scene and takes a while to fade in.
-        // Pulling the scene away before that shows the windows flickering as they catch up.
-        revealDelay.interval = Math.max(24, Theme.windowFocusSpeed * 100 + 40 - Math.max(spin.duration, 0));
+        // Focus just moved behind the scene. Its fades are off while the page turns (see
+        // Illumination), so it's already there: a couple of frames for Hyprland to draw it.
+        revealDelay.interval = 40;
         revealDelay.restart();
     }
 
