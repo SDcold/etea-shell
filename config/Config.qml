@@ -16,9 +16,9 @@ Singleton {
     // What the bar can hold, and where each piece can go
     readonly property var barModuleChoices: [
         { id: "pages", label: "Pages", icon: "layout" },
-        { id: "clock", label: "Heure", icon: "nightlight" },
+        { id: "clock", label: "Heure", icon: "timer" },
         { id: "media", label: "Musique", icon: "music" },
-        { id: "tray", label: "Plateau", icon: "clipboard" },
+        { id: "tray", label: "Plateau", icon: "apps" },
         { id: "status", label: "Statut", icon: "wifi-high" },
         { id: "tools", label: "Outils", icon: "picker" },
         { id: "resources", label: "Ressources", icon: "cpu" }
@@ -36,13 +36,13 @@ Singleton {
     ]
 
     readonly property var statusChoices: [
-        { id: "notifications", label: "Notifications" },
-        { id: "network", label: "Réseau" },
-        { id: "bluetooth", label: "Bluetooth" },
-        { id: "volume", label: "Volume" },
-        { id: "battery", label: "Batterie" },
-        { id: "settings", label: "Réglages" },
-        { id: "session", label: "Session" }
+        { id: "notifications", label: "Notifications", icon: "bell" },
+        { id: "network", label: "Réseau", icon: "wifi-high" },
+        { id: "bluetooth", label: "Bluetooth", icon: "bluetooth" },
+        { id: "volume", label: "Volume", icon: "speaker-high" },
+        { id: "battery", label: "Batterie", icon: "battery-full" },
+        { id: "settings", label: "Réglages", icon: "gear-six" },
+        { id: "session", label: "Session", icon: "power" }
     ]
 
     property string preview: "" // a world being tried on, never saved
