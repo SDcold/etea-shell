@@ -10,10 +10,11 @@ Singleton {
     id: root
 
     property var remembered: null
+    property var chosen: null // picked by hand in the media menu, it wins while it's around
 
+    readonly property var players: Mpris.players.values.filter(p => (p.trackTitle ?? "") !== "")
     readonly property var player: {
-        const players = Mpris.players.values.filter(p => (p.trackTitle ?? "") !== "");
-        return players.find(p => p.isPlaying) ?? players.find(p => p === remembered) ?? players.find(p => p.playbackState === MprisPlaybackState.Paused) ?? players[0] ?? null;
+        return players.find(p => p === chosen) ?? players.find(p => p.isPlaying) ?? players.find(p => p === remembered) ?? players.find(p => p.playbackState === MprisPlaybackState.Paused) ?? players[0] ?? null;
     }
 
     // A beat later, so the choice above isn't changing what it depends on

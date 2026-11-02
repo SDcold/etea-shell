@@ -24,6 +24,45 @@ ColumnLayout {
         name: root.player?.trackTitle ?? "etea"
     }
 
+    // Several players: pick the one everything follows
+    Flow {
+        visible: Music.players.length > 1
+        Layout.fillWidth: true
+        spacing: 8
+
+        Repeater {
+            model: Music.players
+
+            Rectangle {
+                required property var modelData
+                readonly property bool current: modelData === root.player
+
+                width: name.implicitWidth + 24
+                height: 28
+                radius: 14
+                color: Qt.alpha(Menus.tint, current ? 0.3 : 0.1)
+                border.width: 1
+                border.color: Qt.alpha(Menus.tint, current ? 0.7 : 0.2)
+
+                Text {
+                    id: name
+
+                    anchors.centerIn: parent
+                    text: parent.modelData.identity || parent.modelData.desktopEntry || "?"
+                    color: Theme.text
+                    font.family: Theme.font
+                    font.pixelSize: 12
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onPressed: Music.chosen = parent.modelData
+                }
+            }
+        }
+    }
+
     Text {
         visible: !root.player
         text: Lang.t("Rien en cours de lecture.")

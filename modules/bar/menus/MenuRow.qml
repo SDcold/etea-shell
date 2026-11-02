@@ -12,8 +12,11 @@ Item {
     property string detail: ""
     property bool active: false
     property real level: -1 // shown as a row of stars, when there is one
+    property string action: "" // a second thing to do, offered at the far right on hover
+    readonly property bool offering: action !== "" && (pointer.containsMouse || other.containsMouse)
 
     signal picked()
+    signal acted()
 
     implicitWidth: 280
     implicitHeight: 34
@@ -62,10 +65,12 @@ Item {
 
         StarLevel {
             visible: root.level >= 0
+            opacity: root.offering ? 0 : 1
             level: root.level
         }
 
         Text {
+            opacity: root.offering ? 0 : 1
             text: root.detail
             color: Qt.alpha(Theme.text, 0.5)
             font.family: Theme.font
@@ -82,6 +87,27 @@ Item {
         onPressed: mouse => {
             ripple.burst(mouse.x, mouse.y);
             root.picked();
+        }
+    }
+
+    Text {
+        visible: root.offering
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.action
+        color: Menus.tint
+        font.family: Theme.font
+        font.pixelSize: 11
+
+        MouseArea {
+            id: other
+
+            anchors.fill: parent
+            anchors.margins: -6
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onPressed: root.acted()
         }
     }
 }

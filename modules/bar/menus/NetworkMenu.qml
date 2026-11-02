@@ -1,9 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Io
 import Quickshell.Networking
 import qs.config
 
-// Wi-Fi on or off, and the networks in range.
+// Wi-Fi on or off, the networks in range, and your VPNs.
 ColumnLayout {
     id: root
 
@@ -14,6 +15,11 @@ ColumnLayout {
     readonly property real cardRise: Networking.wifiEnabled ? 0.12 : 0.05
 
     property string asking: ""
+    property var vpns: [] // { name, uuid, active }, from NetworkManager
+
+    function readVpns() {
+        vpnReader.running = true;
+    }
 
     spacing: 6
     width: 320
@@ -22,6 +28,23 @@ ColumnLayout {
     Component.onCompleted: {
         if (wifi)
             wifi.scannerEnabled = true;
+        readVpns();
+    }
+
+    Process {
+        id: vpnReader
+
+        command: ["nmcli", "-t", "-f", "NAME,TYPE,ACTIVE,UUID", "connection", "show"]
+        stdout: StdioCollector {
+            onStreamFinished: root.vpns = text.split("\n").map(line => line.split(":")).filter(fields => fields[1] === "vpn" || fields[1] === "wireguard").map(fields => ({ name: fields[0], active: fields[2] === "yes", uuid: fields[3] }))
+        }
+    }
+
+    // A VPN takes a moment to come up or go down, look again once it has
+    Process {
+        id: vpnSwitch
+
+        onExited: root.readVpns()
     }
     Component.onDestruction: {
         if (wifi)
@@ -67,6 +90,8 @@ ColumnLayout {
             label: modelData.name
             level: modelData.signalStrength
             active: modelData.connected
+            action: modelData.known ? Lang.t("Oublier") : ""
+            onActed: modelData.forget()
             onPicked: {
                 if (modelData.connected)
                     modelData.disconnect();
@@ -74,6 +99,28 @@ ColumnLayout {
                     modelData.connect();
                 else
                     root.asking = modelData.name;
+            }
+        }
+    }
+
+    MenuTitle {
+        visible: root.vpns.length > 0
+        Layout.topMargin: 6
+        text: "VPN"
+    }
+
+    Repeater {
+        model: root.vpns
+
+        MenuRow {
+            required property var modelData
+
+            Layout.fillWidth: true
+            label: modelData.name
+            active: modelData.active
+            onPicked: {
+                vpnSwitch.command = ["nmcli", "connection", modelData.active ? "down" : "up", "uuid", modelData.uuid];
+                vpnSwitch.running = true;
             }
         }
     }
