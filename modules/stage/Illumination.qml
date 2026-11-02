@@ -149,5 +149,9 @@ Scope {
         }
     }
 
-    Component.onCompleted: apply.running = true
+    // Started straight from Hyprland, the shell takes its shortcuts itself
+    Component.onCompleted: {
+        apply.running = true;
+        shortcuts.running = true;
+    }
 }

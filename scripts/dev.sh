@@ -156,7 +156,7 @@ logs)
     qs log -p "$ROOT" -f
     ;;
 *)
-    echo "Usage : $0 {start|stop|logs}" >&2
+    echo "Usage: $0 {start|stop|shortcuts|logs}" >&2
     exit 1
     ;;
 esac
