@@ -51,7 +51,7 @@ Scope {
         hl.animation({ leaf = "windowsIn", enabled = false })
 
         hl.window_rule({ match = { title = "Réglages ETEA" }, float = true, center = true, size = { 1040, 700 } })
-        -- The side panels draw their own morph, a layer fade on top would make them see-through
+        -- The side panels unfold through their own star, a layer fade on top would make them see-through
         hl.layer_rule({ match = { namespace = "^etea:panel-.*" }, no_anim = true })
 
         -- A new window waits a beat so ETEA can get the sky in front of it: this curve sits
