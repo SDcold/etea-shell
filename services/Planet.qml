@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import qs.config
 
 // The brain of the page rotation. Stand-ins take the place of the real windows,
@@ -73,6 +74,24 @@ Singleton {
     property var photoOwner: ({}) // photos are kept per slot of a group, this says whose each one is
     property bool arrivalKnown: false
     property real pressedAt: 0
+
+    // While a page turns, focus lands at once: the window arriving behind the scene is
+    // already lit when the scene steps aside, instead of fading in right in front of you.
+    // Ordinary focus changes keep their slow fade.
+    readonly property bool focusQuiet: phase !== Planet.Phase.Idle
+    property bool quieted: false
+    readonly property string fadesOff: 'for _, leaf in ipairs({ "fadeSwitch", "fadeDim", "fadeShadow", "border" }) do hl.animation({ leaf = leaf, enabled = false }) end'
+    readonly property string fadesOn: `for _, leaf in ipairs({ "fadeSwitch", "fadeDim", "fadeShadow", "border" }) do hl.animation({ leaf = leaf, enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" }) end`
+
+    function quiet() {
+        if (fades.running || quieted === focusQuiet)
+            return;
+        quieted = focusQuiet;
+        fades.command = ["/usr/bin/hyprctl", "eval", quieted ? fadesOff : fadesOn];
+        fades.running = true;
+    }
+
+    onFocusQuietChanged: quiet()
 
     signal photoNeeded(int page, int slot)
     signal worldWanted(string id) // a new world picked outside orbit, the stage wipes it in
@@ -571,4 +590,11 @@ Singleton {
     }
 
     Component.onCompleted: resting = (current - 1) * step
+
+    // The phase can flip back faster than hyprctl answers, so catch up once it's done
+    Process {
+        id: fades
+
+        onExited: root.quiet()
+    }
 }
