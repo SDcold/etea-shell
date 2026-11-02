@@ -31,7 +31,7 @@ Scope {
         id: panel
 
         readonly property var actions: [
-            { icon: "lock", label: Lang.t("Verrouiller"), tint: "#8fc7e8", command: ["loginctl", "lock-session"] },
+            { icon: "lock", label: Lang.t("Verrouiller"), tint: "#8fc7e8", run: () => Menus.locked = true },
             { icon: "sleep", label: Lang.t("Veille"), tint: "#b9a2f0", command: ["systemctl", "suspend"] },
             { icon: "logout", label: Lang.t("Déconnecter"), tint: "#ffc98a", confirm: true, command: ["/usr/bin/hyprctl", "dispatch", "hl.dsp.exit()"] },
             { icon: "restart", label: Lang.t("Redémarrer"), tint: "#e98fb0", confirm: true, command: ["systemctl", "reboot"] },
@@ -51,7 +51,10 @@ Scope {
                 return;
             }
             Menus.sessionOpen = false;
-            launcher.exec(action.command);
+            if (action.run)
+                action.run();
+            else
+                launcher.exec(action.command);
         }
 
         function move(step) {

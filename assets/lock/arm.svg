@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 130">
+  <!-- Placeholder: the arm and its open hand, pointing right from the shoulder at (40, 65) -->
+  <defs>
+    <linearGradient id="arm" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#14122a"/>
+      <stop offset="0.75" stop-color="#2a2340"/>
+      <stop offset="1" stop-color="#3a3052"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#arm)" d="M20 40 C120 34 260 42 400 50 C420 44 440 30 470 26 C478 10 500 4 512 8 C530 0 548 4 556 14 C572 10 590 18 588 30 C600 40 596 56 584 62 C596 72 594 92 576 96 C566 112 540 116 520 108 C490 112 460 100 440 84 C300 90 140 98 20 92 C4 82 4 50 20 40 Z"/>
+  <path fill="none" stroke="#f3dcff" stroke-opacity="0.35" stroke-width="2" d="M400 50 C420 44 440 30 470 26 C478 10 500 4 512 8 C530 0 548 4 556 14 C572 10 590 18 588 30"/>
+</svg>

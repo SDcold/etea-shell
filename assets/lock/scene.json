@@ -1,0 +1,10 @@
+{
+    "_help": "Where everything sits on the lock screen. Lengths are shares of the screen height, x is measured from the middle of the screen. Angles are in degrees, 0 points right and they turn clockwise, so -90 is straight up.",
+    "body": { "file": "body.svg", "x": 0.18, "bottom": 1.06, "height": 0.62, "blur": 0.55 },
+    "arm": { "file": "arm.svg", "width": 0.5, "pivot": [0.0667, 0.5], "hand": 0.8667 },
+    "shoulder": [0.39, 0.82],
+    "rest": 70,
+    "arc": [-30, -160],
+    "step": 8,
+    "rowGap": 0.07
+}

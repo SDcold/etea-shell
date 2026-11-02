@@ -6,6 +6,7 @@ import qs.modules.bar
 import qs.modules.bar.menus
 import qs.modules.launcher
 import qs.modules.notifications
+import qs.modules.lock
 import qs.modules.osd
 import qs.modules.panels
 import qs.modules.session
@@ -23,6 +24,7 @@ ShellRoot {
     Launcher {}
     Notifications {}
     Panels {}
+    Lock {}
     Settings {}
     Session {}
     Osd {}

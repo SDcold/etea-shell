@@ -72,6 +72,8 @@ take_pages() {
         hl.unbind("SUPER + SUPER_R")
         hl.bind("SUPER + SUPER_L", hl.dsp.global("etea:launcher"), { release = true })
         hl.bind("SUPER + SUPER_R", hl.dsp.global("etea:launcher"), { release = true })
+        hl.unbind("SUPER + L")
+        hl.bind("SUPER + L", hl.dsp.global("etea:lock"))
         hl.unbind("SUPER + A")
         hl.bind("SUPER + A", hl.dsp.global("etea:panelLeft"))
         hl.unbind("SUPER + N")

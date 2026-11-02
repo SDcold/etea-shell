@@ -13,6 +13,7 @@ Item {
     property real horizon: 1 - Theme.terrainHeight
     property real space: 0
     property real groundOpacity: 1
+    property bool showWidgets: true
 
     // Four sound levels at a time, the way the shader wants them
     function bands(first) {
@@ -56,7 +57,7 @@ Item {
     Widgets {
         anchors.fill: parent
         opacity: 1 - root.space * 3
-        visible: opacity > 0
+        visible: root.showWidgets && opacity > 0
     }
 
     ShaderEffect {

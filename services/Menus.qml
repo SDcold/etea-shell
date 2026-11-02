@@ -14,6 +14,8 @@ Singleton {
     property bool sessionOpen: false
     property string lastClosed: ""
 
+    property bool locked: false // the real lock, the session is shut until the password is right
+    property bool lockPreview: false // the same scene in an ordinary window, Escape leaves it
     property bool captureOpen: false
     property bool clipboardOpen: false
 
