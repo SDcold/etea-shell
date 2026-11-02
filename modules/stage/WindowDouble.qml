@@ -15,6 +15,8 @@ Item {
     required property real screenY
     property Item photo: null
     property bool lit: false
+    property bool live: false // keep the window playing on top of its photo while the page turns
+    readonly property bool playing: live && Config.livePages
 
     // A window can close mid-spin and take its details with it
     readonly property var info: toplevel?.lastIpcObject?.size ? toplevel.lastIpcObject : ({ at: [0, 0], size: [0, 0] })
@@ -52,11 +54,26 @@ Item {
 
             sourceComponent: ScreencopyView {
                 captureSource: root.toplevel?.wayland ?? null
-                live: false
+                live: root.playing
                 onHasContentChanged: {
                     if (hasContent)
                         Planet.noteCaptured();
                 }
+            }
+        }
+
+        // While the page turns, the window keeps playing over its photo: a video runs on,
+        // a cursor keeps blinking. The photo underneath still brings the sky, the border
+        // and the shadow, and shows until the first live frame arrives.
+        Loader {
+            active: root.playing && root.photo !== null
+            anchors.fill: parent
+            anchors.margins: root.edge
+
+            sourceComponent: ScreencopyView {
+                captureSource: root.toplevel?.wayland ?? null
+                live: true
+                opacity: hasContent ? 1 : 0
             }
         }
     }

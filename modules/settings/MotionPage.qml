@@ -20,4 +20,11 @@ ColumnLayout {
         current: Config.pace
         onPicked: id => Config.pace = id
     }
+
+    SettingSwitch {
+        label: Lang.t("Fenêtres vivantes")
+        hint: Lang.t("Les vidéos et animations continuent pendant que la page tourne. Coupe-le sur une machine modeste.")
+        on: Config.livePages
+        onToggled: Config.livePages = !Config.livePages
+    }
 }

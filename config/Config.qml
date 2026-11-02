@@ -54,6 +54,7 @@ Singleton {
     property alias theme: saved.theme
     property alias customPlanets: saved.customPlanets
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
+    property alias livePages: saved.livePages // windows keep playing while the page turns
     property alias status: saved.status
     property alias widgets: saved.widgets
     property alias widgetStyle: saved.widgetStyle // "sky" or "celestial"
@@ -134,6 +135,7 @@ Singleton {
             property string theme: "aster"
             property var customPlanets: []
             property string pace: "daily"
+            property bool livePages: true
             property var status: ["notifications", "keyboard", "network", "bluetooth", "volume", "battery", "settings", "session"]
 
             // Widgets in the sky, for when a page is empty. x and y are shares of the screen.

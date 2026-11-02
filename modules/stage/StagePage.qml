@@ -64,6 +64,8 @@ Item {
             lit: index === root.windows.length - 1
             toplevel: modelData
             photo: root.photo
+            // Live only for the two pages turning past, orbit would film every window at once
+            live: !root.orbitCard
             screenX: root.screenX
             screenY: root.screenY
         }
