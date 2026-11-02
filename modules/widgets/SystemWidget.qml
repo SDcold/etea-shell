@@ -24,10 +24,11 @@ Item {
         y: 16
         spacing: 26
 
+        // Only ids here: values in the model would rebuild both gauges on every reading
         Repeater {
             model: [
-                { label: Lang.t("Processeur"), value: Machine.cpu },
-                { label: Lang.t("Mémoire"), value: Machine.memory }
+                { id: "cpu", label: Lang.t("Processeur") },
+                { id: "memory", label: Lang.t("Mémoire") }
             ]
 
             Item {
@@ -35,14 +36,24 @@ Item {
 
                 required property var modelData
 
-                property real shown: modelData.value
+                readonly property real value: modelData.id === "cpu" ? Machine.cpu : Machine.memory
+                property real shown: 0
 
                 width: 110
                 height: 128
 
+                // Behind windows the gauge holds still
+                Binding on shown {
+                    when: Planet.pageEmpty
+                    value: gauge.value
+                    restoreMode: Binding.RestoreNone
+                }
+
                 Behavior on shown {
                     NumberAnimation { duration: 900; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
                 }
+
+                Component.onCompleted: shown = value
 
                 onShownChanged: ring.requestPaint()
 
@@ -82,7 +93,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: Math.round(gauge.modelData.value * 100)
+                        text: Math.round(gauge.shown * 100)
                         color: Theme.text
                         font.family: Theme.font
                         font.pixelSize: 22

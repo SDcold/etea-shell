@@ -80,13 +80,19 @@ Variants {
             // Fade as one flat picture, or the sky would shine through the windows
             layer.enabled: stage.showing
 
-            World {
+            // Built while the photos are taken, gone at rest: even unseen, every clock tick and
+            // gauge in it would redraw this whole window, on top of every app
+            Loader {
                 anchors.fill: parent
-                angle: Planet.resting + Planet.travel - Planet.handTurn
-                radius: stage.planetRadius
-                horizon: stage.planetTop / stage.screenHeight
-                space: Math.min(1, Planet.altitude * 1.6)
-                groundOpacity: 1 - Planet.systemLevel
+                active: Planet.phase !== Planet.Phase.Idle
+
+                sourceComponent: World {
+                    angle: Planet.resting + Planet.travel - Planet.handTurn
+                    radius: stage.planetRadius
+                    horizon: stage.planetTop / stage.screenHeight
+                    space: Math.min(1, Planet.altitude * 1.6)
+                    groundOpacity: 1 - Planet.systemLevel
+                }
             }
 
             // Your pages, standing around the planet

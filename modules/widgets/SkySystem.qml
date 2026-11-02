@@ -22,14 +22,23 @@ Row {
             required property var modelData
 
             readonly property real value: modelData.id === "cpu" ? Machine.cpu : Machine.memory
-            readonly property color ink: value > 0.85 ? "#f0947c" : Theme.skyInk
-            property real shown: value
+            readonly property color ink: shown > 0.85 ? "#f0947c" : Theme.skyInk
+            property real shown: 0
 
             spacing: root.sky * 0.008
+
+            // Behind windows the reading holds still: each glide redraws the whole sky
+            Binding on shown {
+                when: Planet.pageEmpty
+                value: reading.value
+                restoreMode: Binding.RestoreNone
+            }
 
             Behavior on shown {
                 NumberAnimation { duration: 900; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
             }
+
+            Component.onCompleted: shown = value
 
             Text {
                 text: reading.modelData.label

@@ -2,12 +2,12 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Wayland
 import qs.config
 import qs.modules.bar
 import qs.modules.bar.menus
+import qs.services
 
 // A small porthole that answers the volume and brightness keys. Its horizon
 // climbs with the level, so you can read it without reading it.
@@ -16,14 +16,12 @@ Scope {
 
     readonly property var sink: Pipewire.defaultAudioSink
     property string kind: "volume"
-    property real brightness: -1
-    property real maxBrightness: 1
     property bool awake: false
     property bool showing: false
 
     readonly property real volume: sink?.audio?.volume ?? 0
     readonly property bool muted: sink?.audio?.muted ?? false
-    readonly property real level: kind === "volume" ? (muted ? 0 : Math.min(1, volume)) : Math.max(0, brightness)
+    readonly property real level: kind === "volume" ? (muted ? 0 : Math.min(1, volume)) : Brightness.value
     readonly property string icon: kind === "brightness" ? "brightness" : muted ? "speaker-x" : volume > 0.5 ? "speaker-high" : "speaker-low"
 
     function show(what) {
@@ -55,32 +53,14 @@ Scope {
         onTriggered: root.showing = false
     }
 
-    // The screen doesn't announce its brightness, so we peek at it a few times a second
-    Process {
-        id: reader
+    // Brightness keys change it behind our back, the service notices
+    Connections {
+        target: Brightness
 
-        command: ["sh", "-c", "cat /sys/class/backlight/*/brightness /sys/class/backlight/*/max_brightness 2>/dev/null | head -2"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const [now, most] = text.trim().split("\n").map(Number);
-                if (!most)
-                    return;
-                const value = now / most;
-                if (root.brightness >= 0 && Math.abs(value - root.brightness) > 0.001) {
-                    root.brightness = value;
-                    root.show("brightness");
-                } else {
-                    root.brightness = value;
-                }
-            }
+        function onValueChanged() {
+            if (Brightness.known)
+                root.show("brightness");
         }
-    }
-
-    Timer {
-        running: true
-        repeat: true
-        interval: 400
-        onTriggered: reader.running = true
     }
 
     PanelWindow {

@@ -127,9 +127,22 @@ Item {
         }
     }
 
+    // Hands off the keyboard and mouse, nothing is about to open: the photos rest.
+    // The first touch takes a new one straight away.
+    IdleMonitor {
+        id: idle
+
+        timeout: 8
+        respectInhibitors: false
+        onIsIdleChanged: {
+            if (!isIdle && root.active && !root.frozen)
+                recent.captureFrame();
+        }
+    }
+
     // Keeps the photo fresh, but never while something is playing over the screen
     Timer {
-        running: root.active && !root.frozen && Planet.phase === Planet.Phase.Idle
+        running: root.active && !root.frozen && !idle.isIdle && Planet.phase === Planet.Phase.Idle
         repeat: true
         interval: Theme.openPhotoEvery
         onTriggered: recent.captureFrame()

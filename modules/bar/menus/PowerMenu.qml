@@ -1,15 +1,14 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
 import Quickshell.Services.UPower
 import qs.config
+import qs.services
 
 // Battery, power profile and screen brightness.
 ColumnLayout {
     id: root
 
     readonly property var battery: UPower.displayDevice
-    property real brightness: 0
 
     function timeLeft() {
         const seconds = UPower.onBattery ? battery.timeToEmpty : battery.timeToFull;
@@ -27,23 +26,6 @@ ColumnLayout {
 
     spacing: 6
     width: 320
-
-    // Asks brightnessctl how bright the screen is, once when the menu opens
-    Process {
-        running: true
-        command: ["brightnessctl", "-m"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const percent = text.split(",")[3];
-                if (percent)
-                    root.brightness = parseInt(percent) / 100;
-            }
-        }
-    }
-
-    Process {
-        id: setBrightness
-    }
 
     RowLayout {
         Layout.fillWidth: true
@@ -95,10 +77,7 @@ ColumnLayout {
 
     MenuSlider {
         Layout.fillWidth: true
-        value: root.brightness
-        onMoved: value => {
-            root.brightness = Math.max(0.02, value);
-            setBrightness.exec(["brightnessctl", "s", `${Math.round(root.brightness * 100)}%`]);
-        }
+        value: Brightness.value
+        onMoved: value => Brightness.set(value)
     }
 }
