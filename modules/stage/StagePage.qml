@@ -40,9 +40,11 @@ Item {
         }
     ]
 
-    // An empty page still needs to be there, so you can see where to land
+    // An empty page still needs to be there, so you can see where to land. Coming down it
+    // fades with the climb, or its outline would fill the screen and vanish at once.
     Rectangle {
-        visible: root.orbitCard && root.windows.length === 0
+        visible: root.orbitCard && root.windows.length === 0 && opacity > 0
+        opacity: Math.min(1, Planet.altitude * 2.5)
         anchors.fill: parent
         anchors.margins: Theme.windowGapOuter
         anchors.topMargin: (Theme.barOnTop ? Theme.barReserve : 0) + Theme.windowGapOuter

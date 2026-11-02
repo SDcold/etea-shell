@@ -201,9 +201,13 @@ Scope {
             anchors.fill: parent
             anchors.topMargin: Theme.barReserve + 30
             anchors.bottomMargin: 30
-            anchors.leftMargin: 60
-            anchors.rightMargin: 60
-            spacing: 22
+            // The scrolling area reaches a little past the content, so the cards' stars and
+            // ink have room; the margins give that room back to keep everything in place
+            readonly property int room: 16
+
+            anchors.leftMargin: 60 - room
+            anchors.rightMargin: 60 - room
+            spacing: 22 - room
             opacity: panel.shown
 
             transform: Translate {
@@ -212,6 +216,8 @@ Scope {
 
             RowLayout {
                 Layout.fillWidth: true
+                Layout.leftMargin: parent.room
+                Layout.rightMargin: parent.room
                 spacing: 18
 
                 Text {
@@ -261,15 +267,21 @@ Scope {
 
             // Three columns of constellations, filled from the shortest one
             Flickable {
+                id: scroller
+
+                readonly property int room: parent.room
+
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                contentHeight: flow.implicitHeight
+                contentHeight: flow.implicitHeight + room * 2
                 clip: true
 
                 RowLayout {
                     id: flow
 
-                    width: parent.width
+                    x: scroller.room
+                    y: scroller.room
+                    width: parent.width - scroller.room * 2
                     spacing: 18
 
                     Repeater {
