@@ -49,7 +49,7 @@ ColumnLayout {
 
     Text {
         visible: (root.adapter?.enabled ?? false) && root.known.length === 0
-        text: "Aucun appareil connu."
+        text: Lang.t("Aucun appareil connu.")
         color: Qt.alpha(Theme.text, 0.6)
         font.family: Theme.font
         font.pixelSize: 12

@@ -10,60 +10,60 @@ ColumnLayout {
     function shownAndHidden(chosen, choices) {
         const ids = choices.map(choice => choice.id);
         return [
-            { id: "shown", label: "Affichés", items: chosen.filter(id => ids.includes(id)) },
-            { id: "hidden", label: "Masqués", items: ids.filter(id => !chosen.includes(id)) }
+            { id: "shown", label: Lang.t("Affichés"), items: chosen.filter(id => ids.includes(id)) },
+            { id: "hidden", label: Lang.t("Masqués"), items: ids.filter(id => !chosen.includes(id)) }
         ];
     }
 
     spacing: 18
 
     Text {
-        text: "Barre"
+        text: Lang.t("Barre")
         color: Theme.text
         font.family: Theme.font
         font.pixelSize: 20
     }
 
     SettingSection {
-        text: "Apparence"
+        text: Lang.t("Apparence")
     }
 
     SettingChoice {
-        label: "Position"
-        options: [{ id: "top", label: "En haut" }, { id: "bottom", label: "En bas" }]
+        label: Lang.t("Position")
+        options: [{ id: "top", label: Lang.t("En haut") }, { id: "bottom", label: Lang.t("En bas") }]
         current: Config.barPosition
         onPicked: id => Config.barPosition = id
     }
 
     SettingChoice {
-        label: "Taille"
-        options: [{ id: "compact", label: "Compacte" }, { id: "normal", label: "Normale" }, { id: "large", label: "Grande" }]
+        label: Lang.t("Taille")
+        options: [{ id: "compact", label: Lang.t("Compacte") }, { id: "normal", label: Lang.t("Normale") }, { id: "large", label: Lang.t("Grande") }]
         current: Config.barSize
         onPicked: id => Config.barSize = id
     }
 
     SettingChoice {
-        label: "Style"
-        hint: "Le texte à même le ciel, chaque groupe sur son îlot, ou une seule bande."
-        options: [{ id: "sky", label: "Ciel nu" }, { id: "islands", label: "Îlots" }, { id: "band", label: "Bande" }]
+        label: Lang.t("Style")
+        hint: Lang.t("Le texte à même le ciel, chaque groupe sur son îlot, ou une seule bande.")
+        options: [{ id: "sky", label: Lang.t("Ciel nu") }, { id: "islands", label: Lang.t("Îlots") }, { id: "band", label: Lang.t("Bande") }]
         current: Config.barStyle
         onPicked: id => Config.barStyle = id
     }
 
     SettingSwitch {
-        label: "Coins actifs"
-        hint: "Un clic dans un coin du côté de la barre ouvre le panneau de ce côté."
+        label: Lang.t("Coins actifs")
+        hint: Lang.t("Un clic dans un coin du côté de la barre ouvre le panneau de ce côté.")
         on: Config.hotCorners
         onToggled: Config.hotCorners = !Config.hotCorners
     }
 
     SettingSection {
-        text: "Disposition"
+        text: Lang.t("Disposition")
     }
 
     Text {
         Layout.fillWidth: true
-        text: "Glisse les modules d'une zone à l'autre. Ceux qui sont rangés n'apparaissent pas."
+        text: Lang.t("Glisse les modules d'une zone à l'autre. Ceux qui sont rangés n'apparaissent pas.")
         wrapMode: Text.Wrap
         color: Qt.alpha(Theme.text, 0.6)
         font.family: Theme.font
@@ -77,46 +77,46 @@ ColumnLayout {
         zones: {
             const layout = Config.barLayout, used = [].concat(layout.left ?? [], layout.center ?? [], layout.right ?? []);
             return [
-                { id: "left", label: "Gauche", items: layout.left ?? [] },
-                { id: "center", label: "Centre", items: layout.center ?? [] },
-                { id: "right", label: "Droite", items: layout.right ?? [] },
-                { id: "unused", label: "Rangés", items: Config.barModuleChoices.map(choice => choice.id).filter(id => !used.includes(id)) }
+                { id: "left", label: Lang.t("Gauche"), items: layout.left ?? [] },
+                { id: "center", label: Lang.t("Centre"), items: layout.center ?? [] },
+                { id: "right", label: Lang.t("Droite"), items: layout.right ?? [] },
+                { id: "unused", label: Lang.t("Rangés"), items: Config.barModuleChoices.map(choice => choice.id).filter(id => !used.includes(id)) }
             ];
         }
         onChanged: zones => Config.barLayout = { left: zones[0].items, center: zones[1].items, right: zones[2].items }
     }
 
     SettingSection {
-        text: "Heure"
+        text: Lang.t("Heure")
     }
 
     SettingChoice {
-        label: "Format"
+        label: Lang.t("Format")
         options: [{ id: "24", label: "24 h" }, { id: "12", label: "12 h" }]
         current: Config.clockFormat
         onPicked: id => Config.clockFormat = id
     }
 
     SettingSwitch {
-        label: "Secondes"
+        label: Lang.t("Secondes")
         on: Config.clockSeconds
         onToggled: Config.clockSeconds = !Config.clockSeconds
     }
 
     SettingChoice {
-        label: "Date"
-        options: [{ id: "long", label: "Longue" }, { id: "short", label: "Courte" }, { id: "off", label: "Masquée" }]
+        label: Lang.t("Date")
+        options: [{ id: "long", label: Lang.t("Longue") }, { id: "short", label: Lang.t("Courte") }, { id: "off", label: Lang.t("Masquée") }]
         current: Config.dateFormat
         onPicked: id => Config.dateFormat = id
     }
 
     SettingSection {
-        text: "Pages et musique"
+        text: Lang.t("Pages et musique")
     }
 
     SettingSlider {
-        label: "Pages par groupe"
-        hint: "Au-delà, la barre bascule sur le groupe suivant au lieu de revenir au début."
+        label: Lang.t("Pages par groupe")
+        hint: Lang.t("Au-delà, la barre bascule sur le groupe suivant au lieu de revenir au début.")
         value: Config.pagesShown
         minimum: 4
         maximum: 10
@@ -124,27 +124,27 @@ ColumnLayout {
     }
 
     SettingChoice {
-        label: "Pages"
-        hint: "Une constellation par page, ou simplement son numéro, plus compact."
-        options: [{ id: "constellation", label: "Constellations" }, { id: "numbers", label: "Numéros" }]
+        label: Lang.t("Pages")
+        hint: Lang.t("Une constellation par page, ou simplement son numéro, plus compact.")
+        options: [{ id: "constellation", label: Lang.t("Constellations") }, { id: "numbers", label: Lang.t("Numéros") }]
         current: Config.pageStyle
         onPicked: id => Config.pageStyle = id
     }
 
     SettingChoice {
-        label: "Titre en cours"
-        options: [{ id: "scroll", label: "Défilant" }, { id: "short", label: "Court" }, { id: "off", label: "Note seule" }]
+        label: Lang.t("Titre en cours")
+        options: [{ id: "scroll", label: Lang.t("Défilant") }, { id: "short", label: Lang.t("Court") }, { id: "off", label: Lang.t("Note seule") }]
         current: Config.mediaTitle
         onPicked: id => Config.mediaTitle = id
     }
 
     SettingSection {
-        text: "Statut"
+        text: Lang.t("Statut")
     }
 
     Text {
         Layout.fillWidth: true
-        text: "Un clic affiche ou masque, glisser change l'ordre."
+        text: Lang.t("Un clic affiche ou masque, glisser change l'ordre.")
         color: Qt.alpha(Theme.text, 0.6)
         font.family: Theme.font
         font.pixelSize: 12
@@ -158,21 +158,21 @@ ColumnLayout {
     }
 
     SettingSwitch {
-        label: "Pourcentages"
-        hint: "Les chiffres à côté du volume, de la batterie et des ressources."
+        label: Lang.t("Pourcentages")
+        hint: Lang.t("Les chiffres à côté du volume, de la batterie et des ressources.")
         on: Config.barPercent
         onToggled: Config.barPercent = !Config.barPercent
     }
 
     SettingSwitch {
-        label: "Plateau aux couleurs du shell"
-        hint: "Les icônes des applis en arrière-plan, teintées comme le reste."
+        label: Lang.t("Plateau aux couleurs du shell")
+        hint: Lang.t("Les icônes des applis en arrière-plan, teintées comme le reste.")
         on: Config.trayTint
         onToggled: Config.trayTint = !Config.trayTint
     }
 
     SettingSection {
-        text: "Outils"
+        text: Lang.t("Outils")
     }
 
     ChipBoard {
@@ -183,7 +183,7 @@ ColumnLayout {
     }
 
     SettingSection {
-        text: "Ressources"
+        text: Lang.t("Ressources")
     }
 
     ChipBoard {

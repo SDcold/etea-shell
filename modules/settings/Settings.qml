@@ -15,11 +15,12 @@ Scope {
         property int section: 0
 
         readonly property var sections: [
-            { label: "Monde", page: "WorldPage.qml" },
-            { label: "Bureau", page: "DesktopPage.qml" },
-            { label: "Barre", page: "BarPage.qml" },
-            { label: "Fenêtres", page: "WindowsPage.qml" },
-            { label: "Mouvement", page: "MotionPage.qml" }
+            { label: Lang.t("Monde"), page: "WorldPage.qml" },
+            { label: Lang.t("Bureau"), page: "DesktopPage.qml" },
+            { label: Lang.t("Barre"), page: "BarPage.qml" },
+            { label: Lang.t("Fenêtres"), page: "WindowsPage.qml" },
+            { label: Lang.t("Mouvement"), page: "MotionPage.qml" },
+            { label: Lang.t("Langue"), page: "LanguagePage.qml" }
         ]
 
         title: "Réglages ETEA"
@@ -53,7 +54,7 @@ Scope {
             height: parent.height - 60
 
             Text {
-                text: "Réglages"
+                text: Lang.t("Réglages")
                 color: Theme.text
                 font.family: Theme.font
                 font.pixelSize: 26

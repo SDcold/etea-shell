@@ -47,7 +47,7 @@ Singleton {
         draft = {
             id: `forge-${Date.now()}`,
             name: name.charAt(0).toUpperCase() + name.slice(1),
-            line: "Née d'une image.",
+            line: Lang.t("Née d'une image."),
             skyTop: hex(dark.hue, clamp(dark.saturation, 0.3, 0.75), clamp(dark.value, 0.14, 0.34)),
             skyMid: hex(vivid.hue, clamp(vivid.saturation, 0.45, 0.8), clamp(vivid.value, 0.55, 0.85)),
             skyLow: hex(bright.hue, clamp(bright.saturation, 0.2, 0.55), clamp(bright.value, 0.85, 0.97)),
@@ -89,7 +89,7 @@ Singleton {
     Process {
         id: picker
 
-        command: ["sh", "-c", 'if command -v kdialog >/dev/null; then kdialog --title "Une image pour ta planète" --getopenfilename "$HOME" "*.png *.jpg *.jpeg *.webp"; else zenity --file-selection --title "Une image pour ta planète"; fi']
+        command: ["sh", "-c", 'if command -v kdialog >/dev/null; then kdialog --title "$1" --getopenfilename "$HOME" "*.png *.jpg *.jpeg *.webp"; else zenity --file-selection --title "$1"; fi', "sh", Lang.t("Une image pour ta planète")]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim())

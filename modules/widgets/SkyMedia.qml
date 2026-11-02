@@ -48,7 +48,7 @@ RowLayout {
         Text {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignRight
-            text: root.player ? root.player.trackArtist || "En écoute" : "En attente"
+            text: root.player ? root.player.trackArtist || Lang.t("En écoute") : Lang.t("En attente")
             elide: Text.ElideRight
             color: Theme.skyInk
             font.family: Theme.font
@@ -59,7 +59,7 @@ RowLayout {
         Text {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignRight
-            text: root.player?.trackTitle ?? "Silence radio."
+            text: root.player?.trackTitle ?? Lang.t("Silence radio.")
             elide: Text.ElideRight
             color: Theme.skyInk
             font.family: Theme.font

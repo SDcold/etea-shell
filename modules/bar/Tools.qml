@@ -25,7 +25,7 @@ Row {
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim())
-                    announcer.exec(["notify-send", "-a", "Pipette", "Couleur copiée", text.trim()]);
+                    announcer.exec(["notify-send", "-a", Lang.t("Pipette"), Lang.t("Couleur copiée"), text.trim()]);
             }
         }
     }

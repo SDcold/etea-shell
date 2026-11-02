@@ -12,8 +12,8 @@ Row {
 
     Repeater {
         model: [
-            { id: "cpu", label: "Processeur" },
-            { id: "memory", label: "Mémoire" }
+            { id: "cpu", label: Lang.t("Processeur") },
+            { id: "memory", label: Lang.t("Mémoire") }
         ]
 
         Column {

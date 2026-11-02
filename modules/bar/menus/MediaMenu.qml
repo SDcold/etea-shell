@@ -26,7 +26,7 @@ ColumnLayout {
 
     Text {
         visible: !root.player
-        text: "Rien en cours de lecture."
+        text: Lang.t("Rien en cours de lecture.")
         color: Qt.alpha(Theme.text, 0.7)
         font.family: Theme.font
         font.pixelSize: 14

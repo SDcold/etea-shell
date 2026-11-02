@@ -14,8 +14,8 @@ Row {
     // Short and steady: the number never makes the bar jump around
     function rate(bytes) {
         if (bytes >= 1048576)
-            return (bytes / 1048576).toFixed(1).replace(".", ",") + " Mo/s";
-        return Math.round(bytes / 1024) + " ko/s";
+            return (bytes / 1048576).toFixed(1).replace(".", Qt.locale(Config.locale).decimalPoint) + " " + Lang.t("Mo/s");
+        return Math.round(bytes / 1024) + " " + Lang.t("ko/s");
     }
 
     TextMetrics {

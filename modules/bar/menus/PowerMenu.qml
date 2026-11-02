@@ -14,10 +14,10 @@ ColumnLayout {
     function timeLeft() {
         const seconds = UPower.onBattery ? battery.timeToEmpty : battery.timeToFull;
         if (!seconds)
-            return UPower.onBattery ? "Sur batterie" : "Sur secteur";
+            return UPower.onBattery ? Lang.t("Sur batterie") : Lang.t("Sur secteur");
         const hours = Math.floor(seconds / 3600), minutes = Math.round(seconds % 3600 / 60);
         const left = hours ? `${hours} h ${String(minutes).padStart(2, "0")}` : `${minutes} min`;
-        return UPower.onBattery ? `${left} restantes` : `Pleine dans ${left}`;
+        return UPower.onBattery ? Lang.t("{0} restantes", left) : Lang.t("Pleine dans {0}", left);
     }
 
     // The battery is the sun in this card: it sinks as the charge runs out, and turns red
@@ -67,13 +67,13 @@ ColumnLayout {
 
     MenuTitle {
         Layout.topMargin: 6
-        text: "Énergie"
+        text: Lang.t("Énergie")
     }
 
     Repeater {
         model: [
-            { label: "Économie", profile: PowerProfile.PowerSaver },
-            { label: "Équilibré", profile: PowerProfile.Balanced },
+            { label: Lang.t("Économie"), profile: PowerProfile.PowerSaver },
+            { label: Lang.t("Équilibré"), profile: PowerProfile.Balanced },
             { label: "Performance", profile: PowerProfile.Performance }
         ]
 
@@ -90,7 +90,7 @@ ColumnLayout {
 
     MenuTitle {
         Layout.topMargin: 6
-        text: "Luminosité"
+        text: Lang.t("Luminosité")
     }
 
     MenuSlider {

@@ -77,7 +77,7 @@ ColumnLayout {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: Focus.mode === "focus" ? "Concentration" : "Pause"
+                text: Focus.mode === "focus" ? Lang.t("Concentration") : Lang.t("Pause")
                 color: root.tint
                 font.family: Theme.font
                 font.pixelSize: 12
@@ -90,18 +90,18 @@ ColumnLayout {
         spacing: 10
 
         SettingButton {
-            label: Focus.running ? "Pause" : Focus.left < Focus.length ? "Reprendre" : "Démarrer"
+            label: Focus.running ? Lang.t("Pause") : Focus.left < Focus.length ? Lang.t("Reprendre") : Lang.t("Démarrer")
             onPicked: Focus.toggle()
         }
 
         SettingButton {
-            label: "Remettre à zéro"
+            label: Lang.t("Remettre à zéro")
             quiet: true
             onPicked: Focus.reset()
         }
 
         SettingButton {
-            label: Focus.mode === "focus" ? "Pause" : "Travail"
+            label: Focus.mode === "focus" ? Lang.t("Pause") : Lang.t("Travail")
             quiet: true
             onPicked: Focus.setMode(Focus.mode === "focus" ? "rest" : "focus")
         }

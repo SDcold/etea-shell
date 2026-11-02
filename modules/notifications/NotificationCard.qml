@@ -36,9 +36,9 @@ Item {
     function when() {
         const minutes = Math.floor((Date.now() - entry.time.getTime()) / 60000);
         if (minutes < 1)
-            return "à l'instant";
+            return Lang.t("à l'instant");
         if (minutes < 60)
-            return `il y a ${minutes} min`;
+            return Lang.t("il y a {0} min", minutes);
         return Qt.formatTime(entry.time, "HH:mm");
     }
 

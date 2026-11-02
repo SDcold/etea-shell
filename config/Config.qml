@@ -12,40 +12,40 @@ Singleton {
     // Pages come in groups: the bar shows one group, the planet carries one group around it.
     // Past the last page of a group, the next group takes its place.
     readonly property int pages: Math.max(4, Math.min(10, pagesShown))
-    readonly property string locale: "fr_FR"
+    readonly property string locale: Lang.locale
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
 
     // What the bar can hold, and where each piece can go
     readonly property var barModuleChoices: [
-        { id: "pages", label: "Pages", icon: "layout" },
-        { id: "clock", label: "Heure", icon: "timer" },
-        { id: "media", label: "Musique", icon: "music" },
-        { id: "tray", label: "Plateau", icon: "apps" },
-        { id: "status", label: "Statut", icon: "wifi-high" },
-        { id: "tools", label: "Outils", icon: "picker" },
-        { id: "resources", label: "Ressources", icon: "cpu" }
+        { id: "pages", label: Lang.t("Pages"), icon: "layout" },
+        { id: "clock", label: Lang.t("Heure"), icon: "timer" },
+        { id: "media", label: Lang.t("Musique"), icon: "music" },
+        { id: "tray", label: Lang.t("Plateau"), icon: "apps" },
+        { id: "status", label: Lang.t("Statut"), icon: "wifi-high" },
+        { id: "tools", label: Lang.t("Outils"), icon: "picker" },
+        { id: "resources", label: Lang.t("Ressources"), icon: "cpu" }
     ]
     readonly property var toolChoices: [
-        { id: "capture", label: "Capture", icon: "capture" },
-        { id: "clipboard", label: "Presse-papiers", icon: "clipboard" },
-        { id: "picker", label: "Pipette", icon: "picker" },
-        { id: "nightlight", label: "Veilleuse", icon: "nightlight" },
-        { id: "microphone", label: "Micro", icon: "microphone" }
+        { id: "capture", label: Lang.t("Capture"), icon: "capture" },
+        { id: "clipboard", label: Lang.t("Presse-papiers"), icon: "clipboard" },
+        { id: "picker", label: Lang.t("Pipette"), icon: "picker" },
+        { id: "nightlight", label: Lang.t("Veilleuse"), icon: "nightlight" },
+        { id: "microphone", label: Lang.t("Micro"), icon: "microphone" }
     ]
     readonly property var resourceChoices: [
-        { id: "cpu", label: "Processeur", icon: "cpu" },
-        { id: "memory", label: "Mémoire", icon: "ram" },
-        { id: "network", label: "Débit réseau", icon: "speed" }
+        { id: "cpu", label: Lang.t("Processeur"), icon: "cpu" },
+        { id: "memory", label: Lang.t("Mémoire"), icon: "ram" },
+        { id: "network", label: Lang.t("Débit réseau"), icon: "speed" }
     ]
 
     readonly property var statusChoices: [
         { id: "notifications", label: "Notifications", icon: "bell" },
-        { id: "network", label: "Réseau", icon: "wifi-high" },
+        { id: "network", label: Lang.t("Réseau"), icon: "wifi-high" },
         { id: "bluetooth", label: "Bluetooth", icon: "bluetooth" },
         { id: "volume", label: "Volume", icon: "speaker-high" },
-        { id: "battery", label: "Batterie", icon: "battery-full" },
-        { id: "settings", label: "Réglages", icon: "gear-six" },
-        { id: "session", label: "Session", icon: "power" }
+        { id: "battery", label: Lang.t("Batterie"), icon: "battery-full" },
+        { id: "settings", label: Lang.t("Réglages"), icon: "gear-six" },
+        { id: "session", label: Lang.t("Session"), icon: "power" }
     ]
 
     property string preview: "" // a world being tried on, never saved
@@ -67,6 +67,7 @@ Singleton {
     property alias traceSpacing: saved.traceSpacing
     property alias windowGapOuter: saved.windowGapOuter
 
+    property alias language: saved.language // "auto" follows the system, or a code from Lang.languages
     property alias pagesShown: saved.pagesShown
     property alias barPosition: saved.barPosition // "top" or "bottom"
     property alias barSize: saved.barSize // "compact", "normal" or "large"
@@ -141,6 +142,7 @@ Singleton {
             property int traceSpacing: 420
             property int windowGapOuter: 12
 
+            property string language: "auto"
             property int pagesShown: 8
             property string barPosition: "top"
             property string barSize: "normal"

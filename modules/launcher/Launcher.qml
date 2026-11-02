@@ -298,7 +298,7 @@ Scope {
             Text {
                 anchors.centerIn: input
                 visible: input.text === ""
-                text: "Où veux-tu aller ?"
+                text: Lang.t("Où veux-tu aller ?")
                 color: Qt.alpha(Theme.text, 0.6)
                 font: input.font
             }
@@ -363,7 +363,7 @@ Scope {
                 visible: input.text !== "" && panel.found.length === 0
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: parent.height * 0.54
-                text: "Rien dans ce ciel."
+                text: Lang.t("Rien dans ce ciel.")
                 color: Qt.alpha(Theme.text, 0.6)
                 font.family: Theme.font
                 font.pixelSize: 20

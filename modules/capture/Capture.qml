@@ -31,7 +31,7 @@ Scope {
         const screen = panel.screen, z = zone;
         const geometry = `${Math.round(screen.x + z.x)},${Math.round(screen.y + z.y)} ${Math.round(z.width)}x${Math.round(z.height)}`;
         open = false;
-        saver.command = ["sh", "-c", `dir="$(xdg-user-dir PICTURES)/Captures"; mkdir -p "$dir"; file="$dir/etea-$(date +%Y%m%d-%H%M%S).png"; grim -g "$1" "$file" && wl-copy < "$file" && notify-send -a Capture -i "$file" "Capture enregistrée" "$file"`, "sh", geometry];
+        saver.command = ["sh", "-c", `dir="$(xdg-user-dir PICTURES)/Captures"; mkdir -p "$dir"; file="$dir/etea-$(date +%Y%m%d-%H%M%S).png"; grim -g "$1" "$file" && wl-copy < "$file" && notify-send -a "$2" -i "$file" "$3" "$file"`, "sh", geometry, Lang.t("Capture"), Lang.t("Capture enregistrée")];
         settle.restart();
     }
 
@@ -145,7 +145,7 @@ Scope {
         Text {
             visible: !root.dragging && root.zone.width === 0
             anchors.centerIn: parent
-            text: "Trace la zone à capturer"
+            text: Lang.t("Trace la zone à capturer")
             color: Theme.text
             font.family: Theme.font
             font.pixelSize: 24

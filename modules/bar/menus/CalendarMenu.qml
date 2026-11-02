@@ -32,7 +32,7 @@ ColumnLayout {
         const days = (Date.now() - reference) / 86400000;
         return (days / 29.530588 % 1 + 1) % 1;
     }
-    readonly property string moonName: ["Nouvelle lune", "Premier croissant", "Premier quartier", "Gibbeuse croissante", "Pleine lune", "Gibbeuse décroissante", "Dernier quartier", "Dernier croissant"][Math.round(moon * 8) % 8]
+    readonly property string moonName: [Lang.t("Nouvelle lune"), Lang.t("Premier croissant"), Lang.t("Premier quartier"), Lang.t("Gibbeuse croissante"), Lang.t("Pleine lune"), Lang.t("Gibbeuse décroissante"), Lang.t("Dernier quartier"), Lang.t("Dernier croissant")][Math.round(moon * 8) % 8]
 
     readonly property color cardTint: "#b9a2f0"
     readonly property real cardRise: 0.07

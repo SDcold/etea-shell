@@ -26,8 +26,8 @@ Item {
 
         Repeater {
             model: [
-                { label: "Processeur", value: Machine.cpu },
-                { label: "Mémoire", value: Machine.memory }
+                { label: Lang.t("Processeur"), value: Machine.cpu },
+                { label: Lang.t("Mémoire"), value: Machine.memory }
             ]
 
             Item {

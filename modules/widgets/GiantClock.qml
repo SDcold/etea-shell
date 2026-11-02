@@ -22,7 +22,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: digits.top
         anchors.bottomMargin: -root.sky * 0.085
-        text: Qt.locale(Config.locale).toString(clock.date, "dddd d MMMM")
+        text: Qt.locale(Config.locale).toString(clock.date, Lang.t("dddd d MMMM"))
         color: Theme.skyInk
         font.family: Theme.font
         font.pixelSize: root.sky * 0.03

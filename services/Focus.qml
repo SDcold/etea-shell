@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 // A focus timer: work, then a break, then work again.
 Singleton {
@@ -35,7 +36,7 @@ Singleton {
     // When time's up, say so and get the next round ready
     function finish() {
         running = false;
-        announcer.exec(["notify-send", "-a", "Minuteur", mode === "focus" ? "Pause !" : "On s'y remet", mode === "focus" ? "25 minutes de concentration, bravo. Prends 5 minutes." : "La pause est finie."]);
+        announcer.exec(["notify-send", "-a", Lang.t("Minuteur"), mode === "focus" ? Lang.t("Pause !") : Lang.t("On s'y remet"), mode === "focus" ? Lang.t("25 minutes de concentration, bravo. Prends 5 minutes.") : Lang.t("La pause est finie.")]);
         setMode(mode === "focus" ? "rest" : "focus");
     }
 

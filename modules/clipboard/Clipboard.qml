@@ -173,7 +173,7 @@ Scope {
 
                         Text {
                             visible: search.text === ""
-                            text: "Que cherches-tu ?"
+                            text: Lang.t("Que cherches-tu ?")
                             color: Qt.alpha(Theme.text, 0.5)
                             font: search.font
                         }
@@ -220,7 +220,7 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             x: 34
                             width: parent.width - 46
-                            text: row.modelData.text.startsWith("[[ binary") ? "Image" : row.modelData.text
+                            text: row.modelData.text.startsWith("[[ binary") ? Lang.t("Image") : row.modelData.text
                             elide: Text.ElideRight
                             textFormat: Text.PlainText
                             color: row.active ? Theme.text : Qt.alpha(Theme.text, 0.75)
@@ -241,7 +241,7 @@ Scope {
                 Text {
                     visible: root.found.length === 0
                     Layout.alignment: Qt.AlignHCenter
-                    text: "Rien dans le presse-papiers."
+                    text: Lang.t("Rien dans le presse-papiers.")
                     color: Qt.alpha(Theme.text, 0.6)
                     font.family: Theme.font
                     font.pixelSize: 15

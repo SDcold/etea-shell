@@ -16,8 +16,8 @@ ColumnLayout {
     }
 
     SectionTitle {
-        text: Tasks.items.length ? `Tâches · ${Tasks.items.filter(task => !task.done).length}` : "Tâches"
-        action: Tasks.items.some(task => task.done) ? "Ranger les faites" : ""
+        text: Tasks.items.length ? `${Lang.t("Tâches")} · ${Tasks.items.filter(task => !task.done).length}` : Lang.t("Tâches")
+        action: Tasks.items.some(task => task.done) ? Lang.t("Ranger les faites") : ""
         onActed: Tasks.items = Tasks.items.filter(task => !task.done)
     }
 
@@ -125,7 +125,7 @@ ColumnLayout {
 
             Text {
                 visible: entry.text === "" && !entry.activeFocus
-                text: "Ajouter une tâche"
+                text: Lang.t("Ajouter une tâche")
                 color: Qt.alpha(Theme.text, 0.5)
                 font: entry.font
             }
@@ -133,7 +133,7 @@ ColumnLayout {
     }
 
     SectionTitle {
-        text: "Minuteur"
+        text: Lang.t("Minuteur")
     }
 
     FocusTimer {

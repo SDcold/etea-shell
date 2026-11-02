@@ -143,7 +143,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             topPadding: 12
-            text: root.chosen.id === Config.theme ? "Tu vis ici" : "Entrée pour t'y poser"
+            text: root.chosen.id === Config.theme ? Lang.t("Tu vis ici") : Lang.t("Entrée pour t'y poser")
             color: root.chosen.light
             font.family: Theme.font
             font.pixelSize: 13

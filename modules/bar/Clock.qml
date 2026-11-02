@@ -34,7 +34,7 @@ Item {
         Text {
             visible: Config.dateFormat !== "off"
             anchors.verticalCenter: parent.verticalCenter
-            text: Qt.locale(Config.locale).toString(clock.date, Config.dateFormat === "short" ? "ddd d MMM" : "dddd d MMMM")
+            text: Qt.locale(Config.locale).toString(clock.date, Lang.t(Config.dateFormat === "short" ? "ddd d MMM" : "dddd d MMMM"))
             color: Theme.textSoft
             font.family: Theme.font
             font.pixelSize: Theme.textSize

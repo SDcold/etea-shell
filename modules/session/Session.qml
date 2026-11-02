@@ -8,7 +8,7 @@ import qs.config
 import qs.modules.bar
 import qs.services
 
-// "Et maintenant ?" The way out of a session. Anything that closes your work asks twice,
+// Lang.t("Et maintenant ?") The way out of a session. Anything that closes your work asks twice,
 // so a stray click can't take it away.
 Scope {
     id: root
@@ -31,11 +31,11 @@ Scope {
         id: panel
 
         readonly property var actions: [
-            { icon: "lock", label: "Verrouiller", tint: "#8fc7e8", command: ["loginctl", "lock-session"] },
-            { icon: "sleep", label: "Veille", tint: "#b9a2f0", command: ["systemctl", "suspend"] },
-            { icon: "logout", label: "Déconnecter", tint: "#ffc98a", confirm: true, command: ["/usr/bin/hyprctl", "dispatch", "hl.dsp.exit()"] },
-            { icon: "restart", label: "Redémarrer", tint: "#e98fb0", confirm: true, command: ["systemctl", "reboot"] },
-            { icon: "power", label: "Éteindre", tint: "#f0705f", confirm: true, command: ["systemctl", "poweroff"] }
+            { icon: "lock", label: Lang.t("Verrouiller"), tint: "#8fc7e8", command: ["loginctl", "lock-session"] },
+            { icon: "sleep", label: Lang.t("Veille"), tint: "#b9a2f0", command: ["systemctl", "suspend"] },
+            { icon: "logout", label: Lang.t("Déconnecter"), tint: "#ffc98a", confirm: true, command: ["/usr/bin/hyprctl", "dispatch", "hl.dsp.exit()"] },
+            { icon: "restart", label: Lang.t("Redémarrer"), tint: "#e98fb0", confirm: true, command: ["systemctl", "reboot"] },
+            { icon: "power", label: Lang.t("Éteindre"), tint: "#f0705f", confirm: true, command: ["systemctl", "poweroff"] }
         ]
 
         property real shown: Menus.sessionOpen ? 1 : 0
@@ -152,7 +152,7 @@ Scope {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: panel.armed >= 0 ? `${panel.actions[panel.armed].label}, vraiment ?` : "Et maintenant ?"
+                text: panel.armed >= 0 ? `${panel.actions[panel.armed].label}, vraiment ?` : Lang.t("Et maintenant ?")
                 color: Theme.text
                 font.family: Theme.font
                 font.pixelSize: 36
@@ -205,7 +205,7 @@ Scope {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             y: 168
-                            text: choice.armed ? "Confirmer" : choice.modelData.label
+                            text: choice.armed ? Lang.t("Confirmer") : choice.modelData.label
                             color: choice.focused ? Theme.text : Qt.alpha(Theme.text, 0.7)
                             font.family: Theme.font
                             font.pixelSize: 15

@@ -26,7 +26,7 @@ ColumnLayout {
     }
     readonly property var paired: Bluetooth.devices.values.find(device => device.connected) ?? null
     readonly property var profiles: [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance]
-    readonly property var profileNames: ["Économie", "Équilibré", "Performance"]
+    readonly property var profileNames: [Lang.t("Économie"), Lang.t("Équilibré"), "Performance"]
 
     spacing: 14
 
@@ -52,7 +52,7 @@ ColumnLayout {
             }
 
             Text {
-                text: UPower.onBattery ? "Sur batterie" : "Sur secteur"
+                text: UPower.onBattery ? Lang.t("Sur batterie") : Lang.t("Sur secteur")
                 color: Qt.alpha(Theme.text, 0.6)
                 font.family: Theme.font
                 font.pixelSize: 12
@@ -107,7 +107,7 @@ ColumnLayout {
         QuickTile {
             icon: Networking.wifiEnabled ? "wifi-high" : "wifi-slash"
             label: "Wi-Fi"
-            detail: root.network?.name ?? (Networking.wifiEnabled ? "Recherche" : "Coupé")
+            detail: root.network?.name ?? (Networking.wifiEnabled ? Lang.t("Recherche") : Lang.t("Coupé"))
             on: Networking.wifiEnabled
             tint: "#8fc7e8"
             onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
@@ -116,7 +116,7 @@ ColumnLayout {
         QuickTile {
             icon: root.adapter?.enabled ? "bluetooth" : "bluetooth-slash"
             label: "Bluetooth"
-            detail: root.paired?.name ?? (root.adapter?.enabled ? "Allumé" : "Coupé")
+            detail: root.paired?.name ?? (root.adapter?.enabled ? Lang.t("Allumé") : Lang.t("Coupé"))
             on: root.adapter?.enabled ?? false
             available: root.adapter !== null
             tint: "#b9a2f0"
@@ -125,8 +125,8 @@ ColumnLayout {
 
         QuickTile {
             icon: Notifs.quiet ? "bell-slash" : "bell"
-            label: "Silence"
-            detail: Notifs.quiet ? "Activé" : ""
+            label: Lang.t("Silence")
+            detail: Notifs.quiet ? Lang.t("Activé") : ""
             on: Notifs.quiet
             tint: "#e98fb0"
             onToggled: Notifs.quiet = !Notifs.quiet
@@ -134,7 +134,7 @@ ColumnLayout {
 
         QuickTile {
             icon: "nightlight"
-            label: "Veilleuse"
+            label: Lang.t("Veilleuse")
             detail: NightLight.on ? `${NightLight.temperature} K` : ""
             on: NightLight.on
             available: NightLight.available
@@ -144,8 +144,8 @@ ColumnLayout {
 
         QuickTile {
             icon: root.source?.audio?.muted ? "microphone-off" : "microphone"
-            label: "Micro"
-            detail: root.source?.audio?.muted ? "Coupé" : "Ouvert"
+            label: Lang.t("Micro")
+            detail: root.source?.audio?.muted ? Lang.t("Coupé") : Lang.t("Ouvert")
             on: !(root.source?.audio?.muted ?? true)
             available: root.source?.audio !== undefined
             tint: "#f59a7a"
@@ -156,7 +156,7 @@ ColumnLayout {
             readonly property int current: Math.max(0, root.profiles.indexOf(PowerProfiles.profile))
 
             icon: "energy"
-            label: "Énergie"
+            label: Lang.t("Énergie")
             detail: root.profileNames[current]
             on: PowerProfiles.profile !== PowerProfile.Balanced
             tint: "#8fd6b4"
@@ -197,7 +197,7 @@ ColumnLayout {
         }
 
         SectionTitle {
-            text: "En écoute"
+            text: Lang.t("En écoute")
         }
 
         RowLayout {
@@ -257,8 +257,8 @@ ColumnLayout {
     }
 
     SectionTitle {
-        text: Notifs.count ? `Signaux · ${Notifs.count}` : "Signaux"
-        action: Notifs.count ? "Tout effacer" : ""
+        text: Notifs.count ? `${Lang.t("Signaux")} · ${Notifs.count}` : Lang.t("Signaux")
+        action: Notifs.count ? Lang.t("Tout effacer") : ""
         onActed: Notifs.clear()
     }
 
@@ -266,7 +266,7 @@ ColumnLayout {
         visible: Notifs.count === 0
         Layout.alignment: Qt.AlignHCenter
         Layout.topMargin: 8
-        text: "Aucun signal. Le ciel est calme."
+        text: Lang.t("Aucun signal. Le ciel est calme.")
         color: Qt.alpha(Theme.text, 0.6)
         font.family: Theme.font
         font.pixelSize: 13

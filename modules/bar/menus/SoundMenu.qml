@@ -23,7 +23,7 @@ ColumnLayout {
     }
 
     MenuTitle {
-        text: "Sortie"
+        text: Lang.t("Sortie")
     }
 
     MenuSlider {
@@ -35,7 +35,7 @@ ColumnLayout {
 
     MenuTitle {
         Layout.topMargin: 6
-        text: "Micro"
+        text: Lang.t("Micro")
     }
 
     MenuSlider {
@@ -48,7 +48,7 @@ ColumnLayout {
     MenuTitle {
         Layout.topMargin: 6
         visible: root.outputs.length > 1
-        text: "Écouter sur"
+        text: Lang.t("Écouter sur")
     }
 
     Repeater {

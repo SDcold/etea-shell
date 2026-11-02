@@ -10,7 +10,7 @@ ColumnLayout {
     spacing: 18
 
     Text {
-        text: "Choisis ton monde"
+        text: Lang.t("Choisis ton monde")
         color: Theme.text
         font.family: Theme.font
         font.pixelSize: 20
@@ -19,7 +19,7 @@ ColumnLayout {
     Text {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        text: "Tu peux aussi les rejoindre en vrai : Super + Tab deux fois, puis Entrée pour te poser."
+        text: Lang.t("Tu peux aussi les rejoindre en vrai : Super + Tab deux fois, puis Entrée pour te poser.")
         color: Qt.alpha(Theme.text, 0.65)
         font.family: Theme.font
         font.pixelSize: 13
@@ -88,7 +88,7 @@ ColumnLayout {
                     Text {
                         visible: choice.current
                         topPadding: 6
-                        text: "Tu vis ici"
+                        text: Lang.t("Tu vis ici")
                         color: choice.modelData.light
                         font.family: Theme.font
                         font.pixelSize: 12
@@ -130,7 +130,7 @@ ColumnLayout {
 
     Text {
         Layout.topMargin: 8
-        text: "Créer ma planète"
+        text: Lang.t("Créer ma planète")
         color: Theme.text
         font.family: Theme.font
         font.pixelSize: 20
@@ -139,14 +139,14 @@ ColumnLayout {
     Text {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        text: "Donne une image, ETEA en tire un ciel, un terrain et une lumière."
+        text: Lang.t("Donne une image, ETEA en tire un ciel, un terrain et une lumière.")
         color: Qt.alpha(Theme.text, 0.65)
         font.family: Theme.font
         font.pixelSize: 13
     }
 
     SettingButton {
-        label: Forge.draft ? "Choisir une autre image" : "Choisir une image"
+        label: Forge.draft ? Lang.t("Choisir une autre image") : Lang.t("Choisir une image")
         onPicked: Forge.chooseImage()
     }
 
@@ -213,12 +213,12 @@ ColumnLayout {
                 spacing: 10
 
                 SettingButton {
-                    label: "M'y installer"
+                    label: Lang.t("M'y installer")
                     onPicked: Forge.keep(planetName.text)
                 }
 
                 SettingButton {
-                    label: "Laisser filer"
+                    label: Lang.t("Laisser filer")
                     quiet: true
                     onPicked: Forge.draft = null
                 }

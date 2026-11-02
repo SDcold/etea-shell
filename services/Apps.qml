@@ -17,10 +17,10 @@ Singleton {
 
     // How the sky is divided into constellations
     readonly property var families: [
-        { name: "Création", categories: ["Graphics", "AudioVideo", "Audio", "Video"] },
+        { name: Lang.t("Création"), categories: ["Graphics", "AudioVideo", "Audio", "Video"] },
         { name: "Code", categories: ["Development"] },
-        { name: "Internet", categories: ["Network", "WebBrowser", "Chat", "Email"] },
-        { name: "Le reste", categories: [] }
+        { name: Lang.t("Internet"), categories: ["Network", "WebBrowser", "Chat", "Email"] },
+        { name: Lang.t("Le reste"), categories: [] }
     ]
 
     function usesOf(app) {
@@ -80,7 +80,7 @@ Singleton {
         const asset = name => "file://" + Quickshell.shellPath(`assets/icons/${name}.svg`);
 
         if (typed.startsWith(">") && typed.length > 1)
-            return [{ kind: "command", label: `Lancer ${typed.slice(1).trim()}`, icon: asset("play"), command: typed.slice(1).trim() }];
+            return [{ kind: "command", label: Lang.t("Lancer {0}", typed.slice(1).trim()), icon: asset("play"), command: typed.slice(1).trim() }];
 
         const result = sum(typed);
         if (result !== null)
@@ -90,7 +90,7 @@ Singleton {
             const title = window.title ?? "", kind = window.lastIpcObject?.class ?? "";
             if (title.toLowerCase().includes(wanted) || kind.toLowerCase().includes(wanted)) {
                 const app = DesktopEntries.heuristicLookup(kind);
-                found.push({ kind: "window", label: `Aller à ${app?.name ?? title}`, icon: Quickshell.iconPath(app?.icon ?? "", "application-x-executable"), window: window });
+                found.push({ kind: "window", label: Lang.t("Aller à {0}", app?.name ?? title), icon: Quickshell.iconPath(app?.icon ?? "", "application-x-executable"), window: window });
             }
         }
 

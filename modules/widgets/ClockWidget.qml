@@ -215,7 +215,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.locale(Config.locale).toString(clock.date, "ddd d MMM")
+            text: Qt.locale(Config.locale).toString(clock.date, Lang.t("ddd d MMM"))
             color: Qt.alpha(Theme.text, 0.8)
             font.family: Theme.font
             font.pixelSize: 15

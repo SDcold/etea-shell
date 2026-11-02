@@ -45,7 +45,7 @@ ColumnLayout {
     }
 
     Text {
-        text: root.failed ? "Mot de passe refusé." : join.running ? `Connexion à ${root.network}…` : `Mot de passe pour ${root.network}`
+        text: root.failed ? Lang.t("Mot de passe refusé.") : join.running ? Lang.t("Connexion à {0}…", root.network) : Lang.t("Mot de passe pour {0}", root.network)
         color: root.failed ? "#f0947c" : Qt.alpha(Theme.text, 0.75)
         font.family: Theme.font
         font.pixelSize: 12

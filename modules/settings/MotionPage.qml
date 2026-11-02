@@ -7,16 +7,16 @@ ColumnLayout {
     spacing: 18
 
     Text {
-        text: "Mouvement"
+        text: Lang.t("Mouvement")
         color: Theme.text
         font.family: Theme.font
         font.pixelSize: 20
     }
 
     SettingChoice {
-        label: "Rythme"
-        hint: "Quotidien reste vif. Cérémonie prend le temps de chaque geste."
-        options: [{ id: "daily", label: "Quotidien" }, { id: "ceremony", label: "Cérémonie" }]
+        label: Lang.t("Rythme")
+        hint: Lang.t("Quotidien reste vif. Cérémonie prend le temps de chaque geste.")
+        options: [{ id: "daily", label: Lang.t("Quotidien") }, { id: "ceremony", label: Lang.t("Cérémonie") }]
         current: Config.pace
         onPicked: id => Config.pace = id
     }

@@ -7,14 +7,14 @@ ColumnLayout {
     spacing: 18
 
     Text {
-        text: "Fenêtres"
+        text: Lang.t("Fenêtres")
         color: Theme.text
         font.family: Theme.font
         font.pixelSize: 20
     }
 
     SettingSlider {
-        label: "Force de la lueur"
+        label: Lang.t("Force de la lueur")
         value: Config.windowGlow
         shownAs: 100
         unit: " %"
@@ -22,7 +22,7 @@ ColumnLayout {
     }
 
     SettingSlider {
-        label: "Taille de la lueur"
+        label: Lang.t("Taille de la lueur")
         value: Config.windowGlowSize
         minimum: 6
         maximum: 80
@@ -31,7 +31,7 @@ ColumnLayout {
     }
 
     SettingSlider {
-        label: "Ombre des fenêtres inactives"
+        label: Lang.t("Ombre des fenêtres inactives")
         value: Config.windowDim
         maximum: 0.6
         shownAs: 100
@@ -40,7 +40,7 @@ ColumnLayout {
     }
 
     SettingSlider {
-        label: "Épaisseur du cadre"
+        label: Lang.t("Épaisseur du cadre")
         value: Config.traceWidth
         minimum: 1
         maximum: 5
@@ -49,8 +49,8 @@ ColumnLayout {
     }
 
     SettingSlider {
-        label: "Espace entre les étoiles"
-        hint: "Plus c'est grand, moins il y a d'étoiles sur le cadre."
+        label: Lang.t("Espace entre les étoiles")
+        hint: Lang.t("Plus c'est grand, moins il y a d'étoiles sur le cadre.")
         value: Config.traceSpacing
         minimum: 120
         maximum: 800
@@ -59,7 +59,7 @@ ColumnLayout {
     }
 
     SettingSlider {
-        label: "Marge autour des fenêtres"
+        label: Lang.t("Marge autour des fenêtres")
         value: Config.windowGapOuter
         minimum: 0
         maximum: 40

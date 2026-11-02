@@ -12,7 +12,7 @@ Singleton {
         {
             id: "aster",
             name: "Aster",
-            line: "Le soir qui ne finit pas.",
+            line: Lang.t("Le soir qui ne finit pas."),
             skyTop: "#2b3a55",
             skyMid: "#c9744b",
             skyLow: "#f2b872",
@@ -22,7 +22,7 @@ Singleton {
         {
             id: "nere",
             name: "Néré",
-            line: "Un océan sous la brume.",
+            line: Lang.t("Un océan sous la brume."),
             skyTop: "#0e2a3a",
             skyMid: "#2a7f86",
             skyLow: "#b9e5d3",
@@ -32,7 +32,7 @@ Singleton {
         {
             id: "ocre",
             name: "Ocre",
-            line: "La poussière et la lumière.",
+            line: Lang.t("La poussière et la lumière."),
             skyTop: "#3a4a43",
             skyMid: "#b59a3c",
             skyLow: "#ecdca0",
@@ -42,7 +42,7 @@ Singleton {
         {
             id: "vesper",
             name: "Vesper",
-            line: "La nuit a déjà commencé.",
+            line: Lang.t("La nuit a déjà commencé."),
             skyTop: "#15102e",
             skyMid: "#6b3f9e",
             skyLow: "#e59ac0",
