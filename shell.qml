@@ -2,6 +2,7 @@ import Quickshell
 import qs.modules.alerts
 import qs.modules.background
 import qs.modules.capture
+import qs.modules.cheatsheet
 import qs.modules.clipboard
 import qs.modules.bar
 import qs.modules.bar.menus
@@ -32,6 +33,7 @@ ShellRoot {
     Session {}
     Polkit {}
     Alerts {}
+    Cheatsheet {}
     Osd {}
     Clipboard {}
     Capture {}

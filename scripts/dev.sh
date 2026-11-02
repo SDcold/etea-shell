@@ -86,6 +86,8 @@ take_pages() {
         hl.bind("SUPER + Escape", hl.dsp.global("etea:session"))
         hl.unbind("SUPER + Comma")
         hl.bind("SUPER + Comma", hl.dsp.global("etea:settings"))
+        hl.unbind("SUPER + Slash")
+        hl.bind("SUPER + Slash", hl.dsp.global("etea:cheatsheet"))
         hl.unbind("SUPER + SHIFT + Tab")
         hl.bind("SUPER + SHIFT + Tab", hl.dsp.global("etea:orbitDown"))
         hl.unbind("SUPER + Tab")
