@@ -412,11 +412,16 @@ Singleton {
         coverDelay.restart();
     }
 
-    // The swipe came back: nothing changed page, the scene just steps aside
+    // The swipe came back: nothing changed page. The page we started from is the one on
+    // screen, so it stays while the scene steps aside; only the page that never came goes.
     function rollBack() {
+        arriving = [];
         distance = 0;
         travel = 0;
-        settle();
+        hoveredPage = -1;
+        phase = Planet.Phase.Settling;
+        revealDelay.interval = 40;
+        revealDelay.restart();
     }
 
     function settle() {
