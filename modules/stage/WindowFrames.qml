@@ -90,7 +90,11 @@ Item {
                 }
             }
 
+            // Focus moving within a page crossfades. Landing on a page, the turning stand-in
+            // already wore these stars, so they're simply there, no fade-in after the fact.
             Behavior on opacity {
+                enabled: Planet.phase === Planet.Phase.Idle
+
                 NumberAnimation {
                     duration: Theme.windowFocusSpeed * 100
                     easing.type: Easing.InOutSine
