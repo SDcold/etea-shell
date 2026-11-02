@@ -19,6 +19,7 @@ Singleton {
     readonly property bool wanted: listeners > 0 || dancing
 
     onWantedChanged: {
+        cava.running = wanted;
         if (!wanted)
             levels = [];
     }
@@ -53,9 +54,36 @@ Singleton {
         }
     }
 
+    // qs ipc call beat state, to check the music is really flowing
+    IpcHandler {
+        target: "beat"
+
+        function state(): string {
+            return `wanted ${root.wanted}, dancing ${root.dancing}, heard ${root.levels.length}, shown ${root.shown.length}, peak ${Math.max(0, ...root.shown).toFixed(3)}`;
+        }
+
+        function hold(on: bool): void {
+            on ? root.join() : root.leave();
+        }
+    }
+
+    // cava can quit on its own, when the audio device changes for instance. Bring it back.
+    Timer {
+        id: revive
+
+        interval: 1000
+        onTriggered: cava.running = root.wanted
+    }
+
     Process {
+        id: cava
+
         running: root.wanted
         command: ["cava", "-p", Quickshell.shellPath("assets/cava.conf")]
+        onRunningChanged: {
+            if (!running && root.wanted)
+                revive.restart();
+        }
         stdout: SplitParser {
             onRead: line => root.levels = line.split(";").filter(value => value !== "").map(value => Number(value) / 100)
         }
