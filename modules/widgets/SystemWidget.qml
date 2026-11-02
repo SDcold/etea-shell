@@ -33,7 +33,7 @@ Item {
             model: [
                 { id: "cpu", label: Lang.t("Processeur") },
                 { id: "memory", label: Lang.t("Mémoire") }
-            ].filter(reading => root.readings.includes(reading.id))
+            ].filter(reading => (root?.readings ?? "").includes(reading.id))
 
             Item {
                 id: gauge
@@ -48,7 +48,7 @@ Item {
 
                 // Behind windows the gauge holds still
                 Binding on shown {
-                    when: Planet.pageEmpty
+                    when: Planet.pageEmpty || gauge.shown === 0
                     value: gauge.value
                     restoreMode: Binding.RestoreNone
                 }

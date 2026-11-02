@@ -17,7 +17,7 @@ Row {
         model: [
             { id: "cpu", label: Lang.t("Processeur") },
             { id: "memory", label: Lang.t("Mémoire") }
-        ].filter(reading => root.readings.includes(reading.id))
+        ].filter(reading => (root?.readings ?? "").includes(reading.id))
 
         Column {
             id: reading
@@ -31,8 +31,9 @@ Row {
             spacing: root.sky * 0.008
 
             // Behind windows the reading holds still: each glide redraws the whole sky
+            // Until the first reading comes in it follows anyway, or it would sit at zero
             Binding on shown {
-                when: Planet.pageEmpty
+                when: Planet.pageEmpty || reading.shown === 0
                 value: reading.value
                 restoreMode: Binding.RestoreNone
             }

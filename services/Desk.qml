@@ -19,7 +19,8 @@ Singleton {
         { type: "weather", label: Lang.t("Météo"), icon: "cloud-sun" },
         { type: "calendar", label: Lang.t("Calendrier et lune"), icon: "calendar" },
         { type: "tasks", label: Lang.t("Tâches"), icon: "checklist" },
-        { type: "photo", label: Lang.t("Cadre photo"), icon: "image" }
+        { type: "photo", label: Lang.t("Cadre photo"), icon: "image" },
+        { type: "lyrics", label: Lang.t("Paroles"), icon: "lyrics" }
     ]
 
     // Where each one stands until you move it, and which of its points stands there:
@@ -32,7 +33,8 @@ Singleton {
         weather: { x: 0.956, y: 0.33, ax: 1, ay: 0 },
         calendar: { x: 0.044, y: 0.36, ax: 0, ay: 0 },
         tasks: { x: 0.956, y: 0.58, ax: 1, ay: 0 },
-        photo: { x: 0.3, y: 0.62, ax: 0.5, ay: 0.5 }
+        photo: { x: 0.3, y: 0.62, ax: 0.5, ay: 0.5 },
+        lyrics: { x: 0.5, y: 0.15, ax: 0.5, ay: 0.5 }
     } : {
         clock: { x: 0.5, y: 0.34, ax: 0.5, ay: 0.5 },
         system: { x: 0.14, y: 0.3, ax: 0.5, ay: 0.5 },
@@ -40,7 +42,8 @@ Singleton {
         weather: { x: 0.84, y: 0.6, ax: 0.5, ay: 0.5 },
         calendar: { x: 0.68, y: 0.68, ax: 0.5, ay: 0.5 },
         tasks: { x: 0.14, y: 0.62, ax: 0.5, ay: 0.5 },
-        photo: { x: 0.32, y: 0.64, ax: 0.5, ay: 0.5 }
+        photo: { x: 0.32, y: 0.64, ax: 0.5, ay: 0.5 },
+        lyrics: { x: 0.5, y: 0.15, ax: 0.5, ay: 0.5 }
     }
 
     // Only changes when a widget comes or goes, so moving one doesn't rebuild the others
