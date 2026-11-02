@@ -160,6 +160,7 @@ Item {
                     slot.startedAt = Qt.point(slot.x, slot.y);
                     slot.dragAt = slot.startedAt;
                     slot.dragging = true;
+                    Desk.carrying = true;
                 }
                 onPositionChanged: mouse => {
                     if (!slot.dragging)
@@ -180,8 +181,12 @@ Item {
                     Desk.lastGesture = Date.now();
                     Desk.move(slot.type, (slot.dragAt.x + slot.width * slot.place.ax) / root.width, (slot.dragAt.y + slot.height * slot.place.ay) / root.height);
                     slot.dragging = false;
+                    Desk.carrying = false;
                 }
-                onCanceled: slot.dragging = false
+                onCanceled: {
+                    slot.dragging = false;
+                    Desk.carrying = false;
+                }
             }
         }
     }

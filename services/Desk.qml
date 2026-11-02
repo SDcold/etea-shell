@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
 
@@ -46,7 +47,29 @@ Singleton {
     property var shown: []
 
     property string hovered: "" // the widget under the pointer, for Super + wheel
+    property bool carrying: false // a widget is being dragged right now
     property real lastGesture: 0 // when a Super gesture last landed on a widget
+
+    // Hyprland's Super + drag moves windows, and swallows the click even over the empty
+    // desktop. So while the pointer rests on a widget, that one bind steps aside, and
+    // comes back as soon as it leaves. Only if there is such a bind to begin with.
+    // Hyprland itself remembers that it was lifted, so a reload or a crash of the shell
+    // can't leave it missing: the next start puts it back first.
+    property bool windowDrag: false
+    property bool lifted: false
+    readonly property bool liftWanted: windowDrag && (hovered !== "" || carrying)
+
+    readonly property string putBack: 'if ETEA_LIFTED then hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: Move" }) end ETEA_LIFTED = false'
+
+    onLiftWantedChanged: lift()
+
+    function lift() {
+        if (swap.running || lifted === liftWanted)
+            return;
+        lifted = liftWanted;
+        swap.command = ["/usr/bin/hyprctl", "eval", lifted ? 'hl.unbind("SUPER + mouse:272") ETEA_LIFTED = true' : root.putBack];
+        swap.running = true;
+    }
 
     // The card of options, opened with a right click
     property string menuFor: "" // a widget, "add" for the empty sky, or nothing
@@ -120,6 +143,49 @@ Singleton {
 
         function onWidgetsChanged() {
             root.refresh();
+        }
+    }
+
+    // The pointer can come and go faster than hyprctl answers, so catch up once it's done
+    Process {
+        id: swap
+
+        onExited: root.lift()
+    }
+
+    // Anything a previous run left lifted comes back before we look
+    Process {
+        running: true
+        command: ["/usr/bin/hyprctl", "eval", root.putBack]
+        onExited: binds.running = true
+    }
+
+    // Is there a Super + left button bind to step aside?
+    Process {
+        id: binds
+
+        command: ["/usr/bin/hyprctl", "binds", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.windowDrag = JSON.parse(text).some(bind => bind.modmask === 64 && bind.key === "mouse:272");
+                } catch (error) {
+                    root.windowDrag = false;
+                }
+            }
+        }
+    }
+
+    // A reload brings Hyprland's binds back as they were written
+    Connections {
+        target: Hyprland
+
+        function onRawEvent(event) {
+            if (event.name === "configreloaded") {
+                root.lifted = false;
+                binds.running = true;
+                root.lift();
+            }
         }
     }
 
