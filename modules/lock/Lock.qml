@@ -108,6 +108,9 @@ Scope {
 
         path: Quickshell.shellPath("assets/lock/scene.json")
         blockLoading: true
+        // Tuning the scene shows up right away in the preview
+        watchChanges: true
+        onFileChanged: reload()
     }
 
     PamContext {

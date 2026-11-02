@@ -1,7 +1,10 @@
 # Lock screen art
 
-The woman, her arm and her hand on the lock screen come from this folder. The ones here
-are placeholders, waiting for the real illustrations.
+The woman, her arm and her hand on the lock screen come from this folder. They are cut out
+of `Raised Hand.svg` in VectorCraft: `body.svg` is the robe and hair layers on the full
+artboard, and `arm.svg` is the arm layer turned 85.6° clockwise around the shoulder
+(790, 670) so it points right, then exported cropped to itself. The clouds are still a
+placeholder.
 
 - `body.svg` (or .png): the woman seen from behind. She sits in front and gets blurred.
 - `arm.svg` (or .png): the arm and its open hand, drawn **pointing right**, with the
