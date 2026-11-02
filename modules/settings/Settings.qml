@@ -115,19 +115,27 @@ Scope {
             }
         }
 
+        // The clipping edge sits a little outside the content, so the stars and ink lines
+        // around the cards have room and don't get sliced off
         Flickable {
-            x: side.x + side.width + 30
-            y: 36
-            width: parent.width - x - 40
-            height: parent.height - 60
-            contentHeight: page.height + 20
+            id: scroller
+
+            readonly property int room: 18
+
+            x: side.x + side.width + 30 - room
+            y: 36 - room
+            width: parent.width - x - 40 + room
+            height: parent.height - 60 + room * 2
+            contentHeight: page.height + 20 + room * 2
             clip: true
             boundsBehavior: Flickable.StopAtBounds
 
             Loader {
                 id: page
 
-                width: parent.width
+                x: scroller.room
+                y: scroller.room
+                width: parent.width - scroller.room * 2
                 source: window.sections[window.section].page
             }
         }
