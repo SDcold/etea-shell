@@ -48,18 +48,20 @@ Singleton {
 
     property string hovered: "" // the widget under the pointer, for Super + wheel
     property bool carrying: false // a widget is being dragged right now
+    property bool grabbing: false // Super + left button is down over a widget, Hyprland says
     property real lastGesture: 0 // when a Super gesture last landed on a widget
 
     // Hyprland's Super + drag moves windows, and swallows the click even over the empty
-    // desktop. So while the pointer rests on a widget, that one bind steps aside, and
-    // comes back as soon as it leaves. Only if there is such a bind to begin with.
-    // Hyprland itself remembers that it was lifted, so a reload or a crash of the shell
-    // can't leave it missing: the next start puts it back first.
+    // desktop. So while the pointer rests on a widget, that bind steps aside for one of
+    // ours that lets the click through and tells us Super is down: the desktop never has
+    // the keyboard, so the click itself arrives without it. It comes back as soon as the
+    // pointer leaves, and only if there was such a bind to begin with. Hyprland remembers
+    // it was swapped, so a reload or a crash of the shell can't leave it missing.
     property bool windowDrag: false
     property bool lifted: false
     readonly property bool liftWanted: windowDrag && (hovered !== "" || carrying)
 
-    readonly property string putBack: 'if ETEA_LIFTED then hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: Move" }) end ETEA_LIFTED = false'
+    readonly property string putBack: 'if ETEA_LIFTED then hl.unbind("SUPER + mouse:272") hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: Move" }) end ETEA_LIFTED = false'
 
     onLiftWantedChanged: lift()
 
@@ -67,7 +69,7 @@ Singleton {
         if (swap.running || lifted === liftWanted)
             return;
         lifted = liftWanted;
-        swap.command = ["/usr/bin/hyprctl", "eval", lifted ? 'hl.unbind("SUPER + mouse:272") ETEA_LIFTED = true' : root.putBack];
+        swap.command = ["/usr/bin/hyprctl", "eval", lifted ? 'hl.unbind("SUPER + mouse:272") hl.bind("SUPER + mouse:272", hl.dsp.global("etea:deskGrab"), { non_consuming = true }) ETEA_LIFTED = true' : root.putBack];
         swap.running = true;
     }
 
@@ -144,6 +146,13 @@ Singleton {
         function onWidgetsChanged() {
             root.refresh();
         }
+    }
+
+    GlobalShortcut {
+        appid: "etea"
+        name: "deskGrab"
+        onPressed: root.grabbing = true
+        onReleased: root.grabbing = false
     }
 
     // The pointer can come and go faster than hyprctl answers, so catch up once it's done

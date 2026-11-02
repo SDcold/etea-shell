@@ -151,7 +151,7 @@ Item {
                         Desk.openMenu(slot.type, at, QsWindow.window?.screen ?? null);
                         return;
                     }
-                    if (!(mouse.modifiers & Qt.MetaModifier)) {
+                    if (!(mouse.modifiers & Qt.MetaModifier) && !Desk.grabbing) {
                         mouse.accepted = false;
                         return;
                     }
