@@ -227,11 +227,17 @@ Scope {
             right: true
         }
 
-        LockScene {
+        // Built when opened: the drawings are heavy, and its world would follow the music unseen
+        Loader {
             anchors.fill: parent
-            lock: root
-            main: true
-            preview: true
+            active: Menus.lockPreview
+            focus: true
+
+            sourceComponent: LockScene {
+                lock: root
+                main: true
+                preview: true
+            }
         }
     }
 

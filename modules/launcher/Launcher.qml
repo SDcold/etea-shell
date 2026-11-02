@@ -153,14 +153,28 @@ Scope {
                 y: (panel.height / 2 - panel.pointer.y) * 0.018 + (1 - panel.shown) * 16
             }
 
+            // Only as big as the threads it holds: a full-screen canvas meant drawing and
+            // uploading a whole screen of pixels on every key
             Canvas {
                 id: links
 
-                anchors.fill: parent
+                readonly property rect area: {
+                    const xs = panel.found.map(star => star.x), ys = panel.found.map(star => star.y);
+                    if (!xs.length)
+                        return Qt.rect(0, 0, 1, 1);
+                    const left = Math.min(...xs) - 2, top = Math.min(...ys) - 2;
+                    return Qt.rect(left, top, Math.max(...xs) + 2 - left, Math.max(...ys) + 2 - top);
+                }
+
+                x: area.x
+                y: area.y
+                width: area.width
+                height: area.height
                 renderStrategy: Canvas.Immediate
                 onPaint: {
                     const g = getContext("2d");
                     g.reset();
+                    g.translate(-x, -y);
                     g.strokeStyle = String(Theme.link);
                     g.globalAlpha = 0.32;
                     g.lineWidth = 1;

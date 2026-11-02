@@ -79,8 +79,10 @@ Item {
                     font: title.font
                 }
 
+                // Holds where it is under the pointer and while the music is paused
                 NumberAnimation on x {
-                    running: view.moving && !pointer.containsMouse
+                    running: view.moving
+                    paused: running && (pointer.containsMouse || !(root.player?.isPlaying ?? false))
                     loops: Animation.Infinite
                     from: 0
                     to: -(title.implicitWidth + strip.spacing)

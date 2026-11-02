@@ -115,10 +115,29 @@ Item {
         }
 
         // A thin thread from each star to the next, in the order they came
+        // Only as big as the thread, so a key press doesn't redraw a whole screen of pixels
         Canvas {
             id: links
 
-            anchors.fill: parent
+            function fit() {
+                let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+                for (let n = 0; n < root.lock.stars; n++) {
+                    const star = root.starAt(n);
+                    left = Math.min(left, star.x);
+                    top = Math.min(top, star.y);
+                    right = Math.max(right, star.x);
+                    bottom = Math.max(bottom, star.y);
+                }
+                if (left === Infinity)
+                    return;
+                x = left - 2;
+                y = top - 2;
+                width = right - left + 4;
+                height = bottom - top + 4;
+            }
+
+            width: 1
+            height: 1
             opacity: root.lock.vanishing ? 0 : 1
             renderStrategy: Canvas.Immediate
             onPaint: {
@@ -126,6 +145,7 @@ Item {
                 g.reset();
                 if (root.lock.stars < 2)
                     return;
+                g.translate(-x, -y);
                 g.strokeStyle = String(Theme.link);
                 g.globalAlpha = 0.45;
                 g.lineWidth = 1;
@@ -145,6 +165,7 @@ Item {
                 target: root.lock
 
                 function onStarsChanged() {
+                    links.fit();
                     links.requestPaint();
                 }
             }

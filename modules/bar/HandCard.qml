@@ -13,7 +13,8 @@ Item {
     property real ink: 0.72 // how strong the line is
     property color tint: Theme.windowLit
     property real rise: 0.16 // how high the horizon sits inside the card
-    property bool alive: visible // the sky stops moving when nobody can see it
+    // The sky stops moving when nobody can see it, closed menus and panels included
+    property bool alive: visible && (Window.window?.visible ?? false)
     property real starSpacing: 130 // one star every so often along the sides, 0 keeps only the corners
     property real starScale: 1
 

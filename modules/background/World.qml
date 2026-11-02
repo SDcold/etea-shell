@@ -14,6 +14,9 @@ Item {
     property real space: 0
     property real groundOpacity: 1
     property bool showWidgets: true
+    // Keep the sky and the ground as pictures while they hold still, so a widget moving in
+    // front doesn't make the GPU paint them again pixel by pixel. Off where they move every frame.
+    property bool cached: true
 
     // Four sound levels at a time, the way the shader wants them
     function bands(first) {
@@ -31,6 +34,7 @@ Item {
         property real grain: Theme.grain
         property real space: root.space
 
+        layer.enabled: root.cached
         fragmentShader: Qt.resolvedUrl("../../shaders/sky.frag.qsb")
     }
 
@@ -93,6 +97,7 @@ Item {
         }
         property real grain: Theme.grain
 
+        layer.enabled: root.cached && music === 0
         fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
     }
 }

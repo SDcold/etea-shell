@@ -87,6 +87,7 @@ Variants {
                 active: Planet.phase !== Planet.Phase.Idle
 
                 sourceComponent: World {
+                    cached: false
                     angle: Planet.resting + Planet.travel - Planet.handTurn
                     radius: stage.planetRadius
                     horizon: stage.planetTop / stage.screenHeight
