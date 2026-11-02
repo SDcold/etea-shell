@@ -51,9 +51,11 @@ Scope {
         }
         // Stuck to the edge while it moves, free once it has landed
         readonly property real held: 1 - clamp((progress - 0.75) / 0.25)
+        // It comes from behind the edge and goes back there, so it never pops up or dies on screen
         readonly property rect shape: {
             const w = target.width * reach;
-            return Qt.rect(right ? target.x + target.width - w : target.x, target.y, w, lerp(64, target.height, drop));
+            const outer = right ? lerp(width + 30, target.x + target.width, reach) : lerp(-30, target.x, reach);
+            return Qt.rect(right ? outer - w : outer, target.y, w, lerp(90, target.height, drop));
         }
         // The edge it pours out of, just off screen, sliding away as it lets go
         readonly property rect edge: {

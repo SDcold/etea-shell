@@ -33,18 +33,19 @@ Singleton {
 
     // Sound jumps around, but nothing on screen should. When the music stops,
     // everything sinks back down slowly, like a breath being let out.
-    Timer {
+    // Stepped on every frame the screen draws, so bars glide instead of jumping. The speeds
+    // are per 25 ms and get scaled to however long the frame actually took.
+    FrameAnimation {
         running: root.wanted || root.shown.length > 0
-        repeat: true
-        interval: 25
         onTriggered: {
             const count = Math.max(root.levels.length, root.shown.length);
+            const steps = Math.min(frameTime, 0.1) / 0.025;
             const next = [];
             let highest = 0;
             for (let i = 0; i < count; i++) {
                 const target = root.levels[i] ?? 0, now = root.shown[i] ?? 0;
                 const speed = target > now ? 0.45 : root.wanted ? 0.2 : Theme.groundSettle;
-                const value = now + (target - now) * speed;
+                const value = now + (target - now) * (1 - Math.pow(1 - speed, steps));
                 next.push(value);
                 highest = Math.max(highest, value);
             }
