@@ -12,6 +12,7 @@ Item {
     required property real screenY
     property real angle: 0
     property Item photo: null
+    property Item backdrop: null // the turning world, for see-through windows filmed live
     property real zoom: 1 // how small the page is, seen from above
     property real lift: 0 // how far up it rides with the ground
     property bool orbitCard: false // the pages around the planet, as opposed to the ones spinning past
@@ -66,6 +67,7 @@ Item {
             lit: index === root.windows.length - 1
             toplevel: modelData
             photo: root.photo
+            backdrop: root.backdrop
             // Live only for the two pages turning past, orbit would film every window at once
             live: !root.orbitCard
             screenX: root.screenX

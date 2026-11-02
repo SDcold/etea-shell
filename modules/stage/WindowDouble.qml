@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
@@ -16,7 +17,16 @@ Item {
     property Item photo: null
     property bool lit: false
     property bool live: false // keep the window playing on top of its photo while the page turns
+    property Item backdrop: null
     readonly property bool playing: live && Config.livePages
+
+    // A live capture is the bare window: no blur, no opacity rule, no dimming, Hyprland
+    // only adds those on screen. Glass apps get them here: the world blurred behind them,
+    // and their opacity, a little lower when they're not the lit one.
+    readonly property var glass: Config.glassApps.find(app => app.class === info.class) ?? null
+    readonly property real glassOpacity: !glass?.opacity ? 1 : lit ? glass.opacity : Math.max(0.1, glass.opacity - 0.1)
+    readonly property bool frosted: glass !== null && backdrop !== null && liveReady
+    property bool liveReady: false
 
     // A window can close mid-spin and take its details with it
     readonly property var info: toplevel?.lastIpcObject?.size ? toplevel.lastIpcObject : ({ at: [0, 0], size: [0, 0] })
@@ -41,10 +51,25 @@ Item {
         color: "transparent"
 
         ShaderEffectSource {
-            visible: root.photo !== null
+            visible: root.photo !== null && !root.frosted
             anchors.fill: parent
             sourceItem: root.photo
             sourceRect: Qt.rect(root.x, root.y, root.width, root.height)
+        }
+
+        // What Hyprland's blur would show through a glass window: the world behind it
+        MultiEffect {
+            visible: root.frosted
+            anchors.fill: parent
+            source: ShaderEffectSource {
+                sourceItem: root.backdrop
+                sourceRect: Qt.rect(root.x, root.y, root.width, root.height)
+                live: root.frosted
+            }
+            blurEnabled: true
+            blur: 1
+            blurMax: 48
+            autoPaddingEnabled: false
         }
 
         Loader {
@@ -73,14 +98,24 @@ Item {
             sourceComponent: ScreencopyView {
                 captureSource: root.toplevel?.wayland ?? null
                 live: true
-                opacity: hasContent ? 1 : 0
+                opacity: hasContent ? root.glassOpacity : 0
+                onHasContentChanged: root.liveReady = hasContent
             }
+        }
+
+        // Hyprland dims the windows that aren't lit, the live picture has to as well.
+        // A photo already has it, so only once the live frames take over, or without one.
+        Rectangle {
+            visible: root.playing && !root.lit && (root.liveReady || root.photo === null)
+            anchors.fill: parent
+            color: "black"
+            opacity: Theme.windowDim
         }
     }
 
     // Photos already have their border, only the plain capture needs one drawn
     Rectangle {
-        visible: root.photo === null
+        visible: root.photo === null || root.frosted
         anchors.fill: parent
         radius: Theme.windowRadius + root.edge
         color: "transparent"

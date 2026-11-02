@@ -87,6 +87,8 @@ Variants {
             // Built while the photos are taken, gone at rest: even unseen, every clock tick and
             // gauge in it would redraw this whole window, on top of every app
             Loader {
+                id: world
+
                 anchors.fill: parent
                 active: Planet.phase !== Planet.Phase.Idle
 
@@ -128,6 +130,7 @@ Variants {
             StagePage {
                 anchors.fill: parent
                 windows: stage.focused ? Planet.leaving : []
+                backdrop: world.item
                 photo: photos.itemAt(Planet.slotOf(Planet.origin))?.frame ?? null
                 pivotY: stage.pivotY
                 screenX: stage.modelData.x
@@ -138,6 +141,7 @@ Variants {
             StagePage {
                 anchors.fill: parent
                 windows: stage.focused ? Planet.arriving : []
+                backdrop: world.item
                 photo: Planet.arrivalKnown ? photos.itemAt(Planet.slotOf(Planet.target))?.frame ?? null : null
                 pivotY: stage.pivotY
                 screenX: stage.modelData.x
