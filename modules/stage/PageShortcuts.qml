@@ -82,4 +82,17 @@ Scope {
         name: "pagePrevious"
         onPressed: Planet.requestNext(-1)
     }
+
+    // Super + wheel: over a widget it changes its size, anywhere else it turns the page
+    GlobalShortcut {
+        appid: "etea"
+        name: "wheelUp"
+        onPressed: Desk.hovered ? Desk.grow(Desk.hovered, 1) : Planet.requestNext(1)
+    }
+
+    GlobalShortcut {
+        appid: "etea"
+        name: "wheelDown"
+        onPressed: Desk.hovered ? Desk.grow(Desk.hovered, -1) : Planet.requestNext(-1)
+    }
 }

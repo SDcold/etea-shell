@@ -7,6 +7,9 @@ Row {
     id: root
 
     property real sky: 1080
+    property var options: ({}) // its entry in Config.widgets
+    // Kept as text, so moving the widget doesn't rebuild its gauges
+    readonly property string readings: (options?.readings ?? ["cpu", "memory"]).join()
 
     spacing: sky * 0.05
 
@@ -14,7 +17,7 @@ Row {
         model: [
             { id: "cpu", label: Lang.t("Processeur") },
             { id: "memory", label: Lang.t("Mémoire") }
-        ]
+        ].filter(reading => root.readings.includes(reading.id))
 
         Column {
             id: reading

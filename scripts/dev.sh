@@ -92,6 +92,11 @@ take_pages() {
         hl.bind("SUPER + Tab", hl.dsp.global("etea:orbit"))
         hl.unbind("SUPER + Q")
         hl.bind("SUPER + Q", hl.dsp.global("etea:closeWindow"))
+        -- Super + wheel turns the page, or resizes the widget under the pointer
+        hl.unbind("SUPER + mouse_up")
+        hl.unbind("SUPER + mouse_down")
+        hl.bind("SUPER + mouse_up", hl.dsp.global("etea:wheelUp"))
+        hl.bind("SUPER + mouse_down", hl.dsp.global("etea:wheelDown"))
     ' | grep -v '^ok$' || true
 
     # The four finger swipe would switch pages without us, so it goes through ETEA too.

@@ -8,6 +8,10 @@ import qs.services
 Item {
     id: root
 
+    property var options: ({}) // its entry in Config.widgets
+    // Kept as text, so moving the widget doesn't rebuild its gauges
+    readonly property string readings: (options?.readings ?? ["cpu", "memory"]).join()
+
     implicitWidth: 300
     implicitHeight: 182
 
@@ -29,7 +33,7 @@ Item {
             model: [
                 { id: "cpu", label: Lang.t("Processeur") },
                 { id: "memory", label: Lang.t("Mémoire") }
-            ]
+            ].filter(reading => root.readings.includes(reading.id))
 
             Item {
                 id: gauge

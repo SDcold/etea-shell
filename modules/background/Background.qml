@@ -27,6 +27,7 @@ Variants {
         World {
             anchors.fill: parent
             angle: Planet.resting
+            interactive: true
         }
     }
 }

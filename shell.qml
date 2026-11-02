@@ -21,6 +21,7 @@ ShellRoot {
     Illumination {}
     Bar {}
     BarMenus {}
+    DeskMenu {}
     Launcher {}
     Notifications {}
     Panels {}

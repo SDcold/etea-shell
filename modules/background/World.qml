@@ -14,6 +14,7 @@ Item {
     property real space: 0
     property real groundOpacity: 1
     property bool showWidgets: true
+    property bool interactive: false // only the real desktop answers the pointer
     // Keep the sky and the ground as pictures while they hold still, so a widget moving in
     // front doesn't make the GPU paint them again pixel by pixel. Off where they move every frame.
     property bool cached: true
@@ -60,6 +61,7 @@ Item {
 
     Widgets {
         anchors.fill: parent
+        interactive: root.interactive
         opacity: 1 - root.space * 3
         visible: root.showWidgets && opacity > 0
     }

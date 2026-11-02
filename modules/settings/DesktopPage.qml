@@ -1,18 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.config
+import qs.services
 
 // The sky, the ground and what lives on an empty page.
 ColumnLayout {
     id: root
-
-    function shown(type) {
-        return Config.widgets.find(widget => widget.type === type)?.shown !== false;
-    }
-
-    function toggle(type) {
-        Config.widgets = Config.widgets.map(widget => widget.type === type ? Object.assign({}, widget, { shown: widget.shown === false }) : widget);
-    }
 
     spacing: 18
 
@@ -66,21 +59,26 @@ ColumnLayout {
         onPicked: id => Config.widgetStyle = id
     }
 
-    SettingSwitch {
-        label: Lang.t("Horloge")
-        on: root.shown("clock")
-        onToggled: root.toggle("clock")
+    // Every kind of widget, out in the sky or not. Where they stand is set on the desktop itself.
+    Repeater {
+        model: Desk.catalog
+
+        SettingSwitch {
+            required property var modelData
+
+            Layout.fillWidth: true
+            label: modelData.label
+            on: Desk.shown.includes(modelData.type)
+            onToggled: on ? Desk.remove(modelData.type) : Desk.add(modelData.type)
+        }
     }
 
-    SettingSwitch {
-        label: Lang.t("Instruments du système")
-        on: root.shown("system")
-        onToggled: root.toggle("system")
-    }
-
-    SettingSwitch {
-        label: Lang.t("Lecteur de musique")
-        on: root.shown("media")
-        onToggled: root.toggle("media")
+    Text {
+        Layout.fillWidth: true
+        text: Lang.t("Sur le bureau : Super + glisser pour déplacer un widget, Super + molette pour sa taille, clic droit pour ses options.")
+        wrapMode: Text.WordWrap
+        color: Qt.alpha(Theme.text, 0.55)
+        font.family: Theme.font
+        font.pixelSize: 12
     }
 }

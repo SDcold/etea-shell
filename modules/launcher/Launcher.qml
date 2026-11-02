@@ -20,7 +20,11 @@ Scope {
 
         // Hyprland only reports a lone Super key once it's let go, as a release. It also
         // skips that release if another key came along, so Super + 1 leaves this alone.
-        onReleased: Apps.open = !Apps.open
+        // Letting go of Super after moving or resizing a widget isn't a call for it either.
+        onReleased: {
+            if (Date.now() - Desk.lastGesture > 600)
+                Apps.open = !Apps.open;
+        }
     }
 
     IpcHandler {

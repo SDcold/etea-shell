@@ -10,6 +10,8 @@ import qs.services
 Item {
     id: root
 
+    property var options: ({}) // its entry in Config.widgets
+
     readonly property real size: 350
     readonly property real middle: size / 2
     readonly property int hour: clock.date.getHours()
@@ -214,6 +216,7 @@ Item {
         }
 
         Text {
+            visible: root.options?.date !== false
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.locale(Config.locale).toString(clock.date, Lang.t("ddd d MMM"))
             color: Qt.alpha(Theme.text, 0.8)

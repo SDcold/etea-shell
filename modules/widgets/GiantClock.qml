@@ -8,6 +8,7 @@ Item {
     id: root
 
     property real sky: 1080
+    property var options: ({}) // its entry in Config.widgets
 
     implicitWidth: digits.implicitWidth
     implicitHeight: digits.implicitHeight
@@ -19,6 +20,7 @@ Item {
     }
 
     Text {
+        visible: root.options?.date !== false
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: digits.top
         anchors.bottomMargin: -root.sky * 0.085
