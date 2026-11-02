@@ -263,6 +263,7 @@ Item {
                 y: root.shoulder.y - pivotY
                 source: root.scene ? Quickshell.shellPath(`assets/lock/${info.file}`) : ""
                 sourceSize.width: width * 2
+                asynchronous: true
                 smooth: true
                 transform: [
                     Scale {
@@ -296,6 +297,8 @@ Item {
                 y: info.bottom * root.unit - height
                 source: root.scene ? Quickshell.shellPath(`assets/lock/${info.file}`) : ""
                 sourceSize.height: height
+                // A traced drawing is heavy; read it without stalling the lock
+                asynchronous: true
                 visible: false
             }
 

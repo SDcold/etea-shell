@@ -1,10 +1,19 @@
 # Lock screen art
 
-The woman, her arm and her hand on the lock screen come from this folder. They are cut out
-of `Raised Hand.svg` in VectorCraft: `body.svg` is the robe and hair layers on the full
-artboard, and `arm.svg` is the arm layer turned 85.6° clockwise around the shoulder
-(790, 670) so it points right, then exported cropped to itself. The clouds are still a
-placeholder.
+The woman, her arm and her hand on the lock screen come from this folder. They are
+traced from `Reaching Woman with Flowing Curls.png` (1024×1536, already cut out):
+
+1. The PNG is split in two: the arm above the sleeve, given a stub that carries on under
+   the sleeve so turning it never opens a gap, and the body without it.
+2. The body is brightened (`magick body.png -channel RGB -gamma 2.4 +channel`), or the
+   tracer merges the dark strands of hair into one black mass.
+3. Both go through VectorCraft's Image Trace (colour, 16–24 colours, paths 85–88,
+   corners 35, noise 3). The arm is turned 82° clockwise around the shoulder (745, 750)
+   so it points right, and exported cropped to itself; the body keeps the full artboard.
+4. `scripts/qt-svg.py traced.svg source.png out.svg [2.4]` brings the colours back down,
+   breaks up the paths Qt is too small for, and seals the seams between shapes.
+
+The clouds are still a placeholder.
 
 - `body.svg` (or .png): the woman seen from behind. She sits in front and gets blurred.
 - `arm.svg` (or .png): the arm and its open hand, drawn **pointing right**, with the
