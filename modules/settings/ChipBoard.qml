@@ -83,7 +83,10 @@ Item {
                     return flow.children.filter(child => child.chipId !== undefined);
                 }
 
+                // Zones on the same row keep the same height, so nothing shifts while you drag
                 Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.alignment: Qt.AlignTop
                 Layout.columnSpan: board.spanLast && index === board.zones.length - 1 ? board.columns : 1
                 Layout.preferredHeight: Math.max(76, flow.implicitHeight + 46)
                 radius: 16

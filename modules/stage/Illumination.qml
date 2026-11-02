@@ -50,7 +50,8 @@ Scope {
         hl.animation({ leaf = "windowsOut", enabled = false })
         hl.animation({ leaf = "windowsIn", enabled = false })
 
-        hl.window_rule({ match = { title = "Réglages ETEA" }, float = true, center = true, size = { 1040, 700 } })
+        -- Always opaque, even unfocused: the text behind would bleed through the labels
+        hl.window_rule({ match = { title = "Réglages ETEA" }, float = true, center = true, size = { 1040, 700 }, opacity = "1.0 override 1.0 override" })
         -- The side panels unfold through their own star, a layer fade on top would make them see-through
         hl.layer_rule({ match = { namespace = "^etea:panel-.*" }, no_anim = true })
 

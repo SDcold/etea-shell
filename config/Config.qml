@@ -32,7 +32,8 @@ Singleton {
     ]
     readonly property var resourceChoices: [
         { id: "cpu", label: "Processeur", icon: "cpu" },
-        { id: "memory", label: "Mémoire", icon: "ram" }
+        { id: "memory", label: "Mémoire", icon: "ram" },
+        { id: "network", label: "Débit réseau", icon: "speed" }
     ]
 
     readonly property var statusChoices: [
