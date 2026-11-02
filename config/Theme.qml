@@ -34,7 +34,7 @@ Singleton {
     readonly property int barSide: 20
     readonly property int barGlowRoom: 32
     readonly property int barReserve: barGap + barHeight // the strip of screen the bar keeps for itself
-    readonly property int barSpacing: Math.round(18 * barScale)
+    readonly property int barSpacing: Math.round(12 * barScale)
     readonly property int iconSize: Math.round(21 * barScale)
 
     // Crisp white on the sky, with a warm glow around it
@@ -131,8 +131,8 @@ Singleton {
     readonly property color skyInk: Qt.tint(windowLit, Qt.alpha("#ffffff", 0.7))
 
     // Where things sit in the bar, so stars know where to fly
-    readonly property int pageWidth: 66
-    readonly property int pageGap: 8
+    readonly property int pageWidth: 42
+    readonly property int pageGap: 4
 
     // We bring our own font so nobody has to install anything
     Instantiator {

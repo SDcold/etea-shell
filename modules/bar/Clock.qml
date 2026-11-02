@@ -19,7 +19,7 @@ Item {
     Row {
         id: row
 
-        spacing: 12
+        spacing: 8
 
         Text {
             anchors.verticalCenter: parent.verticalCenter

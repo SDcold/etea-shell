@@ -75,7 +75,7 @@ Row {
             Row {
                 id: content
 
-                spacing: 6
+                spacing: 4
 
                 Icon {
                     anchors.verticalCenter: parent.verticalCenter

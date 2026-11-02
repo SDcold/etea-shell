@@ -11,7 +11,7 @@ Item {
     // Go for the player that's actually playing, or else the first one around
     readonly property var player: Music.player
     readonly property bool wanted: player !== null && (player.trackTitle ?? "") !== ""
-    readonly property real limit: Math.round(240 * Theme.barScale)
+    readonly property real limit: Math.round(200 * Theme.barScale)
 
     implicitWidth: content.implicitWidth
     implicitHeight: Theme.barHeight
@@ -21,7 +21,7 @@ Item {
         id: content
 
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 8
+        spacing: 6
 
         Icon {
             anchors.verticalCenter: parent.verticalCenter
