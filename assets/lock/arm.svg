@@ -1,12 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 130">
-  <!-- Placeholder: the arm and its open hand, pointing right from the shoulder at (40, 65) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240">
+  <!-- Placeholder: the raised arm and its open hand, pointing right from the shoulder at (40, 120) -->
   <defs>
-    <linearGradient id="arm" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#14122a"/>
-      <stop offset="0.75" stop-color="#2a2340"/>
-      <stop offset="1" stop-color="#3a3052"/>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6a4236"/>
+      <stop offset="0.45" stop-color="#2e1d22"/>
+      <stop offset="1" stop-color="#170f15"/>
     </linearGradient>
   </defs>
-  <path fill="url(#arm)" d="M20 40 C120 34 260 42 400 50 C420 44 440 30 470 26 C478 10 500 4 512 8 C530 0 548 4 556 14 C572 10 590 18 588 30 C600 40 596 56 584 62 C596 72 594 92 576 96 C566 112 540 116 520 108 C490 112 460 100 440 84 C300 90 140 98 20 92 C4 82 4 50 20 40 Z"/>
-  <path fill="none" stroke="#f3dcff" stroke-opacity="0.35" stroke-width="2" d="M400 50 C420 44 440 30 470 26 C478 10 500 4 512 8 C530 0 548 4 556 14 C572 10 590 18 588 30"/>
+  <path fill="url(#skin)" d="M30 50 C200 60 420 82 590 92 C620 78 650 66 680 62 L770 30 C782 24 794 36 786 44 L712 80 L824 64 C838 62 842 78 830 82 L716 102 L834 114 C848 116 846 132 832 132 L716 128 L812 160 C826 166 820 180 806 176 L706 152 C684 166 652 170 628 160 C612 154 600 148 590 144 C420 150 200 170 30 190 C6 172 6 70 30 50 Z"/>
+  <path fill="url(#skin)" d="M640 160 C664 176 686 200 696 226 C700 238 688 242 680 234 C664 212 644 192 624 176 Z"/>
+  <path fill="none" stroke="#f3b57e" stroke-opacity="0.65" stroke-width="5" d="M30 50 C200 60 420 82 590 92 C620 78 650 66 680 62 L770 30"/>
 </svg>

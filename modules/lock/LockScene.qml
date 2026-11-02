@@ -88,15 +88,16 @@ Item {
             shine: (1 - root.reveal) * 0.9
         }
 
+        // A night sky of its own, set in scene.json, whatever world you live on
         ShaderEffect {
             anchors.fill: parent
 
-            property color colorTop: Theme.skyTop
-            property color colorMid: Theme.skyMid
-            property color colorLow: Theme.skyLow
+            property color colorTop: root.scene?.sky?.top ?? Theme.skyTop
+            property color colorMid: root.scene?.sky?.middle ?? Theme.skyMid
+            property color colorLow: root.scene?.sky?.low ?? Theme.skyLow
             property vector2d resolution: Qt.vector2d(width, height)
             property real grain: Theme.grain
-            property real space: 0.86
+            property real space: root.scene?.sky?.stars ?? 0.86
 
             fragmentShader: Qt.resolvedUrl("../../shaders/sky.frag.qsb")
         }
@@ -149,7 +150,7 @@ Item {
 
                 x: spot.x - size
                 y: spot.y - size
-                size: (newest ? 12 : 8) * (root.lock.capsLock ? 1.4 : 1)
+                size: (newest ? 10 : 7) * (root.lock.capsLock ? 1.4 : 1)
                 lit: true
                 opacity: root.lock.vanishing ? 0 : root.lock.checking ? 0.55 + 0.45 * root.pulse : newest ? 1 : root.lock.capsLock ? 0.95 : 0.7
                 scale: root.lock.vanishing ? 0.3 : 1
@@ -164,6 +165,78 @@ Item {
                     NumberAnimation { duration: 220 + star.index * 30; easing.type: Easing.InCubic }
                 }
             }
+        }
+
+        // The newest star burns warm behind her hand and shines out between the fingers
+        Canvas {
+            id: glint
+
+            readonly property var spot: root.lock.stars > 0 ? root.starAt(root.lock.stars - 1) : null
+            readonly property color tint: root.scene?.glow?.color ?? "#ffcf8a"
+
+            width: (root.scene?.glow?.size ?? 0.2) * root.unit
+            height: width
+            x: (spot?.x ?? 0) - width / 2
+            y: (spot?.y ?? 0) - height / 2
+            visible: root.main && spot !== null
+            opacity: root.lock.vanishing ? 0 : root.lock.checking ? 0.6 + 0.4 * root.pulse : 1
+            scale: root.lock.capsLock ? 1.3 : 1
+            renderStrategy: Canvas.Immediate
+            // A hidden canvas drops paint requests, so ask again whenever it shows up
+            onWidthChanged: requestPaint()
+            onTintChanged: requestPaint()
+            onVisibleChanged: requestPaint()
+            onAvailableChanged: requestPaint()
+            // Canvas wants CSS colours, so transparency goes through rgba()
+            function rgba(color, alpha) {
+                return `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${alpha})`;
+            }
+
+            onPaint: {
+                const g = getContext("2d"), c = width / 2;
+                g.reset();
+                const halo = g.createRadialGradient(c, c, 0, c, c, c * 0.62);
+                halo.addColorStop(0, "rgba(255, 250, 240, 1)");
+                halo.addColorStop(0.14, rgba(tint, 0.95));
+                halo.addColorStop(0.45, rgba(tint, 0.4));
+                halo.addColorStop(1, rgba(tint, 0));
+                g.fillStyle = halo;
+                g.fillRect(0, 0, width, height);
+                // Long thin rays, the way a bright star looks through a lens
+                for (const [w, h] of [[c * 0.8, 1.6], [1.6, c]]) {
+                    const ray = g.createRadialGradient(c, c, 0, c, c, Math.max(w, h));
+                    ray.addColorStop(0, "rgba(255, 243, 220, 0.95)");
+                    ray.addColorStop(1, rgba(tint, 0));
+                    g.fillStyle = ray;
+                    g.fillRect(c - w, c - h, w * 2, h * 2);
+                }
+            }
+
+            Behavior on x {
+                NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+            }
+            Behavior on y {
+                NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+            }
+            Behavior on opacity {
+                NumberAnimation { duration: 300 }
+            }
+            Behavior on scale {
+                NumberAnimation { duration: 260 }
+            }
+        }
+
+        Image {
+            readonly property var info: root.scene?.clouds ?? null
+
+            visible: info !== null
+            height: (info?.height ?? 0) * root.unit
+            width: height * (implicitHeight > 0 ? implicitWidth / implicitHeight : 2)
+            x: root.width / 2 + (info?.x ?? 0) * root.unit - width / 2
+            y: (info?.bottom ?? 1) * root.unit - height
+            opacity: info?.opacity ?? 1
+            source: info ? Quickshell.shellPath(`assets/lock/${info.file}`) : ""
+            sourceSize.height: height
         }
 
         // Her, rising from the bottom of the screen. The hand is sharp, the body soft and close.

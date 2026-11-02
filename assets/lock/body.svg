@@ -1,12 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 700">
-  <!-- Placeholder: a woman seen from behind, to be replaced by the real illustration -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 900">
+  <!-- Placeholder: her back, long hair on the left, the raised arm's shoulder on the right at (640, 470) -->
   <defs>
-    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1b1830"/>
-      <stop offset="1" stop-color="#07070f"/>
+    <linearGradient id="sleeve" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3a2f45"/>
+      <stop offset="1" stop-color="#15121f"/>
+    </linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#140f14"/>
+      <stop offset="1" stop-color="#050307"/>
     </linearGradient>
   </defs>
-  <path fill="url(#skin)" d="M30 700 C40 560 110 470 230 430 C290 410 330 392 350 360 L352 300 C330 284 312 250 308 208 C300 128 344 74 402 74 C462 74 506 126 498 206 C494 250 474 284 452 300 L452 360 C472 392 512 410 572 430 C692 470 760 560 770 700 Z"/>
-  <path fill="url(#skin)" d="M318 150 C330 92 380 66 410 70 C470 76 512 120 500 190 C540 210 548 260 520 300 C500 250 470 230 456 230 C470 180 440 120 400 116 C356 116 330 160 336 210 C320 196 314 172 318 150 Z"/>
-  <path fill="none" stroke="#e9c7ff" stroke-opacity="0.22" stroke-width="3" d="M150 470 C190 445 220 434 230 430 C290 410 330 392 350 360 L352 300 C330 284 312 250 308 208 C300 128 344 74 402 74 C462 74 506 126 498 206 C494 250 474 284 452 300 L452 360 C472 392 512 410 572 430 C600 438 630 452 652 470"/>
+  <path fill="url(#sleeve)" d="M470 560 C520 500 590 455 650 440 C700 430 740 450 760 500 C800 600 840 720 880 900 L380 900 C400 760 430 640 470 560 Z"/>
+  <path fill="none" stroke="#f0b27a" stroke-opacity="0.45" stroke-width="5" d="M650 440 C700 430 740 450 760 500 C800 600 840 720 880 900"/>
+  <path fill="url(#hair)" d="M380 90 C250 90 160 180 150 300 C120 360 60 420 50 520 C30 620 10 740 0 900 L560 900 C540 800 560 700 540 600 C580 520 600 420 580 320 C570 190 490 90 380 90 Z"/>
+  <path fill="none" stroke="#c98a62" stroke-opacity="0.25" stroke-width="4" d="M380 90 C490 90 570 190 580 320 C600 420 580 520 540 600"/>
 </svg>
