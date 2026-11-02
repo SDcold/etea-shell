@@ -18,6 +18,29 @@ Scope {
     // Config.glassApps as a Lua table: class name to opacity
     readonly property string glass: Config.glassApps.map(app => `["${app.class}"] = ${app.opacity ?? 0}`).join(", ")
 
+    // Changing page: the planet turning under the fingers, or Hyprland's own slide
+    readonly property string pages: Config.pageTransition === "slide" ? `
+        hl.curve("eteaSlide", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
+        hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "eteaSlide", style = "slide" })
+        pcall(hl.gesture, { fingers = 4, direction = "horizontal", action = "unset" })
+        hl.gesture({ fingers = 4, direction = "horizontal", action = "workspace" })
+    ` : `
+        hl.animation({ leaf = "workspaces", enabled = false })
+        pcall(hl.gesture, { fingers = 4, direction = "horizontal", action = "unset" })
+        -- The start of the swipe, every move and its end reach the shell as events
+        hl.gesture({ fingers = 4, direction = "horizontal", action = {
+            start = function()
+                hl.dispatch(hl.dsp.event("etea:swipe,start"))
+            end,
+            update = function(e)
+                hl.dispatch(hl.dsp.event("etea:swipe,move," .. (e.delta and e.delta.x or 0)))
+            end,
+            finish = function(e)
+                hl.dispatch(hl.dsp.event("etea:swipe,end," .. tostring(e.cancelled == true)))
+            end
+        } })
+    `
+
     readonly property string settings: `
         hl.config({
             general = {
@@ -106,6 +129,7 @@ Scope {
         hl.animation({ leaf = "fadeSwitch", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeDim", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeShadow", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
+        ${root.pages}
     `
 
     onSettingsChanged: reapply.restart()

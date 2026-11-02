@@ -41,7 +41,6 @@ stop_etea() {
 # own page animation. Nothing is written to your config, a reload undoes it all.
 take_pages() {
     /usr/bin/hyprctl eval '
-        hl.animation({ leaf = "workspaces", enabled = false })
         local keys = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 }
         local pad = { 87, 88, 89, 83, 84, 85, 79, 80, 81, 90 }
         for i = 1, 10 do
@@ -91,25 +90,13 @@ take_pages() {
         hl.bind("SUPER + mouse_down", hl.dsp.global("etea:wheelDown"), { description = "Shell: Previous page, or shrink a widget" })
     ' | grep -v '^ok$' || true
 
-    # The four finger swipe would switch pages without us, so it goes through ETEA too.
+    # Up and down go to the orbit. Sideways belongs to the page transition, which ETEA
+    # sets up itself (modules/stage/Illumination.qml) since it depends on the settings.
     # Hyprland complains when removing a gesture that isn't there, which is fine here.
-    for direction in horizontal left right up down; do
+    for direction in up down; do
         /usr/bin/hyprctl eval "hl.gesture({ fingers = 4, direction = \"$direction\", action = \"unset\" })" >/dev/null 2>&1 || true
     done
     /usr/bin/hyprctl eval '
-        -- Sideways the planet follows the fingers: the start of the swipe, every move and
-        -- its end reach the shell as events, and it decides on letting go
-        hl.gesture({ fingers = 4, direction = "horizontal", action = {
-            start = function()
-                hl.dispatch(hl.dsp.event("etea:swipe,start"))
-            end,
-            update = function(e)
-                hl.dispatch(hl.dsp.event("etea:swipe,move," .. (e.delta and e.delta.x or 0)))
-            end,
-            finish = function(e)
-                hl.dispatch(hl.dsp.event("etea:swipe,end," .. tostring(e.cancelled == true)))
-            end
-        } })
         hl.gesture({ fingers = 4, direction = "up", action = function()
             hl.dispatch(hl.dsp.global("etea:orbit"))
         end })

@@ -26,7 +26,8 @@ Variants {
 
         World {
             anchors.fill: parent
-            angle: Planet.resting
+            // Hyprland's slide moves the windows only, the world stays where it is
+            angle: Config.pageTransition === "slide" ? 0 : Planet.resting
             interactive: true
         }
     }

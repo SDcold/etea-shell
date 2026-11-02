@@ -182,6 +182,11 @@ Singleton {
         }
         if (page === current)
             return;
+        // Hyprland's own slide, to compare: it does it all
+        if (Config.pageTransition === "slide") {
+            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${page} })`);
+            return;
+        }
 
         origin = current;
         target = page;

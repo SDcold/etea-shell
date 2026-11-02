@@ -15,6 +15,7 @@ Item {
 
     property bool sliding: false // a layout change, Hyprland is animating the windows
     property bool following: false // something is moving right now, keep up with it
+    property bool paging: false // Hyprland is sliding a page in, the stars wait for it
     property string lastShape: ""
 
     readonly property var pageWindows: Hyprland.toplevels.values.filter(t => t.workspace?.id === Planet.current)
@@ -32,6 +33,13 @@ Item {
 
         interval: 400
         onTriggered: root.following = false
+    }
+
+    Timer {
+        id: pageDone
+
+        interval: 420
+        onTriggered: root.paging = false
     }
 
     Timer {
@@ -57,6 +65,12 @@ Item {
             case "activewindowv2":
                 Hyprland.refreshToplevels();
                 break;
+            case "workspacev2":
+                if (Config.pageTransition === "slide") {
+                    root.paging = true;
+                    pageDone.restart();
+                }
+                break;
             }
         }
     }
@@ -73,7 +87,7 @@ Item {
             readonly property bool known: info?.size !== undefined
             readonly property bool focused: Hyprland.activeToplevel === modelData
             readonly property string shape: known ? `${info.at} ${info.size}` : ""
-            readonly property bool shown: root.active && focused && known && info.fullscreen !== 2 && modelData.address !== Planet.birthing
+            readonly property bool shown: root.active && !root.paging && focused && known && info.fullscreen !== 2 && modelData.address !== Planet.birthing
 
             x: known ? info.at[0] - root.screenX : 0
             y: known ? info.at[1] - root.screenY : 0
