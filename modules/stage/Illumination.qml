@@ -15,6 +15,9 @@ Scope {
         return `rgba(${hex(color.r)}${hex(color.g)}${hex(color.b)}${hex(alpha)})`;
     }
 
+    // Config.glassApps as a Lua table: class name to opacity
+    readonly property string glass: Config.glassApps.map(app => `["${app.class}"] = ${app.opacity ?? 0}`).join(", ")
+
     readonly property string settings: `
         hl.config({
             general = {
@@ -49,6 +52,30 @@ Scope {
         -- ETEA plays closing windows itself. Apps that quit on their own still fade out quickly.
         hl.animation({ leaf = "windowsOut", enabled = false })
         hl.animation({ leaf = "windowsIn", enabled = false })
+
+        -- Glass apps. The stock rules switch blur off on every window and a later rule can't
+        -- turn it back on, but set_prop outranks rules. 0 means the app fades itself.
+        ETEA_GLASS = { ${root.glass} }
+        function ETEA_GLAZE()
+            for _, window in ipairs(hl.get_windows()) do
+                local opacity = ETEA_GLASS[window.class]
+                if opacity then
+                    local target = "address:" .. window.address
+                    hl.dispatch(hl.dsp.window.set_prop({ prop = "no_blur", value = "false", window = target }))
+                    if opacity > 0 then
+                        hl.dispatch(hl.dsp.window.set_prop({ prop = "opacity", value = tostring(opacity), window = target }))
+                        hl.dispatch(hl.dsp.window.set_prop({ prop = "opacity_inactive", value = tostring(math.max(0.1, opacity - 0.1)), window = target }))
+                    end
+                end
+            end
+        end
+        ETEA_GLAZE()
+        if not ETEA_GLAZING then
+            ETEA_GLAZING = true
+            hl.on("window.open", function() ETEA_GLAZE() end)
+            -- Some apps only say who they are after the window is up
+            hl.on("window.class", function() ETEA_GLAZE() end)
+        end
 
         -- Always opaque, even unfocused: the text behind would bleed through the labels
         hl.window_rule({ match = { title = "Réglages ETEA" }, float = true, center = true, size = { 1040, 700 }, opacity = "1.0 override 1.0 override" })

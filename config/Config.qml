@@ -84,6 +84,7 @@ Singleton {
     property alias hotCorners: saved.hotCorners
     property alias pageStyle: saved.pageStyle // "constellation" or "numbers"
     property alias trayTint: saved.trayTint // background apps drawn in the shell's colours
+    property alias glassApps: saved.glassApps // windows blurred behind; with an opacity, Hyprland also fades them
 
     // The folder has to exist before we can save anything into it
     Process {
@@ -160,6 +161,17 @@ Singleton {
             property bool hotCorners: true
             property string pageStyle: "constellation"
             property bool trayTint: false
+            // kitty and Zen are see-through on their own and only need the blur
+            property var glassApps: [
+                { class: "kitty" },
+                { class: "zen" },
+                { class: "loaf" },
+                { class: "org.kde.dolphin", opacity: 0.8 },
+                { class: "code", opacity: 0.82 },
+                { class: "Code", opacity: 0.82 },
+                { class: "code-url-handler", opacity: 0.82 },
+                { class: "microsoft-edge", opacity: 0.9 }
+            ]
         }
     }
 }
