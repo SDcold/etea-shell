@@ -7,6 +7,7 @@ import qs.modules.bar.menus
 import qs.modules.launcher
 import qs.modules.notifications
 import qs.modules.osd
+import qs.modules.panels
 import qs.modules.session
 import qs.modules.settings
 import qs.modules.stage
@@ -21,6 +22,7 @@ ShellRoot {
     BarMenus {}
     Launcher {}
     Notifications {}
+    Panels {}
     Settings {}
     Session {}
     Osd {}

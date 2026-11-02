@@ -109,7 +109,7 @@ Row {
                         if (mouse.button === Qt.RightButton)
                             Notifs.quiet = !Notifs.quiet;
                         else
-                            Notifs.journalOpen = !Notifs.journalOpen;
+                            Menus.togglePanel("right", Qt.rect(item.mapToItem(null, 0, 0).x - 12, Theme.barGap, item.width + 24, Theme.barHeight));
                     } else if (item.modelData === "volume" && mouse.button === Qt.RightButton) {
                         root.sink.audio.muted = !root.sink.audio.muted;
                     } else {

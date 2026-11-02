@@ -44,6 +44,6 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onPressed: Menus.toggle("calendar", root.mapToItem(null, root.width / 2, 0).x)
+        onPressed: Menus.togglePanel("left", Qt.rect(root.mapToItem(null, 0, 0).x - 16, Theme.barGap, root.width + 32, Theme.barHeight))
     }
 }

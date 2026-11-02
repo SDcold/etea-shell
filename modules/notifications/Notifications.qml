@@ -28,7 +28,7 @@ Scope {
         target: "notifications"
 
         function journal(): void {
-            Notifs.journalOpen = !Notifs.journalOpen;
+            Menus.togglePanel("right");
         }
 
         function clear(): void {
@@ -40,7 +40,7 @@ Scope {
         id: panel
 
         screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-        visible: Notifs.popups.length > 0 || Notifs.journalOpen
+        visible: Notifs.popups.length > 0 && !Menus.rightOpen
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         implicitWidth: Theme.notifWidth + 40
@@ -66,38 +66,8 @@ Scope {
             y: 10
             spacing: 16
 
-            // The journal: every message still waiting for you
-            Text {
-                visible: Notifs.journalOpen
-                width: Theme.notifWidth
-                text: Notifs.count ? "Effacer tout" : "Aucun signal."
-                horizontalAlignment: Text.AlignRight
-                color: Theme.text
-                style: Text.Outline
-                styleColor: Qt.alpha("#000000", 0.3)
-                font.family: Theme.font
-                font.pixelSize: 13
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onPressed: Notifs.clear()
-                }
-            }
-
             Repeater {
-                model: Notifs.journalOpen ? Notifs.log.slice(0, 6) : []
-
-                NotificationCard {
-                    required property var modelData
-
-                    entry: modelData
-                    inJournal: true
-                }
-            }
-
-            Repeater {
-                model: Notifs.journalOpen ? [] : Notifs.popups
+                model: Notifs.popups
 
                 NotificationCard {
                     required property var modelData

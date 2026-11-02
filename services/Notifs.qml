@@ -9,7 +9,7 @@ Singleton {
 
     property var log: [] // newest first, what the journal shows
     property var popups: [] // on screen right now
-    property bool journalOpen: false
+    readonly property bool journalOpen: Menus.rightOpen // the control centre lists them already
     property bool quiet: false // do not disturb: notifications go straight to the journal
 
     readonly property int count: log.length

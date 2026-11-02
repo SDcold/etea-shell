@@ -115,6 +115,11 @@ Singleton {
     readonly property real groundLift: Config.groundLift // how high the ridges can climb, on a 1600 wide screen
     readonly property real groundSettle: 0.05 // how fast it calms down when the music stops, lower is slower
 
+    // The side panels, poured out of the bar
+    readonly property int panelWidth: 420
+    readonly property int panelOpen: 600 * pace
+    readonly property int panelClose: 380 * pace
+
     // How thick progress bars and rings are
     readonly property int barThickness: 7
     readonly property int ringThickness: 6
