@@ -8,9 +8,10 @@ import qs.config
 import qs.modules.bar
 import qs.services
 
-// "Where do you want to go?" Your apps are a map of the sky: every one of them, a
-// constellation per kind of thing you do, your favourites burning brightest at its heart.
-// The constellations float at different depths and drift against the pointer. Typing searches apps, open windows
+// "Where do you want to go?" Your apps are a map of the sky: a constellation per kind of
+// thing you do, its favourites drawn. Open one, by its name or with Tab, and it comes to
+// the middle with every app it holds while the others step back. The constellations
+// float at different depths and drift against the pointer. Typing searches apps, open windows
 // and sums, and ">" runs a command. A star can be carried to a page in the bar.
 Scope {
     id: root
@@ -54,6 +55,9 @@ Scope {
         property var clusters: []
         property int chosen: 0
         property point pointer: Qt.point(width / 2, height / 2)
+        property int opened: -1 // the family brought to the middle, -1 for the whole map
+        property var counts: [] // how many apps each family holds, for the tabs and the "+12"
+        readonly property int favourites: 6 // how many a family shows on the map
 
         // Where the constellations sit, and how much room each has: four across the top, three
         // below with the biggest, the system, in the middle. Each one floats at its own depth.
@@ -88,28 +92,35 @@ Scope {
             const stars = [], groups = [], wide = screen.width, tall = screen.height;
             // Read the box right now: the mapping binding may not have caught up with the text yet
             if (input.text.trim() === "") {
-                // A sunflower spiral per family: the most used at the heart, the rest winding out
-                Apps.map().forEach((family, group) => {
-                    if (!family.stars.length)
+                const families = Apps.map();
+                counts = families.map(family => family.stars.length);
+                families.forEach((family, group) => {
+                    if (!family.stars.length || (opened >= 0 && group !== opened))
                         return;
-                    const home = homes[group % homes.length], cx = wide * home[0], cy = tall * home[1];
-                    // The spiral fills an ellipse of its slot: spaced so it all fits, never sparse
-                    const rx = wide * home[2] / 2 * 0.85, ry = tall * 0.145, count = family.stars.length;
-                    const step = Math.min(42, Math.sqrt(rx * ry / count));
+                    const whole = group === opened;
+                    // On the map: the favourites at the family's spot. Opened: all of it, big,
+                    // in the middle of the screen.
+                    const home = whole ? [0.5, 0.6, 0.62] : homes[group % homes.length];
+                    const cx = wide * home[0], cy = tall * home[1];
+                    const shown = whole ? family.stars : family.stars.slice(0, favourites);
+                    const rx = wide * home[2] / 2 * 0.85, ry = tall * (whole ? 0.27 : 0.11), count = shown.length;
+                    const step = Math.min(whole ? 64 : 46, Math.sqrt(rx * ry / count));
                     const sx = Math.sqrt(rx / ry), sy = Math.sqrt(ry / rx);
                     const first = stars.length;
-                    family.stars.forEach((entry, rank) => {
+                    shown.forEach((entry, rank) => {
                         const angle = rank * 2.39996, reach = step * Math.sqrt(rank + (rank ? 0.6 : 0));
-                        stars.push(Object.assign({}, entry, { x: cx + Math.cos(angle) * reach * sx, y: cy + Math.sin(angle) * reach * sy, rank: rank, fit: Math.min(1, step / 36) }));
+                        stars.push(Object.assign({}, entry, { x: cx + Math.cos(angle) * reach * sx, y: cy + Math.sin(angle) * reach * sy, rank: rank, fit: whole ? 1 : 1 }));
                     });
                     const last = stars.length - 1;
                     groups.push({
                         name: family.name,
+                        family: group,
+                        more: family.stars.length - shown.length,
                         first: first,
                         last: last,
                         x: cx,
-                        y: cy + step * Math.sqrt(count) * sy + 22,
-                        depth: depths[group % depths.length],
+                        y: cy + step * Math.sqrt(count) * sy + 26,
+                        depth: whole ? 1 : depths[group % depths.length],
                         lines: tree(stars, first, last)
                     });
                 });
@@ -129,6 +140,20 @@ Scope {
             found = stars;
             clusters = groups;
             chosen = 0;
+        }
+
+        // Tab walks through the families, Escape steps back to the whole map
+        function openFamily(group) {
+            opened = group;
+            refresh();
+        }
+
+        function stepFamily(step) {
+            const filled = counts.map((count, group) => count ? group : -1).filter(group => group >= 0);
+            if (!filled.length)
+                return;
+            const at = filled.indexOf(opened);
+            openFamily(filled[((at < 0 ? (step > 0 ? -1 : 0) : at) + step + filled.length) % filled.length]);
         }
 
         function move(step) {
@@ -175,6 +200,7 @@ Scope {
             function onOpenChanged() {
                 if (!Apps.open)
                     return;
+                panel.opened = -1;
                 input.text = Apps.startWith;
                 Apps.startWith = "";
                 panel.refresh();
@@ -327,15 +353,26 @@ Scope {
                         }
                     }
 
+                    // The family's name opens it; "+12" says how many more it holds
                     Text {
                         visible: cluster.modelData.name !== ""
                         x: (cluster.modelData.x ?? 0) - width / 2
                         y: cluster.modelData.y ?? 0
-                        text: cluster.modelData.name
-                        color: Qt.alpha(Theme.text, 0.5)
+                        text: cluster.modelData.more > 0 ? `${cluster.modelData.name}   +${cluster.modelData.more}` : cluster.modelData.name
+                        color: Qt.alpha(Theme.text, opener.containsMouse ? 0.9 : 0.55)
                         font.family: Theme.font
                         font.pixelSize: 13
                         font.letterSpacing: 1.5
+
+                        MouseArea {
+                            id: opener
+
+                            anchors.fill: parent
+                            anchors.margins: -8
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onPressed: panel.openFamily(panel.opened === cluster.modelData.family ? -1 : cluster.modelData.family)
+                        }
                     }
 
                     Repeater {
@@ -506,22 +543,30 @@ Scope {
                 focus: true
                 onTextChanged: panel.refresh()
                 Keys.onPressed: event => {
+                    const browsing = input.text.trim() === "";
                     switch (event.key) {
                     case Qt.Key_Escape:
-                        Apps.open = false;
+                        if (browsing && panel.opened >= 0)
+                            panel.openFamily(-1);
+                        else
+                            Apps.open = false;
                         break;
                     case Qt.Key_Return:
                     case Qt.Key_Enter:
                         panel.launch();
                         break;
+                    case Qt.Key_Tab:
+                        browsing ? panel.stepFamily(1) : panel.move(1);
+                        break;
+                    case Qt.Key_Backtab:
+                        browsing ? panel.stepFamily(-1) : panel.move(-1);
+                        break;
                     case Qt.Key_Left:
                     case Qt.Key_Up:
-                    case Qt.Key_Backtab:
                         panel.move(-1);
                         break;
                     case Qt.Key_Right:
                     case Qt.Key_Down:
-                    case Qt.Key_Tab:
                         panel.move(1);
                         break;
                     default:
@@ -542,6 +587,51 @@ Scope {
                     GradientStop { position: 0; color: Qt.alpha(Theme.windowLit, 0) }
                     GradientStop { position: 0.5; color: Qt.alpha(Theme.windowLit, 0.8) }
                     GradientStop { position: 1; color: Qt.alpha(Theme.windowLit, 0) }
+                }
+            }
+
+            // The other families, to hop to one without going back to the map
+            Row {
+                visible: input.text.trim() === "" && panel.opened >= 0
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: parent.height * 0.92
+                spacing: 10
+
+                Repeater {
+                    model: Apps.families
+
+                    Rectangle {
+                        required property var modelData
+                        required property int index
+                        readonly property bool current: index === panel.opened
+
+                        visible: (panel.counts[index] ?? 0) > 0
+                        width: tab.implicitWidth + 26
+                        height: 30
+                        radius: 15
+                        color: Qt.alpha(Theme.windowLit, current ? 0.3 : press.containsMouse ? 0.14 : 0.06)
+                        border.width: 1
+                        border.color: Qt.alpha(Theme.windowLit, current ? 0.7 : 0.2)
+
+                        Text {
+                            id: tab
+
+                            anchors.centerIn: parent
+                            text: `${parent.modelData.name}  ${panel.counts[parent.index] ?? 0}`
+                            color: Theme.text
+                            font.family: Theme.font
+                            font.pixelSize: 12
+                        }
+
+                        MouseArea {
+                            id: press
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onPressed: panel.openFamily(parent.current ? -1 : parent.index)
+                        }
+                    }
                 }
             }
 
