@@ -9,9 +9,9 @@ Text {
     // Go for the player that's actually playing, or else the first one around
     readonly property var player: Music.player
 
-    visible: player !== null && (player.trackTitle ?? "") !== ""
+    readonly property bool wanted: player !== null && (player.trackTitle ?? "") !== ""
+
     width: Math.min(implicitWidth, 300)
-    anchors.verticalCenter: parent.verticalCenter
     elide: Text.ElideRight
     text: {
         if (!player)

@@ -8,9 +8,9 @@ import qs.config
 Row {
     id: root
 
-    visible: Config.status.includes("tray") && SystemTray.items.values.length > 0
-    spacing: 12
-    anchors.verticalCenter: parent.verticalCenter
+    readonly property bool wanted: SystemTray.items.values.length > 0
+
+    spacing: Math.round(Theme.barSpacing * 0.7)
 
     Repeater {
         model: SystemTray.items
@@ -21,8 +21,8 @@ Row {
             required property var modelData
 
             anchors.verticalCenter: parent.verticalCenter
-            width: 20
-            height: 20
+            width: Theme.iconSize - 1
+            height: Theme.iconSize - 1
             scale: pointer.containsMouse ? 1.18 : 1
 
             Behavior on scale {
@@ -32,7 +32,7 @@ Row {
             IconImage {
                 anchors.fill: parent
                 source: entry.modelData.icon
-                implicitSize: 20
+                implicitSize: Theme.iconSize - 1
             }
 
             MouseArea {

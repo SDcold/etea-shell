@@ -45,7 +45,8 @@ Item {
         visible: root.orbitCard && root.windows.length === 0
         anchors.fill: parent
         anchors.margins: Theme.windowGapOuter
-        anchors.topMargin: Theme.barGap + Theme.barHeight + Theme.windowGapOuter
+        anchors.topMargin: (Theme.barOnTop ? Theme.barReserve : 0) + Theme.windowGapOuter
+        anchors.bottomMargin: (Theme.barOnTop ? 0 : Theme.barReserve) + Theme.windowGapOuter
         radius: Theme.windowRadius
         color: Qt.alpha(Theme.windowLit, 0.04)
         border.width: 6

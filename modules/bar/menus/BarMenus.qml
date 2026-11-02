@@ -29,10 +29,12 @@ Scope {
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "etea:menu"
         WlrLayershell.keyboardFocus: Menus.open === "network" ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-        margins.top: Theme.barGap + Theme.barHeight + 6
+        margins.top: Theme.barReserve + 6
+        margins.bottom: Theme.barReserve + 6
 
         anchors {
-            top: true
+            top: Theme.barOnTop
+            bottom: !Theme.barOnTop
             left: true
             right: true
         }
@@ -98,12 +100,12 @@ Scope {
             readonly property real wanted: Menus.anchorX - width / 2
 
             x: Math.max(14, Math.min(parent.width - width - 14, wanted))
-            y: 8
+            y: Theme.barOnTop ? 8 : parent.height - height - 8
             width: menu.width + 40
             height: menu.height + 62
             layer.enabled: panel.reveal < 1
             layer.effect: StarMask {
-                center: Qt.point(Menus.anchorX - card.x, 0)
+                center: Qt.point(Menus.anchorX - card.x, Theme.barOnTop ? 0 : card.height)
                 reach: fullReach * panel.reveal
                 shine: (1 - panel.reveal) * 0.9
                 tint: Menus.tint

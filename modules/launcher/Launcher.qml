@@ -90,9 +90,10 @@ Scope {
 
         // The page of the bar under the pointer, for dropping a star onto it
         function pageUnder(x, y) {
-            if (y > Theme.barGap + Theme.barHeight + 20)
+            const area = Planet.pagesArea;
+            if (area.width === 0 || y < area.y - 20 || y > area.y + area.height + 20)
                 return 0;
-            const page = Math.floor((x - Theme.barSide) / (Theme.pageWidth + Theme.pageGap)) + 1;
+            const page = Math.floor((x - area.x) / (Theme.pageWidth + Theme.pageGap)) + 1;
             return page >= 1 && page <= Config.pages ? page : 0;
         }
 

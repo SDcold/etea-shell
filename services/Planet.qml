@@ -92,9 +92,12 @@ Singleton {
         geometryDelay.restart();
     }
 
+    // Where the pages sit in the bar on the focused screen. The bar keeps it up to date.
+    property rect pagesArea: Qt.rect(Theme.barSide, Theme.barGap, 0, Theme.barHeight)
+
     // The middle of a page's constellation in the bar
     function pagePoint(page) {
-        return Qt.point(Theme.barSide + (page - 1) * (Theme.pageWidth + Theme.pageGap) + Theme.pageWidth / 2, Theme.barGap + Theme.barHeight * 0.6);
+        return Qt.point(pagesArea.x + (page - 1) * (Theme.pageWidth + Theme.pageGap) + Theme.pageWidth / 2, pagesArea.y + pagesArea.height * 0.6);
     }
 
     // Going up: ground, then orbit, then the whole system, then back home

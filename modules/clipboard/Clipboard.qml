@@ -13,6 +13,14 @@ Scope {
     id: root
 
     property bool open: false
+
+    Connections {
+        target: Menus
+
+        function onClipboardOpenChanged() {
+            root.open = Menus.clipboardOpen;
+        }
+    }
     property var entries: []
     property int chosen: 0
 
@@ -30,6 +38,7 @@ Scope {
     }
 
     onOpenChanged: {
+        Menus.clipboardOpen = open; // the bar's tools can open it too
         if (!open)
             return;
         search.text = "";

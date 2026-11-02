@@ -44,10 +44,10 @@ Scope {
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         implicitWidth: Theme.notifWidth + 40
-        implicitHeight: screen.height - Theme.barGap - Theme.barHeight
+        implicitHeight: screen.height - Theme.barReserve
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "etea:notifications"
-        margins.top: Theme.barGap + Theme.barHeight + 6
+        margins.top: Theme.barOnTop ? Theme.barReserve + 6 : 14
 
         anchors {
             top: true

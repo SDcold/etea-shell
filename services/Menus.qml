@@ -14,6 +14,9 @@ Singleton {
     property bool sessionOpen: false
     property string lastClosed: ""
 
+    property bool captureOpen: false
+    property bool clipboardOpen: false
+
     // The side panels
     property bool leftOpen: false
     property bool rightOpen: false

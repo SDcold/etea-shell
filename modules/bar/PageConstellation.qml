@@ -96,7 +96,7 @@ Item {
         readonly property var app: root.hovered ? DesktopEntries.heuristicLookup(root.hovered.lastIpcObject?.class ?? root.hovered.wayland?.appId ?? "") : null
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: parent.height + 2
+        y: Theme.barOnTop ? parent.height + 2 : -height - 2
         spacing: 6
         opacity: root.hovered ? 1 : 0
 

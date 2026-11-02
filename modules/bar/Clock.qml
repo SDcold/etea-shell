@@ -9,7 +9,6 @@ Item {
 
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
-    anchors.verticalCenter: parent.verticalCenter
 
     SystemClock {
         id: clock

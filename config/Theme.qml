@@ -26,11 +26,16 @@ Singleton {
     readonly property color starAsleep: "#d8d2d4"
     readonly property color link: planet.light
 
-    // The bar floats just below the edge of the screen
-    readonly property int barHeight: 40
+    // The bar floats just off the edge of the screen, at the top or the bottom
+    readonly property bool barOnTop: Config.barPosition !== "bottom"
+    readonly property real barScale: ({ compact: 0.82, normal: 1, large: 1.2 })[Config.barSize] ?? 1
+    readonly property int barHeight: Math.round(40 * barScale)
     readonly property int barGap: 8
     readonly property int barSide: 20
     readonly property int barGlowRoom: 32
+    readonly property int barReserve: barGap + barHeight // the strip of screen the bar keeps for itself
+    readonly property int barSpacing: Math.round(18 * barScale)
+    readonly property int iconSize: Math.round(21 * barScale)
 
     // Crisp white on the sky, with a warm glow around it
     readonly property color text: "#ffffff"
@@ -39,7 +44,7 @@ Singleton {
 
     // One font for the whole shell, icons on the side
     readonly property string font: "Poppins"
-    readonly property int textSize: 14
+    readonly property int textSize: Math.round(14 * barScale)
 
     // The everyday pace: quick enough to never keep you waiting
     readonly property int fast: 160

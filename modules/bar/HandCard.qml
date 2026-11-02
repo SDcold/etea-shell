@@ -13,6 +13,8 @@ Item {
     property color tint: Theme.windowLit
     property real rise: 0.16 // how high the horizon sits inside the card
     property bool alive: visible // the sky stops moving when nobody can see it
+    property real starSpacing: 130 // one star every so often along the sides, 0 keeps only the corners
+    property real starScale: 1
 
     readonly property alias hovered: hoverWatch.hovered
 
@@ -35,17 +37,20 @@ Item {
             return [];
         const random = randomFrom(phase);
         const corner = radius * 0.29;
+        const s = starScale;
         const points = [
-            { x: corner, y: corner, size: 7.5 },
-            { x: w - corner, y: corner, size: 6 },
-            { x: w - corner, y: h - corner, size: 7.5 },
-            { x: corner, y: h - corner, size: 6 }
+            { x: corner, y: corner, size: 7.5 * s },
+            { x: w - corner, y: corner, size: 6 * s },
+            { x: w - corner, y: h - corner, size: 7.5 * s },
+            { x: corner, y: h - corner, size: 6 * s }
         ];
         const scatter = (length, place) => {
-            const count = Math.max(1, Math.round(length / 130));
+            if (starSpacing <= 0)
+                return;
+            const count = Math.max(1, Math.round(length / starSpacing));
             for (let i = 0; i < count; i++) {
                 const t = (i + 0.5 + (random() - 0.5) * 0.7) / count;
-                points.push(Object.assign(place(radius + (length - radius * 2) * t), { size: 2.6 + random() * 2.6 }));
+                points.push(Object.assign(place(radius + (length - radius * 2) * t), { size: (2.6 + random() * 2.6) * s }));
             }
         };
         scatter(w, x => ({ x: x, y: 0 }));

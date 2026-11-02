@@ -13,8 +13,29 @@ Singleton {
     readonly property string locale: "fr_FR"
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
 
+    // What the bar can hold, and where each piece can go
+    readonly property var barModuleChoices: [
+        { id: "pages", label: "Pages", icon: "layout" },
+        { id: "clock", label: "Heure", icon: "nightlight" },
+        { id: "media", label: "Musique", icon: "music" },
+        { id: "tray", label: "Plateau", icon: "clipboard" },
+        { id: "status", label: "Statut", icon: "wifi-high" },
+        { id: "tools", label: "Outils", icon: "picker" },
+        { id: "resources", label: "Ressources", icon: "cpu" }
+    ]
+    readonly property var toolChoices: [
+        { id: "capture", label: "Capture", icon: "capture" },
+        { id: "clipboard", label: "Presse-papiers", icon: "clipboard" },
+        { id: "picker", label: "Pipette", icon: "picker" },
+        { id: "nightlight", label: "Veilleuse", icon: "nightlight" },
+        { id: "microphone", label: "Micro", icon: "microphone" }
+    ]
+    readonly property var resourceChoices: [
+        { id: "cpu", label: "Processeur", icon: "cpu" },
+        { id: "memory", label: "Mémoire", icon: "ram" }
+    ]
+
     readonly property var statusChoices: [
-        { id: "tray", label: "Applis en arrière-plan" },
         { id: "notifications", label: "Notifications" },
         { id: "network", label: "Réseau" },
         { id: "bluetooth", label: "Bluetooth" },
@@ -42,6 +63,21 @@ Singleton {
     property alias traceWidth: saved.traceWidth
     property alias traceSpacing: saved.traceSpacing
     property alias windowGapOuter: saved.windowGapOuter
+
+    property alias barPosition: saved.barPosition // "top" or "bottom"
+    property alias barSize: saved.barSize // "compact", "normal" or "large"
+    property alias barStyle: saved.barStyle // "sky", "islands" or "band"
+    property alias barLayout: saved.barLayout // { left, center, right }, each a list of modules
+    property alias barTools: saved.barTools
+    property alias barResources: saved.barResources
+    property alias clockFormat: saved.clockFormat // "24" or "12"
+    property alias clockSeconds: saved.clockSeconds
+    property alias dateFormat: saved.dateFormat // "long", "short" or "off"
+    property alias barPercent: saved.barPercent // numbers beside the volume and battery
+    property alias mediaTitle: saved.mediaTitle // "scroll", "short" or "off"
+    property alias hotCorners: saved.hotCorners
+    property alias pageStyle: saved.pageStyle // "constellation" or "numbers"
+    property alias trayTint: saved.trayTint // background apps drawn in the shell's colours
 
     // The folder has to exist before we can save anything into it
     Process {
@@ -75,7 +111,7 @@ Singleton {
             property string theme: "aster"
             property var customPlanets: []
             property string pace: "daily"
-            property var status: ["tray", "notifications", "network", "bluetooth", "volume", "battery", "settings", "session"]
+            property var status: ["notifications", "network", "bluetooth", "volume", "battery", "settings", "session"]
 
             // Widgets in the sky, for when a page is empty. x and y are shares of the screen.
             property var widgets: [
@@ -100,6 +136,21 @@ Singleton {
             property int traceWidth: 2
             property int traceSpacing: 420
             property int windowGapOuter: 12
+
+            property string barPosition: "top"
+            property string barSize: "normal"
+            property string barStyle: "sky"
+            property var barLayout: ({ left: ["pages"], center: ["clock", "media"], right: ["tray", "status"] })
+            property var barTools: ["capture", "clipboard", "picker"]
+            property var barResources: ["cpu", "memory"]
+            property string clockFormat: "24"
+            property bool clockSeconds: false
+            property string dateFormat: "long"
+            property bool barPercent: true
+            property string mediaTitle: "scroll"
+            property bool hotCorners: true
+            property string pageStyle: "constellation"
+            property bool trayTint: false
         }
     }
 }

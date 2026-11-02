@@ -32,7 +32,8 @@ Scope {
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: `etea:panel-${root.side}`
         WlrLayershell.keyboardFocus: root.open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-        margins.top: Theme.barGap + Theme.barHeight + 6
+        margins.top: Theme.barOnTop ? Theme.barReserve + 6 : 6
+        margins.bottom: Theme.barOnTop ? 0 : Theme.barReserve
 
         anchors {
             top: true
@@ -91,7 +92,7 @@ Scope {
             height: parent.height - y - 14
             layer.enabled: window.reveal < 1
             layer.effect: StarMask {
-                center: Qt.point(root.side === "left" ? 0 : card.width, 0)
+                center: Qt.point(root.side === "left" ? 0 : card.width, Theme.barOnTop ? 0 : card.height)
                 reach: fullReach * window.reveal
                 shine: (1 - window.reveal) * 0.9
                 tint: root.tint

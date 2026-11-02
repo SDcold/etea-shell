@@ -4,6 +4,7 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 import qs.config
+import qs.services
 import qs.modules.bar
 
 // Take a piece of the screen. Everything freezes, you draw a zone with stars on its
@@ -12,6 +13,14 @@ Scope {
     id: root
 
     property bool open: false
+
+    Connections {
+        target: Menus
+
+        function onCaptureOpenChanged() {
+            root.open = Menus.captureOpen;
+        }
+    }
     property point start: Qt.point(0, 0)
     property point end: Qt.point(0, 0)
     property bool dragging: false
@@ -27,6 +36,7 @@ Scope {
     }
 
     onOpenChanged: {
+        Menus.captureOpen = open; // the bar's tools can open it too
         dragging = false;
         start = Qt.point(0, 0);
         end = Qt.point(0, 0);

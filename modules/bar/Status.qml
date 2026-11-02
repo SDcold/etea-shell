@@ -21,8 +21,7 @@ Row {
     readonly property int bluetoothDevices: Bluetooth.devices.values.filter(d => d.connected).length
     readonly property var battery: UPower.displayDevice
 
-    spacing: 18
-    anchors.verticalCenter: parent.verticalCenter
+    spacing: Theme.barSpacing
 
     // Without this, Pipewire won't tell us the volume
     PwObjectTracker {
@@ -81,7 +80,7 @@ Row {
                 Icon {
                     anchors.verticalCenter: parent.verticalCenter
                     name: item.info[0]
-                    size: 21
+                    size: Theme.iconSize
                     tint: item.tint
                 }
 
