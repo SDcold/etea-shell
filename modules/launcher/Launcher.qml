@@ -256,13 +256,23 @@ Scope {
                         }
 
                         Image {
+                            visible: !node.modelData.glyph
                             x: -width / 2
                             y: -height / 2
                             width: 44
                             height: 44
                             sourceSize: Qt.size(96, 96)
                             smooth: true
-                            source: node.modelData.icon
+                            source: node.modelData.icon ?? ""
+                            opacity: node.chosen ? 1 : 0.8
+                        }
+
+                        // An emoji is its own icon
+                        Text {
+                            visible: !!node.modelData.glyph
+                            anchors.centerIn: parent
+                            text: node.modelData.glyph ?? ""
+                            font.pixelSize: 36
                             opacity: node.chosen ? 1 : 0.8
                         }
                     }
