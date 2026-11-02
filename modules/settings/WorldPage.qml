@@ -104,7 +104,7 @@ ColumnLayout {
                     cursorShape: Qt.PointingHandCursor
                     onPressed: mouse => {
                         ripple.burst(mouse.x, mouse.y);
-                        Config.theme = choice.modelData.id;
+                        Planet.changeWorld(choice.modelData.id);
                     }
                 }
 

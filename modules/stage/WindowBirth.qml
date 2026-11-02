@@ -80,6 +80,38 @@ Item {
         birth.restart();
     }
 
+    // A new world: hold the screen still on the last photo, change the world behind it,
+    // then open the same star from the middle of the screen
+    function changeWorld(id) {
+        if (!active || playing || !recent.hasContent) {
+            Config.theme = id;
+            return;
+        }
+        frozen = true;
+        playing = true;
+        mask.center = Qt.point(width / 2, height / 2);
+        mask.reach = 0;
+        mask.shine = 0.9;
+        Config.theme = id;
+        worldSettle.restart();
+    }
+
+    // Give the new colours a moment to reach every window before the star opens
+    Timer {
+        id: worldSettle
+
+        interval: 140
+        onTriggered: birth.restart()
+    }
+
+    Connections {
+        target: Planet
+
+        function onWorldWanted(id) {
+            root.changeWorld(id);
+        }
+    }
+
     // The warning came but no window followed: thaw the screen
     Timer {
         id: giveUp

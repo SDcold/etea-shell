@@ -24,11 +24,15 @@ Variants {
         // The camera. All of this hangs off Planet.altitude, 0 on the ground and 1 in orbit.
         readonly property real unit: width / 1600
         readonly property real screenHeight: height / unit
-        readonly property real planetRadius: Math.exp(Math.log(Theme.terrainCurve) + (Math.log(Theme.orbitRadius) - Math.log(Theme.terrainCurve)) * Planet.altitude)
+        // Going on up to the planets, the camera keeps rising: the planet shrinks a little
+        // and drifts to where the row of worlds will hold it, its pages fall in towards it
+        readonly property real beyond: Planet.systemLevel
+        readonly property real planetRadius: Math.exp(Math.log(Theme.terrainCurve) + (Math.log(Theme.orbitRadius) - Math.log(Theme.terrainCurve)) * Planet.altitude) * (1 - 0.22 * beyond)
         readonly property real planetTop: {
             const ground = screenHeight * (1 - Theme.terrainHeight);
             const t = Math.max(0, Math.min(1, (Planet.altitude - 0.3) / 0.7));
-            return ground + (screenHeight / 2 - Theme.orbitRadius - ground) * t * t * (3 - 2 * t);
+            const orbit = ground + (screenHeight / 2 - Theme.orbitRadius - ground) * t * t * (3 - 2 * t);
+            return orbit + (screenHeight * 0.44 - planetRadius - (screenHeight / 2 - Theme.orbitRadius)) * beyond;
         }
 
         screen: modelData
@@ -114,7 +118,7 @@ Variants {
                     screenX: stage.modelData.x
                     screenY: stage.modelData.y
                     angle: Planet.shortestSteps(Planet.origin, page) * Planet.step - Planet.travel + Planet.handTurn
-                    zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude)
+                    zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude) * (1 - 0.55 * stage.beyond)
                     lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
                     orbitCard: true
                     pointedAt: Planet.hoveredPage === index

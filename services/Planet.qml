@@ -75,6 +75,7 @@ Singleton {
     property real pressedAt: 0
 
     signal photoNeeded(int page, int slot)
+    signal worldWanted(string id) // a new world picked outside orbit, the stage wipes it in
     signal finished(real prepareMs)
 
     // Everything that wants to change page comes through here
@@ -200,6 +201,18 @@ Singleton {
     // Let go and it carries on a little, then settles on the nearest planet
     function releaseSystem(speed) {
         slideSystemTo(Math.round(systemScroll + speed * 0.22));
+    }
+
+    // A world picked from Settings: the focused stage freezes the screen, the new world
+    // settles in behind, and a star wipes it in. Nothing to freeze, it simply changes.
+    function changeWorld(id) {
+        if (id === Config.theme)
+            return;
+        if (phase !== Planet.Phase.Idle) {
+            Config.theme = id;
+            return;
+        }
+        worldWanted(id);
     }
 
     // Moving to a new planet: the theme changes and we come down onto it
@@ -460,7 +473,7 @@ Singleton {
 
         target: root
         property: "systemLevel"
-        duration: 620
+        duration: Theme.orbitRise
         easing.type: Easing.InOutCubic
     }
 
