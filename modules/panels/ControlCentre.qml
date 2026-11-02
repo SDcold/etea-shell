@@ -44,7 +44,7 @@ ColumnLayout {
             Layout.fillWidth: true
 
             Text {
-                text: root.battery?.isLaptopBattery ? `${Math.round(root.battery.percentage * 100)} %` : Qt.formatTime(new Date(), "HH:mm")
+                text: root.battery?.isLaptopBattery ? `${Math.round(root.battery.percentage * 100)} %` : Config.time(new Date())
                 color: Theme.text
                 font.family: Theme.font
                 font.pixelSize: 34

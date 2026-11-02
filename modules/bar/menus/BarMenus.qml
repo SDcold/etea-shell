@@ -129,7 +129,7 @@ Scope {
 
                 x: 20
                 y: 20
-                source: ({
+                source: panel.shown.startsWith("tray-") ? "TrayMenu.qml" : ({
                         calendar: "CalendarMenu.qml",
                         media: "MediaMenu.qml",
                         sound: "SoundMenu.qml",

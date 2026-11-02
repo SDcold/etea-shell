@@ -39,7 +39,7 @@ Item {
             return Lang.t("à l'instant");
         if (minutes < 60)
             return Lang.t("il y a {0} min", minutes);
-        return Qt.formatTime(entry.time, "HH:mm");
+        return Config.time(entry.time);
     }
 
     Component.onCompleted: {

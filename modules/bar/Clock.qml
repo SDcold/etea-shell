@@ -23,7 +23,7 @@ Item {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: Qt.formatTime(clock.date, (Config.clockFormat === "12" ? "h:mm" : "HH:mm") + (Config.clockSeconds ? ":ss" : "") + (Config.clockFormat === "12" ? " AP" : ""))
+            text: Config.time(clock.date, { seconds: Config.clockSeconds })
             font.features: { "tnum": 1 }
             color: Theme.text
             font.family: Theme.font

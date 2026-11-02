@@ -9,6 +9,7 @@ Singleton {
     property string open: ""
     property real anchorX: 0
     property color tint: Theme.windowLit
+    property var trayItem: null // the background app whose menu is open
 
     property bool settingsOpen: false
     property bool sessionOpen: false

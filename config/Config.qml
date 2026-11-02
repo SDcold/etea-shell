@@ -86,6 +86,13 @@ Singleton {
     property alias trayTint: saved.trayTint // background apps drawn in the shell's colours
     property alias glassApps: saved.glassApps // windows blurred behind; with an opacity, Hyprland also fades them
 
+    // Times written the way the clock setting asks, 12 or 24 hours. The big clocks leave out
+    // AM/PM: their numerals are the drawing, the time of day reads from the sky anyway.
+    function time(date, options) {
+        const twelve = clockFormat === "12";
+        return Qt.formatTime(date, (twelve ? "h:mm" : "HH:mm") + (options?.seconds ? ":ss" : "") + (twelve && options?.suffix !== false ? " AP" : ""));
+    }
+
     // The folder has to exist before we can save anything into it
     Process {
         running: true

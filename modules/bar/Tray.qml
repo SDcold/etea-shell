@@ -4,8 +4,10 @@ import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import qs.config
+import qs.services
 
-// The apps running in the background. Left click opens them, right click shows their menu.
+// The apps running in the background. Left click opens them, right click shows their menu
+// in one of ours.
 Row {
     id: root
 
@@ -51,8 +53,8 @@ Row {
                         entry.modelData.secondaryActivate();
                     } else if (mouse.button === Qt.RightButton || entry.modelData.onlyMenu) {
                         if (entry.modelData.hasMenu) {
-                            const spot = entry.mapToItem(null, 0, entry.height + 8);
-                            entry.modelData.display(QsWindow.window, spot.x, spot.y);
+                            Menus.trayItem = entry.modelData;
+                            Menus.toggle(`tray-${entry.modelData.id}`, entry.mapToItem(null, entry.width / 2, 0).x);
                         }
                     } else {
                         entry.modelData.activate();

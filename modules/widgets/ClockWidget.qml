@@ -205,7 +205,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatTime(clock.date, "HH:mm")
+            text: Config.time(clock.date, { suffix: false })
             color: Theme.text
             font.family: Theme.font
             font.pixelSize: 54

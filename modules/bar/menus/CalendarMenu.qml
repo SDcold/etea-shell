@@ -12,10 +12,12 @@ ColumnLayout {
     property date shown: new Date()
     readonly property date today: new Date()
     readonly property var locale: Qt.locale(Config.locale)
+    // Weeks start where the language starts them: Monday in French, Sunday in American English
+    readonly property int firstDay: locale.firstDayOfWeek
 
     readonly property var days: {
         const first = new Date(shown.getFullYear(), shown.getMonth(), 1);
-        const offset = (first.getDay() + 6) % 7;
+        const offset = (first.getDay() - firstDay + 7) % 7;
         const cells = [];
         for (let i = 0; i < 42; i++)
             cells.push(new Date(shown.getFullYear(), shown.getMonth(), i - offset + 1));
@@ -119,16 +121,16 @@ ColumnLayout {
         Layout.fillWidth: true
 
         Repeater {
-            model: ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"]
+            model: 7
 
             Text {
-                required property string modelData
+                required property int index
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: 28
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                text: modelData
+                text: root.locale.dayName((root.firstDay + index) % 7, Locale.ShortFormat).replace(/\.$/, "")
                 color: Menus.tint
                 font.family: Theme.font
                 font.pixelSize: 10

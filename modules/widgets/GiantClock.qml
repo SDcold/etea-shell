@@ -32,7 +32,7 @@ Item {
     Text {
         id: digits
 
-        text: Qt.formatTime(clock.date, "HH:mm")
+        text: Config.time(clock.date, { suffix: false })
         color: Theme.skyInk
         font.family: Theme.font
         font.pixelSize: root.sky * 0.54
