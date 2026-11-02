@@ -14,16 +14,13 @@ Singleton {
     property bool sessionOpen: false
     property string lastClosed: ""
 
-    // The side panels, and the spot in the bar each one was poured out of
+    // The side panels
     property bool leftOpen: false
     property bool rightOpen: false
-    property rect leftAnchor: Qt.rect(0, 0, 0, 0)
-    property rect rightAnchor: Qt.rect(0, 0, 0, 0)
     property string panelClosed: ""
     property real panelClosedAt: 0
 
-    // With no spot given, it was the keyboard: the panel finds its own way out
-    function togglePanel(side, from) {
+    function togglePanel(side) {
         if (side === panelClosed && Date.now() - panelClosedAt < 250)
             return;
         const isOpen = side === "left" ? leftOpen : rightOpen;
@@ -32,13 +29,10 @@ Singleton {
             return;
         }
         open = "";
-        if (side === "left") {
-            leftAnchor = from ?? Qt.rect(0, 0, 0, 0);
+        if (side === "left")
             leftOpen = true;
-        } else {
-            rightAnchor = from ?? Qt.rect(0, 0, 0, 0);
+        else
             rightOpen = true;
-        }
     }
 
     function closePanel(side) {

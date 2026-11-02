@@ -10,7 +10,6 @@ Scope {
     SidePanel {
         side: "left"
         open: Menus.leftOpen
-        anchorRect: Menus.leftAnchor
         tint: "#b9a2f0"
         content: Logbook {}
         onCloseRequested: Menus.closePanel("left")
@@ -19,7 +18,6 @@ Scope {
     SidePanel {
         side: "right"
         open: Menus.rightOpen
-        anchorRect: Menus.rightAnchor
         tint: Theme.windowLit
         content: ControlCentre {}
         onCloseRequested: Menus.closePanel("right")

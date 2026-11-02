@@ -52,7 +52,7 @@ Variants {
                 height: Theme.barGap + Theme.barHeight
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onPressed: Menus.togglePanel(modelData, Qt.rect(isLeft ? 0 : bar.width - 48, Theme.barGap, 48, Theme.barHeight))
+                onPressed: Menus.togglePanel(modelData)
                 Component.onCompleted: isLeft ? bar.leftCorner = corner : bar.rightCorner = corner
 
                 Star {

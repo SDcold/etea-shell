@@ -6,14 +6,13 @@ import qs.config
 import qs.modules.bar
 import qs.services
 
-// A side panel that pours out of whatever opened it, like a drop pulled out of the
-// bar: it stretches sideways, falls into place, then lets go. Closing pours it back.
+// A side panel that pours out of the edge of the screen: it bulges out, runs down,
+// then lets go of the edge and floats. Closing pours it back in.
 Scope {
     id: root
 
     required property string side // "left" or "right"
     required property bool open
-    property rect anchorRect: Qt.rect(0, 0, 0, 0)
     property color tint: Theme.windowLit
     property Component content
 
@@ -23,6 +22,7 @@ Scope {
         id: window
 
         property real progress: root.open ? 1 : 0
+        readonly property bool right: root.side === "right"
 
         function clamp(value) {
             return Math.max(0, Math.min(1, value));
@@ -32,25 +32,34 @@ Scope {
             return from + (to - from) * amount;
         }
 
-        // Opened from the keyboard, the drop comes from roughly where the button would be
-        readonly property rect from: root.anchorRect.width > 0 ? root.anchorRect : root.side === "right" ? Qt.rect(width - Theme.barSide - 44, Theme.barGap, 44, Theme.barHeight) : Qt.rect(width / 2 - 90, Theme.barGap, 180, Theme.barHeight)
         readonly property rect target: {
             const top = Theme.barGap + Theme.barHeight + 12;
-            return Qt.rect(root.side === "right" ? width - Theme.barSide - Theme.panelWidth : Theme.barSide, top, Theme.panelWidth, height - top - 14);
+            return Qt.rect(right ? width - Theme.barSide - Theme.panelWidth : Theme.barSide, top, Theme.panelWidth, height - top - 14);
         }
 
-        // Sideways first with a little overshoot, then down, then the drop lets go
-        readonly property real spread: {
-            const t = clamp(progress / 0.7) - 1, c = 1.2;
-            return 1 + (c + 1) * t * t * t + c * t * t;
+        // Out of the edge with a little overshoot, then down. Closing rises first, then sinks back in.
+        readonly property real reach: {
+            const t = clamp(progress / 0.7);
+            if (!root.open)
+                return t * t * (3 - 2 * t);
+            const c = 1.3, u = t - 1;
+            return 1 + (c + 1) * u * u * u + c * u * u;
         }
-        // Closing isn't the opening played backwards: it rises steadily, then narrows into the button
         readonly property real drop: {
-            const t = clamp((progress - 0.12) / 0.88);
-            return root.open ? 1 - Math.pow(1 - t, 5) : t * t * (3 - 2 * t);
+            const t = clamp((progress - 0.08) / 0.92);
+            return root.open ? 1 - Math.pow(1 - t, 4) : t * t * (3 - 2 * t);
         }
-        readonly property real letGo: 1 - clamp((progress - 0.55) / 0.4)
-        readonly property rect shape: Qt.rect(lerp(from.x, target.x, spread), lerp(from.y, target.y, spread), lerp(from.width, target.width, spread), lerp(from.height, target.height, drop))
+        // Stuck to the edge while it moves, free once it has landed
+        readonly property real held: 1 - clamp((progress - 0.75) / 0.25)
+        readonly property rect shape: {
+            const w = target.width * reach;
+            return Qt.rect(right ? target.x + target.width - w : target.x, target.y, w, lerp(64, target.height, drop));
+        }
+        // The edge it pours out of, just off screen, sliding away as it lets go
+        readonly property rect edge: {
+            const away = (1 - held) * 70;
+            return Qt.rect(right ? width + away : -40 - away, shape.y, 40, shape.height);
+        }
 
         screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
         visible: progress > 0.001
@@ -101,22 +110,22 @@ Scope {
             property color deep: Theme.cardDeep
             property color tint: root.tint
             property color ink: root.tint
-            property vector4d anchorBox: Qt.vector4d(window.from.x - x, window.from.y - y, window.from.width, window.from.height)
+            property vector4d anchorBox: Qt.vector4d(window.edge.x - x, window.edge.y - y, window.edge.width, window.edge.height)
             property vector4d panelBox: Qt.vector4d(window.shape.x - x, window.shape.y - y, window.shape.width, window.shape.height)
             property vector2d resolution: Qt.vector2d(width, height)
-            property real anchorRadius: window.from.height / 2
-            property real panelRadius: window.lerp(window.from.height / 2, 26, window.spread)
-            property real blend: 34
-            property real anchorAmount: window.letGo
+            property real anchorRadius: 0
+            property real panelRadius: 26
+            property real blend: 30 + 70 * window.held // a thick neck to the edge that thins out and snaps
+            property real anchorAmount: window.held > 0 ? 1 : 0
             property real time: 0
             property real seed: root.side === "right" ? 4.7 : 1.3
             property real rise: 0.06
             property real inkAmount: window.clamp((window.progress - 0.85) / 0.15)
 
-            x: Math.min(window.shape.x, window.from.x) - pad
-            y: Math.min(window.shape.y, window.from.y) - pad
-            width: Math.max(window.shape.x + window.shape.width, window.from.x + window.from.width) - x + pad
-            height: Math.max(window.shape.y + window.shape.height, window.from.y + window.from.height) - y + pad
+            x: window.right ? window.shape.x - pad : 0
+            y: window.shape.y - pad
+            width: window.right ? window.width - x : window.shape.x + window.shape.width + pad
+            height: window.shape.height + pad * 2
             fragmentShader: Qt.resolvedUrl("../../shaders/drawer.frag.qsb")
 
             Behavior on tint {
