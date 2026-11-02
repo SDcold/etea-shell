@@ -12,6 +12,7 @@ Singleton {
     id: root
 
     property bool open: false
+    property string startWith: "" // what the search box opens with, ":" for the emoji
     property var uses: ({})
     property var emoji: [] // [glyph, names, plain names], split the first time ":" is typed
 

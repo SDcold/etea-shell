@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
 
@@ -55,6 +56,21 @@ Singleton {
         id: say
     }
 
+    // A zone drawn with slurp, for the shortcuts that film without the capture overlay
+    Process {
+        id: zone
+
+        property bool sound: false
+
+        command: ["slurp"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text.trim())
+                    root.start(text.trim(), zone.sound);
+            }
+        }
+    }
+
     // qs ipc call recorder start "0,0 1920x1080" false, then stop
     IpcHandler {
         target: "recorder"
@@ -65,6 +81,25 @@ Singleton {
 
         function stop(): void {
             root.stop();
+        }
+
+        // One key to start and stop: a zone you draw, or the whole focused screen
+        function region(withSound: bool): void {
+            if (root.recording) {
+                root.stop();
+                return;
+            }
+            zone.sound = withSound;
+            zone.running = true;
+        }
+
+        function screen(withSound: bool): void {
+            if (root.recording) {
+                root.stop();
+                return;
+            }
+            const output = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0];
+            root.start(`${output.x},${output.y} ${output.width}x${output.height}`, withSound);
         }
 
         function state(): string {

@@ -142,13 +142,10 @@ Both are only asked while their widget is on your desktop.
 The whole shell is QML; hot reload is on, so saving a file updates the desktop under your eyes.
 
 ```sh
-scripts/dev.sh start   # stop your usual shell and run ETEA from this folder
+scripts/dev.sh start   # (re)start ETEA from this folder
 scripts/dev.sh logs    # follow what it says
-scripts/dev.sh stop    # put your usual shell back
-```
-
-`dev.sh` was written for my own setup (it swaps out an end4 Quickshell config named `end4-pC`),
-so read it before running it on yours. The visual rules live in `DESIGN_LANGUAGE.md`, the
+scripts/dev.sh stop    # stop it
+``` The visual rules live in `DESIGN_LANGUAGE.md`, the
 lock screen art and how it's traced in `assets/lock/README.md`.
 
 Want ETEA in your language? Copy `i18n/en.json`, translate each line, add it to

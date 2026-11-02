@@ -1,22 +1,12 @@
 #!/usr/bin/env bash
-# Swaps between your usual shell and ETEA while you work on it.
-#   scripts/dev.sh start   stops end4 and runs ETEA, with live reload
-#   scripts/dev.sh stop    stops ETEA and brings end4 back
-#   scripts/dev.sh logs    follows what ETEA has to say
-#   scripts/dev.sh shortcuts  takes the page shortcuts back after a Hyprland reload
+# Runs ETEA from this folder while you work on it. Saving a file reloads it live.
+#   scripts/dev.sh start      (re)starts ETEA
+#   scripts/dev.sh stop       stops it
+#   scripts/dev.sh logs       follows what ETEA has to say
+#   scripts/dev.sh shortcuts  takes the shell's shortcuts back after a Hyprland reload
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SHELL_NAME="end4-pC"
-IDLE="$HOME/.config/hypr/hypridle.conf"
-BACKUP="$IDLE.etea-backup"
-
-# Hypridle only reads its config when it starts
-restart_idle() {
-    pkill -x hypridle || true
-    sleep 0.3
-    setsid -f hypridle >/dev/null 2>&1
-}
 
 # Finds ETEA by what it's running rather than by name: after a crash, Quickshell
 # restarts itself as plain "quickshell" and a name search would walk right past it
@@ -63,42 +53,42 @@ take_pages() {
         end
         hl.unbind("CTRL + SUPER + Right")
         hl.unbind("CTRL + SUPER + Left")
-        hl.bind("CTRL + SUPER + Right", hl.dsp.global("etea:pageNext"))
-        hl.bind("CTRL + SUPER + Left", hl.dsp.global("etea:pagePrevious"))
+        hl.bind("CTRL + SUPER + Right", hl.dsp.global("etea:pageNext"), { description = "Shell: Next page" })
+        hl.bind("CTRL + SUPER + Left", hl.dsp.global("etea:pagePrevious"), { description = "Shell: Previous page" })
         -- The Super key alone opens the launcher. It fires on release, and only if
         -- no other key came in between, so Super + anything still works normally.
         hl.unbind("SUPER + Space")
         hl.unbind("SUPER + SUPER_L")
         hl.unbind("SUPER + SUPER_R")
-        hl.bind("SUPER + SUPER_L", hl.dsp.global("etea:launcher"), { release = true })
+        hl.bind("SUPER + SUPER_L", hl.dsp.global("etea:launcher"), { release = true, description = "Shell: Launcher" })
         hl.bind("SUPER + SUPER_R", hl.dsp.global("etea:launcher"), { release = true })
         hl.unbind("SUPER + L")
-        hl.bind("SUPER + L", hl.dsp.global("etea:lock"))
+        hl.bind("SUPER + L", hl.dsp.global("etea:lock"), { description = "Shell: Lock" })
         hl.unbind("SUPER + A")
-        hl.bind("SUPER + A", hl.dsp.global("etea:panelLeft"))
+        hl.bind("SUPER + A", hl.dsp.global("etea:panelLeft"), { description = "Shell: Logbook" })
         hl.unbind("SUPER + N")
-        hl.bind("SUPER + N", hl.dsp.global("etea:panelRight"))
+        hl.bind("SUPER + N", hl.dsp.global("etea:panelRight"), { description = "Shell: Control centre" })
         hl.unbind("SUPER + V")
-        hl.bind("SUPER + V", hl.dsp.global("etea:clipboard"))
+        hl.bind("SUPER + V", hl.dsp.global("etea:clipboard"), { description = "Shell: Clipboard history" })
         hl.unbind("SUPER + SHIFT + S")
-        hl.bind("SUPER + SHIFT + S", hl.dsp.global("etea:capture"))
+        hl.bind("SUPER + SHIFT + S", hl.dsp.global("etea:capture"), { description = "Shell: Capture (Tab for video)" })
         hl.unbind("SUPER + Escape")
-        hl.bind("SUPER + Escape", hl.dsp.global("etea:session"))
+        hl.bind("SUPER + Escape", hl.dsp.global("etea:session"), { description = "Shell: Session menu" })
         hl.unbind("SUPER + Comma")
-        hl.bind("SUPER + Comma", hl.dsp.global("etea:settings"))
+        hl.bind("SUPER + Comma", hl.dsp.global("etea:settings"), { description = "Shell: Settings" })
         hl.unbind("SUPER + Slash")
-        hl.bind("SUPER + Slash", hl.dsp.global("etea:cheatsheet"))
+        hl.bind("SUPER + Slash", hl.dsp.global("etea:cheatsheet"), { description = "Shell: Shortcuts" })
         hl.unbind("SUPER + SHIFT + Tab")
-        hl.bind("SUPER + SHIFT + Tab", hl.dsp.global("etea:orbitDown"))
+        hl.bind("SUPER + SHIFT + Tab", hl.dsp.global("etea:orbitDown"), { description = "Shell: Come back down" })
         hl.unbind("SUPER + Tab")
-        hl.bind("SUPER + Tab", hl.dsp.global("etea:orbit"))
+        hl.bind("SUPER + Tab", hl.dsp.global("etea:orbit"), { description = "Shell: Orbit, then the planets" })
         hl.unbind("SUPER + Q")
-        hl.bind("SUPER + Q", hl.dsp.global("etea:closeWindow"))
+        hl.bind("SUPER + Q", hl.dsp.global("etea:closeWindow"), { description = "Shell: Close the window" })
         -- Super + wheel turns the page, or resizes the widget under the pointer
         hl.unbind("SUPER + mouse_up")
         hl.unbind("SUPER + mouse_down")
-        hl.bind("SUPER + mouse_up", hl.dsp.global("etea:wheelUp"))
-        hl.bind("SUPER + mouse_down", hl.dsp.global("etea:wheelDown"))
+        hl.bind("SUPER + mouse_up", hl.dsp.global("etea:wheelUp"), { description = "Shell: Next page, or grow a widget" })
+        hl.bind("SUPER + mouse_down", hl.dsp.global("etea:wheelDown"), { description = "Shell: Previous page, or shrink a widget" })
     ' | grep -v '^ok$' || true
 
     # The four finger swipe would switch pages without us, so it goes through ETEA too.
@@ -123,30 +113,15 @@ take_pages() {
 }
 
 case "${1:-}" in
-start)
-    # Idle and sleep lock through ETEA, which picks its own screen or hyprlock from Settings
-    if [[ ! -f "$BACKUP" ]]; then
-        cp "$IDLE" "$BACKUP"
-    fi
-    if ! grep -q "scripts/lock.sh" "$IDLE"; then
-        sed -i -e 's|^\$lock_cmd = .*|$lock_cmd = '"'$ROOT/scripts/lock.sh'"'|' "$IDLE"
-        restart_idle
-    fi
-    qs kill -c "$SHELL_NAME" 2>/dev/null || true
+start | restart)
     stop_etea
-    # ETEA shows notifications itself now, and only one program can
+    # ETEA shows notifications itself, and only one program can
     pkill -x mako 2>/dev/null || true
     qs -p "$ROOT" -d
     take_pages
     ;;
 stop)
     stop_etea
-    if [[ -f "$BACKUP" ]]; then
-        mv "$BACKUP" "$IDLE"
-        restart_idle
-    fi
-    /usr/bin/hyprctl reload config-only >/dev/null
-    qs -c "$SHELL_NAME" -d
     ;;
 shortcuts)
     # The shell calls this itself after a Hyprland reload, which wipes them
@@ -156,7 +131,7 @@ logs)
     qs log -p "$ROOT" -f
     ;;
 *)
-    echo "Usage: $0 {start|stop|shortcuts|logs}" >&2
+    echo "Usage: $0 {start|restart|stop|shortcuts|logs}" >&2
     exit 1
     ;;
 esac

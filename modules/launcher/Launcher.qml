@@ -27,6 +27,16 @@ Scope {
         }
     }
 
+    // Straight to the emoji: the launcher opens with ":" already typed
+    GlobalShortcut {
+        appid: "etea"
+        name: "emoji"
+        onPressed: {
+            Apps.startWith = ":";
+            Apps.open = true;
+        }
+    }
+
     IpcHandler {
         target: "launcher"
 
@@ -126,7 +136,8 @@ Scope {
             function onOpenChanged() {
                 if (!Apps.open)
                     return;
-                input.text = "";
+                input.text = Apps.startWith;
+                Apps.startWith = "";
                 panel.refresh();
                 input.forceActiveFocus();
             }
