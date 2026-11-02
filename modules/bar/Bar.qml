@@ -25,6 +25,12 @@ Variants {
         exclusiveZone: Theme.barReserve
         WlrLayershell.namespace: "etea:bar"
 
+        // Staying awake is tied to a window that's always on screen, and the bar always is
+        IdleInhibitor {
+            window: bar
+            enabled: Wake.on
+        }
+
         anchors {
             top: Theme.barOnTop
             bottom: !Theme.barOnTop

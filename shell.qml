@@ -1,4 +1,5 @@
 import Quickshell
+import qs.modules.alerts
 import qs.modules.background
 import qs.modules.capture
 import qs.modules.clipboard
@@ -9,6 +10,7 @@ import qs.modules.notifications
 import qs.modules.lock
 import qs.modules.osd
 import qs.modules.panels
+import qs.modules.polkit
 import qs.modules.session
 import qs.modules.settings
 import qs.modules.stage
@@ -28,6 +30,8 @@ ShellRoot {
     Lock {}
     Settings {}
     Session {}
+    Polkit {}
+    Alerts {}
     Osd {}
     Clipboard {}
     Capture {}

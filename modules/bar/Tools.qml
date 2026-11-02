@@ -1,11 +1,11 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Services.Pipewire
 import qs.config
 import qs.services
 
-// Little tools within reach: capture, clipboard, colour picker, night light, microphone.
+// Little tools within reach: capture, clipboard, colour picker, night light, staying awake,
+// microphone.
 Row {
     id: root
 
@@ -18,22 +18,6 @@ Row {
         objects: root.source ? [root.source] : []
     }
 
-    Process {
-        id: picker
-
-        command: ["hyprpicker", "-a", "-f", "hex"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.trim())
-                    announcer.exec(["notify-send", "-a", Lang.t("Pipette"), Lang.t("Couleur copiée"), text.trim()]);
-            }
-        }
-    }
-
-    Process {
-        id: announcer
-    }
-
     Repeater {
         model: Config.barTools
 
@@ -41,7 +25,7 @@ Row {
             id: tool
 
             required property string modelData
-            readonly property bool on: modelData === "nightlight" ? NightLight.on : modelData === "microphone" ? !(root.source?.audio?.muted ?? true) : false
+            readonly property bool on: modelData === "nightlight" ? NightLight.on : modelData === "awake" ? Wake.on : modelData === "microphone" ? !(root.source?.audio?.muted ?? true) : false
 
             implicitWidth: Theme.iconSize
             implicitHeight: Theme.iconSize
@@ -63,7 +47,10 @@ Row {
                         Menus.clipboardOpen = !Menus.clipboardOpen;
                         break;
                     case "picker":
-                        picker.running = true;
+                        Picker.pick();
+                        break;
+                    case "awake":
+                        Wake.on = !Wake.on;
                         break;
                     case "nightlight":
                         NightLight.toggle();

@@ -165,6 +165,36 @@ ColumnLayout {
                 PowerProfiles.profile = next === PowerProfile.Performance && !PowerProfiles.hasPerformanceProfile ? PowerProfile.PowerSaver : next;
             }
         }
+
+        QuickTile {
+            icon: "coffee"
+            label: Lang.t("Éveillé")
+            detail: Wake.on ? Lang.t("Pas de veille") : ""
+            on: Wake.on
+            tint: "#d9b08c"
+            onToggled: Wake.on = !Wake.on
+        }
+
+        // Two tools that do something once rather than stay on
+        QuickTile {
+            icon: "capture"
+            label: Lang.t("Capture")
+            tint: "#8fc7e8"
+            onToggled: {
+                Menus.closePanel("right");
+                Menus.captureOpen = true;
+            }
+        }
+
+        QuickTile {
+            icon: "picker"
+            label: Lang.t("Pipette")
+            tint: "#e98fb0"
+            onToggled: {
+                Menus.closePanel("right");
+                Picker.pick();
+            }
+        }
     }
 
     SliderRow {

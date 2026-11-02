@@ -155,7 +155,7 @@ Scope {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: panel.armed >= 0 ? `${panel.actions[panel.armed].label}, vraiment ?` : Lang.t("Et maintenant ?")
+                text: panel.armed >= 0 ? Lang.t("{0}, vraiment ?", panel.actions[panel.armed].label) : Lang.t("Et maintenant ?")
                 color: Theme.text
                 font.family: Theme.font
                 font.pixelSize: 36

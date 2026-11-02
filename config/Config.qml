@@ -30,6 +30,7 @@ Singleton {
         { id: "clipboard", label: Lang.t("Presse-papiers"), icon: "clipboard" },
         { id: "picker", label: Lang.t("Pipette"), icon: "picker" },
         { id: "nightlight", label: Lang.t("Veilleuse"), icon: "nightlight" },
+        { id: "awake", label: Lang.t("Éveillé"), icon: "coffee" },
         { id: "microphone", label: Lang.t("Micro"), icon: "microphone" }
     ]
     readonly property var resourceChoices: [
