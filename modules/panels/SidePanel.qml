@@ -23,12 +23,14 @@ Scope {
         id: window
 
         property real reveal: 0
+        // Room around the card for the stars and ink that spill past its edge
+        readonly property int room: 16
 
         screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
         visible: root.open || reveal > 0
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
-        implicitWidth: Theme.panelWidth + Theme.barSide
+        implicitWidth: Theme.panelWidth + Theme.barSide + room
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: `etea:panel-${root.side}`
         WlrLayershell.keyboardFocus: root.open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
@@ -86,7 +88,7 @@ Scope {
         Item {
             id: card
 
-            x: root.side === "left" ? Theme.barSide : 0
+            x: root.side === "left" ? Theme.barSide : window.room
             y: 8
             width: Theme.panelWidth
             height: parent.height - y - 14
@@ -106,14 +108,18 @@ Scope {
                 radius: 26
             }
 
+            // The clipping edge sits a little outside the content, so the stars and ink
+            // around the cards inside have room and don't get sliced off
             Flickable {
                 id: scroller
 
-                x: 22
-                y: 24
-                width: parent.width - 44
-                height: parent.height - 48
-                contentHeight: page.item?.implicitHeight ?? 0
+                readonly property int room: 14
+
+                x: 22 - room
+                y: 24 - room
+                width: parent.width - 44 + room * 2
+                height: parent.height - 48 + room * 2
+                contentHeight: (page.item?.implicitHeight ?? 0) + room * 2
                 boundsBehavior: Flickable.StopAtBounds
                 clip: true
                 focus: true
@@ -122,7 +128,9 @@ Scope {
                 Loader {
                     id: page
 
-                    width: scroller.width
+                    x: scroller.room
+                    y: scroller.room
+                    width: scroller.width - scroller.room * 2
                     active: window.visible
                     sourceComponent: root.content
                 }
