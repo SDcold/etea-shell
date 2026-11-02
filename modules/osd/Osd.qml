@@ -9,20 +9,22 @@ import qs.modules.bar
 import qs.modules.bar.menus
 import qs.services
 
-// A small porthole that answers the volume and brightness keys. Its horizon
+// A small porthole that answers the volume, brightness and microphone keys. Its horizon
 // climbs with the level, so you can read it without reading it.
 Scope {
     id: root
 
     readonly property var sink: Pipewire.defaultAudioSink
+    readonly property var source: Pipewire.defaultAudioSource
     property string kind: "volume"
     property bool awake: false
     property bool showing: false
 
     readonly property real volume: sink?.audio?.volume ?? 0
     readonly property bool muted: sink?.audio?.muted ?? false
-    readonly property real level: kind === "volume" ? (muted ? 0 : Math.min(1, volume)) : Brightness.value
-    readonly property string icon: kind === "brightness" ? "brightness" : muted ? "speaker-x" : volume > 0.5 ? "speaker-high" : "speaker-low"
+    readonly property bool micMuted: source?.audio?.muted ?? false
+    readonly property real level: kind === "volume" ? (muted ? 0 : Math.min(1, volume)) : kind === "microphone" ? (micMuted ? 0 : Math.min(1, source?.audio?.volume ?? 0)) : Brightness.value
+    readonly property string icon: kind === "brightness" ? "brightness" : kind === "microphone" ? (micMuted ? "microphone-off" : "microphone") : muted ? "speaker-x" : volume > 0.5 ? "speaker-high" : "speaker-low"
 
     function show(what) {
         if (!awake)
@@ -34,9 +36,10 @@ Scope {
 
     onVolumeChanged: show("volume")
     onMutedChanged: show("volume")
+    onMicMutedChanged: show("microphone")
 
     PwObjectTracker {
-        objects: root.sink ? [root.sink] : []
+        objects: [root.sink, root.source].filter(node => node)
     }
 
     // Nothing to announce while everything is still starting up
@@ -98,7 +101,7 @@ Scope {
             HandCard {
                 anchors.fill: parent
                 seed: root.kind
-                tint: root.kind === "volume" ? "#e98fb0" : "#ffd08a"
+                tint: root.kind === "volume" ? "#e98fb0" : root.kind === "microphone" ? "#f59a7a" : "#ffd08a"
                 rise: 0.05 + root.level * 0.22
                 alive: panel.visible
             }
