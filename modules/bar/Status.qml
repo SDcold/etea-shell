@@ -20,12 +20,24 @@ Row {
     readonly property bool wired: Networking.devices.values.some(d => d.connected && d.networks === undefined)
     readonly property int bluetoothDevices: Bluetooth.devices.values.filter(d => d.connected).length
     readonly property var battery: UPower.displayDevice
+    // Apps listening to the microphone. Captures of what the speakers play don't count,
+    // like the visualiser's or a recording with the computer's sound.
+    readonly property var listening: Pipewire.nodes.values.filter(node => node.isStream && !node.isSink && node.audio && node.properties["stream.capture.sink"] !== "true")
 
     spacing: Theme.barSpacing
 
     // Without this, Pipewire won't tell us the volume
     PwObjectTracker {
         objects: root.sink ? [root.sink] : []
+    }
+
+    // Someone is listening: the microphone lights up in the bar
+    Icon {
+        visible: root.listening.length > 0
+        anchors.verticalCenter: parent.verticalCenter
+        name: "microphone"
+        size: Theme.iconSize
+        tint: "#f59a7a"
     }
 
     // Filming: a beating red dot and the time so far, a click stops it

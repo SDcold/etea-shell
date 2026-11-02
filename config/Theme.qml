@@ -114,7 +114,7 @@ Singleton {
     readonly property int notifWidth: 380
     readonly property int notifComet: 360
     readonly property int notifOpen: 240
-    readonly property int notifLife: 6000 // how long one stays when the app doesn't say
+    readonly property int notifLife: Config.notifSeconds * 1000 // how long one stays when the app doesn't say
 
     // The ground moving with the music
     readonly property real groundLift: Config.groundLift // how high the ridges can climb, on a 1600 wide screen

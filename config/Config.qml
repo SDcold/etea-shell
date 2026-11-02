@@ -86,6 +86,8 @@ Singleton {
     property alias pageStyle: saved.pageStyle // "constellation" or "numbers"
     property alias trayTint: saved.trayTint // background apps drawn in the shell's colours
     property alias glassApps: saved.glassApps // windows blurred behind; with an opacity, Hyprland also fades them
+    property alias nightWarmth: saved.nightWarmth // the night light's colour, in kelvin
+    property alias notifSeconds: saved.notifSeconds // how long a notification stays when its app doesn't say
 
     // Times written the way the clock setting asks, 12 or 24 hours. The big clocks leave out
     // AM/PM: their numerals are the drawing, the time of day reads from the sky anyway.
@@ -169,6 +171,8 @@ Singleton {
             property bool hotCorners: true
             property string pageStyle: "constellation"
             property bool trayTint: false
+            property int nightWarmth: 4200
+            property int notifSeconds: 6
             // kitty and Zen are see-through on their own and only need the blur
             property var glassApps: [
                 { class: "kitty" },

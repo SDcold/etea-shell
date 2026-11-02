@@ -78,6 +78,7 @@ Scope {
             return;
         search.text = "";
         chosen = 0;
+        thumbs = 0;
         reader.running = true;
         search.forceActiveFocus();
     }
@@ -304,7 +305,8 @@ Scope {
                             asynchronous: true
                             cache: false
                             sourceSize.width: 240
-                            source: row.picture ? `file://${root.cache}/${row.modelData.id}?${root.thumbs}` : ""
+                            // Only once the decoder is through, or the picture isn't there yet
+                            source: row.picture && root.thumbs > 0 ? `file://${root.cache}/${row.modelData.id}?${root.thumbs}` : ""
                         }
 
                         Text {
