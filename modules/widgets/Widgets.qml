@@ -13,7 +13,23 @@ Item {
 
     property bool interactive: false
     readonly property bool skyStyle: Config.widgetStyle === "sky"
-    readonly property var files: skyStyle ? { clock: "GiantClock.qml", system: "SkySystem.qml", media: "SkyMedia.qml" } : { clock: "ClockWidget.qml", system: "SystemWidget.qml", media: "MediaWidget.qml" }
+    readonly property var files: skyStyle ? {
+        clock: "GiantClock.qml",
+        system: "SkySystem.qml",
+        media: "SkyMedia.qml",
+        weather: "SkyWeather.qml",
+        calendar: "SkyCalendar.qml",
+        tasks: "SkyTasks.qml",
+        photo: "SkyPhoto.qml"
+    } : {
+        clock: "ClockWidget.qml",
+        system: "SystemWidget.qml",
+        media: "MediaWidget.qml",
+        weather: "WeatherWidget.qml",
+        calendar: "CalendarWidget.qml",
+        tasks: "TasksWidget.qml",
+        photo: "PhotoWidget.qml"
+    }
 
     function origin(ax, ay) {
         return [[Item.TopLeft, Item.Top, Item.TopRight], [Item.Left, Item.Center, Item.Right], [Item.BottomLeft, Item.Bottom, Item.BottomRight]][Math.round(ay * 2)][Math.round(ax * 2)];

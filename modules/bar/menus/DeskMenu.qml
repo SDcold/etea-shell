@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Wayland
 import qs.config
 import qs.modules.bar
@@ -11,6 +12,19 @@ import qs.services
 // A right click on the desktop. On a widget: its size, its options, and a way to put it
 // away. On the empty sky: the widgets that aren't out yet.
 Scope {
+    // The picture for the photo frame
+    Process {
+        id: picker
+
+        command: ["sh", "-c", 'if command -v kdialog >/dev/null; then kdialog --title "$1" --getopenfilename "$HOME" "*.png *.jpg *.jpeg *.webp"; else zenity --file-selection --title "$1"; fi', "sh", Lang.t("Une image pour le ciel")]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text.trim())
+                    Desk.update("photo", { image: text.trim() });
+            }
+        }
+    }
+
     PanelWindow {
         id: panel
 
@@ -25,6 +39,8 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "etea:desk-menu"
+        // Only the weather has something to type, its city
+        WlrLayershell.keyboardFocus: shown === "weather" ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
         anchors {
             top: true
@@ -72,6 +88,7 @@ Scope {
                 if (Desk.menuFor) {
                     panel.reveal = 0;
                     panel.shown = Desk.menuFor;
+                    city.text = Desk.entry("weather").city ?? "";
                     unfold.restart();
                 } else {
                     unfold.stop();
@@ -158,6 +175,73 @@ Scope {
                                 if (next.length)
                                     Desk.update("system", { readings: ["cpu", "memory"].filter(id => next.includes(id)) });
                             }
+                        }
+                    }
+
+                    MenuRow {
+                        visible: panel.shown === "photo"
+                        Layout.fillWidth: true
+                        label: panel.widget?.image ? Lang.t("Changer d'image") : Lang.t("Choisir une image")
+                        onPicked: {
+                            Desk.menuFor = "";
+                            picker.running = true;
+                        }
+                    }
+
+                    // Where to look at the sky. Empty means wherever the connection says you are.
+                    ColumnLayout {
+                        visible: panel.shown === "weather"
+                        Layout.fillWidth: true
+                        spacing: 4
+
+                        Text {
+                            text: Lang.t("Ville")
+                            color: Qt.alpha(Theme.text, 0.6)
+                            font.family: Theme.font
+                            font.pixelSize: 11
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: 34
+                            radius: 11
+                            color: Qt.alpha(Theme.windowLit, city.activeFocus ? 0.14 : 0.08)
+
+                            TextInput {
+                                id: city
+
+                                anchors.fill: parent
+                                anchors.leftMargin: 10
+                                anchors.rightMargin: 10
+                                verticalAlignment: TextInput.AlignVCenter
+                                color: Theme.text
+                                selectionColor: Qt.alpha(Theme.windowLit, 0.4)
+                                font.family: Theme.font
+                                font.pixelSize: 13
+                                clip: true
+                                onAccepted: {
+                                    Desk.update("weather", { city: text.trim() });
+                                    Desk.menuFor = "";
+                                }
+                                Keys.onEscapePressed: Desk.menuFor = ""
+                            }
+
+                            Text {
+                                visible: city.text === ""
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: 10
+                                text: Lang.t("Automatique, selon ta connexion")
+                                color: Qt.alpha(Theme.text, 0.4)
+                                font.family: Theme.font
+                                font.pixelSize: 13
+                            }
+                        }
+
+                        Text {
+                            text: Lang.t("Entrée pour valider.")
+                            color: Qt.alpha(Theme.text, 0.45)
+                            font.family: Theme.font
+                            font.pixelSize: 11
                         }
                     }
 
