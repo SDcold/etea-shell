@@ -5,7 +5,8 @@ import qs.modules.bar
 import qs.services
 
 // A window onto today's sky: the sun climbs its arc from sunrise to sunset, then the moon
-// takes the night. The light follows, blue by day, warm at both ends, deep at night.
+// takes the night. The light is your world's own: its sky by day, its low glow at both
+// ends, its light at night.
 Item {
     id: root
 
@@ -23,7 +24,7 @@ Item {
         return (((now - set) % 86400000 + 86400000) % 86400000) / night;
     }
     readonly property bool edge: day && (along < 0.12 || along > 0.88) // dawn and dusk
-    readonly property color light: !day ? "#9aa0e8" : edge ? "#ffb38a" : "#8fc7e8"
+    readonly property color light: !day ? Theme.windowLit : edge ? Theme.skyLow : Theme.skyMid
     readonly property var weather: Weather.look(Weather.code, Weather.day)
 
     implicitHeight: 172

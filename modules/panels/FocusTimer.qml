@@ -9,7 +9,8 @@ import qs.services
 ColumnLayout {
     id: root
 
-    readonly property color tint: Focus.mode === "focus" ? "#ffc98a" : "#8fd6b4"
+    // Your world's light for work, a greener cast of it for the break
+    readonly property color tint: Focus.mode === "focus" ? Theme.windowLit : Qt.tint(Theme.windowLit, Qt.alpha("#8fd6b4", 0.55))
     readonly property var presets: [[25, 5], [50, 10]]
 
     spacing: 10

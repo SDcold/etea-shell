@@ -10,7 +10,7 @@ Scope {
     SidePanel {
         side: "left"
         open: Menus.leftOpen
-        tint: "#b9a2f0"
+        tint: Theme.windowLit
         content: Logbook {}
         onCloseRequested: Menus.closePanel("left")
     }

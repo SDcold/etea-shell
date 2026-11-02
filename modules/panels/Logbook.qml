@@ -87,7 +87,7 @@ ColumnLayout {
                     Layout.fillWidth: true
                     month: root.month
                     unit: 10.5
-                    heading: "#b9a2f0"
+                    heading: Theme.windowLit
                 }
             }
         }
@@ -144,7 +144,7 @@ ColumnLayout {
                 Text {
                     visible: root.done > 0
                     text: Lang.t("Ranger les faites")
-                    color: "#b9a2f0"
+                    color: Theme.windowLit
                     font.family: Theme.font
                     font.pixelSize: 12
 
@@ -164,13 +164,13 @@ ColumnLayout {
                 Layout.bottomMargin: 4
                 implicitHeight: 3
                 radius: 2
-                color: Qt.alpha("#b9a2f0", 0.18)
+                color: Qt.alpha(Theme.windowLit, 0.18)
 
                 Rectangle {
                     width: parent.width * (Tasks.items.length ? root.done / Tasks.items.length : 0)
                     height: parent.height
                     radius: parent.radius
-                    color: "#b9a2f0"
+                    color: Theme.windowLit
 
                     Behavior on width {
                         NumberAnimation { duration: Theme.normal; easing.type: Easing.OutCubic }
