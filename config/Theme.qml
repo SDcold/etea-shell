@@ -131,8 +131,8 @@ Singleton {
     readonly property color skyInk: Qt.tint(windowLit, Qt.alpha("#ffffff", 0.7))
 
     // Where things sit in the bar, so stars know where to fly
-    readonly property int pageWidth: 42
-    readonly property int pageGap: 4
+    readonly property int pageWidth: Config.pageStyle === "numbers" ? Math.round(22 * barScale) : 42
+    readonly property int pageGap: Config.pageStyle === "numbers" ? 0 : 4
 
     // We bring our own font so nobody has to install anything
     Instantiator {

@@ -3,6 +3,7 @@
 #   scripts/dev.sh start   stops end4 and runs ETEA, with live reload
 #   scripts/dev.sh stop    stops ETEA and brings end4 back
 #   scripts/dev.sh logs    follows what ETEA has to say
+#   scripts/dev.sh shortcuts  takes the page shortcuts back after a Hyprland reload
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -51,10 +52,10 @@ stop_etea() {
 take_pages() {
     /usr/bin/hyprctl eval '
         hl.animation({ leaf = "workspaces", enabled = false })
-        local keys = { 10, 11, 12, 13, 14, 15 }
-        local pad = { 87, 88, 89, 83, 84, 85 }
-        for i = 1, 6 do
-            hl.unbind("SUPER + " .. i)
+        local keys = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 }
+        local pad = { 87, 88, 89, 83, 84, 85, 79, 80, 81, 90 }
+        for i = 1, 10 do
+            hl.unbind("SUPER + " .. (i % 10))
             hl.unbind("SUPER + code:" .. keys[i])
             hl.unbind("SUPER + code:" .. pad[i])
             hl.bind("SUPER + code:" .. keys[i], hl.dsp.global("etea:page" .. i))
@@ -135,6 +136,10 @@ stop)
     fi
     /usr/bin/hyprctl reload config-only >/dev/null
     qs -c "$SHELL_NAME" -d
+    ;;
+shortcuts)
+    # The shell calls this itself after a Hyprland reload, which wipes them
+    take_pages
     ;;
 logs)
     qs log -p "$ROOT" -f

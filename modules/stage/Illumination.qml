@@ -103,13 +103,22 @@ Scope {
         }
     }
 
-    // A Hyprland reload wipes everything we set, so put it right back
+    // The shortcuts ETEA takes over, from scripts/dev.sh
+    Process {
+        id: shortcuts
+
+        command: ["bash", Quickshell.shellPath("scripts/dev.sh"), "shortcuts"]
+    }
+
+    // A Hyprland reload wipes everything we set, shortcuts included, so put it right back
     Connections {
         target: Hyprland
 
         function onRawEvent(event) {
-            if (event.name === "configreloaded")
+            if (event.name === "configreloaded") {
                 apply.running = true;
+                shortcuts.running = true;
+            }
         }
     }
 

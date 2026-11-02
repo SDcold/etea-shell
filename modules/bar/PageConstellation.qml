@@ -38,8 +38,8 @@ Item {
     Canvas {
         id: links
 
+        visible: !root.numbered
         anchors.fill: parent
-        opacity: root.numbered ? 0.35 : 1
         renderStrategy: Canvas.Immediate
         onPaint: {
             const g = getContext("2d");
@@ -61,14 +61,25 @@ Item {
     // With numbers on, each page wears its number and the constellation steps back behind it
     readonly property bool numbered: Config.pageStyle === "numbers"
 
+    // Compact: just the number. Pages with windows stand out, empty ones step back.
     Text {
         visible: root.numbered
         anchors.centerIn: parent
         text: root.pageId
-        color: root.lit ? Theme.text : Qt.alpha(Theme.text, root.windows ? 0.75 : 0.4)
+        color: root.lit ? Theme.text : Qt.alpha(Theme.text, root.windows ? 0.8 : 0.36)
         font.family: Theme.font
-        font.pixelSize: Theme.textSize + 2
+        font.pixelSize: Theme.textSize + 1
         font.weight: root.active ? Font.DemiBold : Font.Normal
+        font.features: { "tnum": 1 }
+    }
+
+    Star {
+        visible: root.numbered && root.active
+        x: root.width / 2 - size
+        y: Theme.barOnTop ? root.height - size * 2 - 3 : 3
+        size: 2.5
+        lit: true
+        animated: false
     }
 
     // Even an empty page keeps one tiny star, so it doesn't vanish
@@ -92,7 +103,7 @@ Item {
         Star {
             required property int index
 
-            opacity: root.numbered ? 0.45 : 1
+            visible: !root.numbered
 
             size: root.lit ? 9 : 6
             lit: root.lit
@@ -152,6 +163,8 @@ Item {
 
         // The closest star wins, and you don't have to land exactly on it
         onPositionChanged: mouse => {
+            if (root.numbered)
+                return;
             let closest = null, distance = 18;
             for (let i = 0; i < root.windows; i++) {
                 const dx = mouse.x - root.layout[i][0] * root.width, dy = mouse.y - root.starY(root.layout[i][1]);

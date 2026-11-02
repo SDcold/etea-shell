@@ -20,6 +20,10 @@ Singleton {
 
     readonly property real step: Math.PI * 2 / Config.pages
     readonly property int current: Hyprland.focusedWorkspace?.id ?? 1
+    readonly property int lastPage: Config.pages * 10
+    // The group of pages the bar shows, and the one carried around the planet in orbit
+    readonly property int groupStart: groupOf(current)
+    property int orbitStart: 1
     readonly property bool pageEmpty: Hyprland.toplevels.values.every(t => t.workspace?.id !== current)
 
     property int phase: Planet.Phase.Idle
@@ -61,20 +65,21 @@ Singleton {
     // Turning the planet by hand, up in orbit
     property real handTurn: 0
     property int hoveredPage: -1
-    readonly property int topPage: ((origin - 1 - Math.round(handTurn / step)) % Config.pages + Config.pages) % Config.pages + 1
+    readonly property int topPage: orbitStart + ((origin - orbitStart - Math.round(handTurn / step)) % Config.pages + Config.pages) % Config.pages
 
     property int target: 0
     property int queued: 0
     property var layouts: ({}) // what each page looked like when we last took its photo
+    property var photoOwner: ({}) // photos are kept per slot of a group, this says whose each one is
     property bool arrivalKnown: false
     property real pressedAt: 0
 
-    signal photoNeeded(int page)
+    signal photoNeeded(int page, int slot)
     signal finished(real prepareMs)
 
     // Everything that wants to change page comes through here
     function request(page) {
-        if (page < 1 || page > Config.pages)
+        if (page < 1 || page > lastPage)
             return;
         if (phase !== Planet.Phase.Idle) {
             queued = page;
@@ -97,7 +102,25 @@ Singleton {
 
     // The middle of a page's constellation in the bar
     function pagePoint(page) {
-        return Qt.point(pagesArea.x + (page - 1) * (Theme.pageWidth + Theme.pageGap) + Theme.pageWidth / 2, pagesArea.y + pagesArea.height * 0.6);
+        const place = Math.max(0, Math.min(Config.pages - 1, page - groupStart));
+        return Qt.point(pagesArea.x + place * (Theme.pageWidth + Theme.pageGap) + Theme.pageWidth / 2, pagesArea.y + pagesArea.height * 0.6);
+    }
+
+    function groupOf(page) {
+        return Math.floor((page - 1) / Config.pages) * Config.pages + 1;
+    }
+
+    function slotOf(page) {
+        return (page - 1) % Config.pages;
+    }
+
+    function askPhoto(page) {
+        photoOwner[slotOf(page)] = page;
+        photoNeeded(page, slotOf(page));
+    }
+
+    function hasPhoto(page) {
+        return photoOwner[slotOf(page)] === page;
     }
 
     // Going up: ground, then orbit, then the whole system, then back home
@@ -189,6 +212,7 @@ Singleton {
     // Same trick as a page change: photograph this page, then the stand-ins take over
     function enterOrbit() {
         origin = current;
+        orbitStart = groupOf(current);
         target = current;
         goingUp = true;
         captured = 0;
@@ -231,8 +255,9 @@ Singleton {
         settle();
     }
 
+    // No looping round: page 1 is the first, and past the end of a group comes the next one
     function requestNext(direction) {
-        request((current - 1 + direction + Config.pages) % Config.pages + 1);
+        request(current + direction);
     }
 
     // Stacked the way they are on screen, and a maximized window hides the others
@@ -319,7 +344,13 @@ Singleton {
         queued = 0;
     }
 
-    // Shortest way round, so going from page 6 to page 1 is a single step
+    // How far the planet turns for a page change: one step per page, at most half a turn
+    function spinSteps(from, to) {
+        const half = Math.floor(Config.pages / 2);
+        return Math.max(-half, Math.min(half, to - from));
+    }
+
+    // Shortest way round the planet in orbit, where the pages of a group sit in a ring
     function shortestSteps(from, to) {
         const pages = Config.pages;
         const steps = ((to - from) % pages + pages) % pages;
@@ -332,19 +363,19 @@ Singleton {
 
         interval: 12
         onTriggered: {
-            root.distance = root.shortestSteps(root.origin, root.target) * root.step;
+            root.distance = root.spinSteps(root.origin, root.target) * root.step;
             const leaving = root.windowsOn(root.origin);
             root.leavingNext = leaving;
             root.arriving = root.windowsOn(root.target);
 
             // Coming back to a page that hasn't changed? Its old photo is still good
             const arrival = root.layoutOf(root.arriving);
-            root.arrivalKnown = root.arriving.length > 0 && root.layouts[root.target] === arrival;
+            root.arrivalKnown = root.arriving.length > 0 && root.layouts[root.target] === arrival && root.hasPhoto(root.target);
             root.expected = (leaving.length ? 1 : 0) + (root.arrivalKnown ? 0 : root.arriving.length);
 
             if (leaving.length) {
                 root.layouts[root.origin] = root.layoutOf(leaving);
-                root.photoNeeded(root.origin);
+                root.askPhoto(root.origin);
             }
             if (root.expected === 0)
                 root.begin();
@@ -359,7 +390,7 @@ Singleton {
         interval: 12
         onTriggered: {
             const pages = [];
-            for (let page = 1; page <= Config.pages; page++)
+            for (let page = root.orbitStart; page < root.orbitStart + Config.pages; page++)
                 pages.push(root.windowsOn(page));
             root.orbitPages = pages;
 
@@ -367,7 +398,7 @@ Singleton {
             root.expected = here.length ? 1 : 0;
             if (here.length) {
                 root.layouts[root.origin] = root.layoutOf(here);
-                root.photoNeeded(root.origin);
+                root.askPhoto(root.origin);
                 captureTimeout.restart();
             } else {
                 root.beginOrbit();
@@ -408,7 +439,7 @@ Singleton {
         interval: 160
         onTriggered: {
             const pages = [];
-            for (let page = 1; page <= Config.pages; page++)
+            for (let page = root.orbitStart; page < root.orbitStart + Config.pages; page++)
                 pages.push(root.windowsOn(page));
             root.orbitPages = pages;
         }

@@ -100,11 +100,13 @@ Variants {
 
                     anchors.fill: parent
                     windows: stage.focused ? modelData : []
-                    photo: Planet.layouts[index + 1] === Planet.layoutOf(modelData) ? photos.itemAt(index)?.frame ?? null : null
+                    readonly property int page: Planet.orbitStart + index
+
+                    photo: Planet.layouts[page] === Planet.layoutOf(modelData) && Planet.hasPhoto(page) ? photos.itemAt(index)?.frame ?? null : null
                     pivotY: (stage.planetTop + stage.planetRadius) * stage.unit
                     screenX: stage.modelData.x
                     screenY: stage.modelData.y
-                    angle: Planet.shortestSteps(Planet.origin, index + 1) * Planet.step - Planet.travel + Planet.handTurn
+                    angle: Planet.shortestSteps(Planet.origin, page) * Planet.step - Planet.travel + Planet.handTurn
                     zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude)
                     lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
                     orbitCard: true
@@ -115,7 +117,7 @@ Variants {
             StagePage {
                 anchors.fill: parent
                 windows: stage.focused ? Planet.leaving : []
-                photo: photos.itemAt(Planet.origin - 1)?.frame ?? null
+                photo: photos.itemAt(Planet.slotOf(Planet.origin))?.frame ?? null
                 pivotY: stage.pivotY
                 screenX: stage.modelData.x
                 screenY: stage.modelData.y
@@ -125,7 +127,7 @@ Variants {
             StagePage {
                 anchors.fill: parent
                 windows: stage.focused ? Planet.arriving : []
-                photo: Planet.arrivalKnown ? photos.itemAt(Planet.target - 1)?.frame ?? null : null
+                photo: Planet.arrivalKnown ? photos.itemAt(Planet.slotOf(Planet.target))?.frame ?? null : null
                 pivotY: stage.pivotY
                 screenX: stage.modelData.x
                 screenY: stage.modelData.y
@@ -185,8 +187,10 @@ Variants {
                     Planet.nudge(-1);
                 else if (!Planet.inSystem && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter))
                     Planet.leaveOrbit(Planet.topPage);
-                else if (!Planet.inSystem && event.key >= Qt.Key_1 && event.key < Qt.Key_1 + Config.pages)
-                    Planet.leaveOrbit(event.key - Qt.Key_0);
+                else if (!Planet.inSystem && event.key >= Qt.Key_1 && event.key < Qt.Key_1 + Math.min(9, Config.pages))
+                    Planet.leaveOrbit(Planet.orbitStart + event.key - Qt.Key_1);
+                else if (!Planet.inSystem && event.key === Qt.Key_0 && Config.pages === 10)
+                    Planet.leaveOrbit(Planet.orbitStart + 9);
             }
         }
 
@@ -208,9 +212,9 @@ Variants {
         Connections {
             target: Planet
 
-            function onPhotoNeeded(page) {
+            function onPhotoNeeded(page, slot) {
                 if (stage.focused)
-                    photos.itemAt(page - 1)?.capture();
+                    photos.itemAt(slot)?.capture();
             }
 
             function onFinished(prepareMs) {

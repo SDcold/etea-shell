@@ -114,9 +114,18 @@ ColumnLayout {
         text: "Pages et musique"
     }
 
+    SettingSlider {
+        label: "Pages par groupe"
+        hint: "Au-delà, la barre bascule sur le groupe suivant au lieu de revenir au début."
+        value: Config.pagesShown
+        minimum: 4
+        maximum: 10
+        onMoved: value => Config.pagesShown = Math.round(value)
+    }
+
     SettingChoice {
         label: "Pages"
-        hint: "Une constellation par page, ou son numéro devant."
+        hint: "Une constellation par page, ou simplement son numéro, plus compact."
         options: [{ id: "constellation", label: "Constellations" }, { id: "numbers", label: "Numéros" }]
         current: Config.pageStyle
         onPicked: id => Config.pageStyle = id

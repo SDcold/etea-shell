@@ -93,8 +93,8 @@ Scope {
             const area = Planet.pagesArea;
             if (area.width === 0 || y < area.y - 20 || y > area.y + area.height + 20)
                 return 0;
-            const page = Math.floor((x - area.x) / (Theme.pageWidth + Theme.pageGap)) + 1;
-            return page >= 1 && page <= Config.pages ? page : 0;
+            const place = Math.floor((x - area.x) / (Theme.pageWidth + Theme.pageGap));
+            return place >= 0 && place < Config.pages ? Planet.groupStart + place : 0;
         }
 
         screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]

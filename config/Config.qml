@@ -9,7 +9,9 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property int pages: 6
+    // Pages come in groups: the bar shows one group, the planet carries one group around it.
+    // Past the last page of a group, the next group takes its place.
+    readonly property int pages: Math.max(4, Math.min(10, pagesShown))
     readonly property string locale: "fr_FR"
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
 
@@ -65,6 +67,7 @@ Singleton {
     property alias traceSpacing: saved.traceSpacing
     property alias windowGapOuter: saved.windowGapOuter
 
+    property alias pagesShown: saved.pagesShown
     property alias barPosition: saved.barPosition // "top" or "bottom"
     property alias barSize: saved.barSize // "compact", "normal" or "large"
     property alias barStyle: saved.barStyle // "sky", "islands" or "band"
@@ -138,6 +141,7 @@ Singleton {
             property int traceSpacing: 420
             property int windowGapOuter: 12
 
+            property int pagesShown: 8
             property string barPosition: "top"
             property string barSize: "normal"
             property string barStyle: "sky"

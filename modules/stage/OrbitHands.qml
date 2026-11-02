@@ -125,7 +125,7 @@ MouseArea {
         } else if (mode === "carry") {
             const page = pageToward(mouse.x, mouse.y);
             if (page !== carriedFrom) {
-                Hyprland.dispatch(`hl.dsp.window.move({ workspace = ${page + 1}, follow = false, window = "address:0x${carried.address}" })`);
+                Hyprland.dispatch(`hl.dsp.window.move({ workspace = ${Planet.orbitStart + page}, follow = false, window = "address:0x${carried.address}" })`);
                 Planet.refreshOrbit();
             }
         } else if (mouse.button !== Qt.LeftButton) {
@@ -134,7 +134,7 @@ MouseArea {
                 Planet.refreshOrbit();
             }
         } else if (carriedFrom >= 0) {
-            Planet.leaveOrbit(carriedFrom + 1);
+            Planet.leaveOrbit(Planet.orbitStart + carriedFrom);
         }
         mode = "";
         carried = null;
