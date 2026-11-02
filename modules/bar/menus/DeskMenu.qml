@@ -160,11 +160,11 @@ Scope {
                     }
 
                     Repeater {
-                        model: panel.shown === "system" ? [{ id: "cpu", label: Lang.t("Processeur") }, { id: "memory", label: Lang.t("Mémoire") }] : []
+                        model: panel.shown === "system" ? [{ id: "cpu", label: Lang.t("Processeur") }, { id: "memory", label: Lang.t("Mémoire") }, { id: "network", label: Lang.t("Débit réseau") }, { id: "temperature", label: Lang.t("Chaleur") }] : []
 
                         MenuRow {
                             required property var modelData
-                            readonly property var readings: panel.widget?.readings ?? ["cpu", "memory"]
+                            readonly property var readings: panel.widget?.readings ?? ["cpu", "memory", "network", "temperature"]
 
                             Layout.fillWidth: true
                             label: modelData.label
@@ -173,7 +173,7 @@ Scope {
                             onPicked: {
                                 const next = active ? readings.filter(id => id !== modelData.id) : readings.concat([modelData.id]);
                                 if (next.length)
-                                    Desk.update("system", { readings: ["cpu", "memory"].filter(id => next.includes(id)) });
+                                    Desk.update("system", { readings: ["cpu", "memory", "network", "temperature"].filter(id => next.includes(id)) });
                             }
                         }
                     }

@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 // How hard the computer is working, core by core, how warm it runs, and how fast data
 // comes in and goes out. A quick look every couple of seconds is plenty.
@@ -18,6 +19,13 @@ Singleton {
     property var last: null
     property var lastCores: []
     property var lastNet: null
+
+    // A rate the way people read it: kB/s, then MB/s once it gets big
+    function rate(bytes) {
+        if (bytes >= 1048576)
+            return (bytes / 1048576).toFixed(1).replace(".", Qt.locale(Config.locale).decimalPoint) + " " + Lang.t("Mo/s");
+        return Math.round(bytes / 1024) + " " + Lang.t("ko/s");
+    }
 
     // Busy time and total time of one "cpu" line of /proc/stat
     function times(line) {

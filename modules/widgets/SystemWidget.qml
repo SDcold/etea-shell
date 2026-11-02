@@ -1,116 +1,79 @@
 import QtQuick
+import QtQuick.Layouts
 import qs.config
 import qs.modules.bar
 import qs.services
 
-// The ship's instruments: each reading is a star orbiting a little world, and the
-// further round it has gone, the harder the machine is working.
+// The machine in a porthole, as a constellation: a star per core, memory as the nebula
+// behind, comets for the network, and the numbers along the bottom. The card warms up
+// when the processor does.
 Item {
     id: root
 
-    property var options: ({}) // its entry in Config.widgets
-    // Kept as text, so moving the widget doesn't rebuild its gauges
-    readonly property string readings: (options?.readings ?? ["cpu", "memory"]).join()
+    property var options: ({})
+    readonly property string readings: (options?.readings ?? ["cpu", "memory", "network", "temperature"]).join()
 
-    implicitWidth: 300
-    implicitHeight: 182
+    property var snap: ({ cpu: 0, memory: 0, download: 0, upload: 0, temperature: 0, cores: 0 })
+
+    Binding on snap {
+        when: Planet.pageEmpty || root.snap.cores === 0
+        value: ({ cpu: Machine.cpu, memory: Machine.memory, download: Machine.download, upload: Machine.upload, temperature: Machine.temperature, cores: Machine.cores.length })
+        restoreMode: Binding.RestoreNone
+    }
+
+    implicitWidth: 360
+    implicitHeight: 230
 
     HandCard {
         anchors.fill: parent
         seed: "system"
-        tint: Machine.cpu > 0.8 ? "#f0705f" : "#8fc7e8"
-        rise: 0.07 + Machine.cpu * 0.16
+        tint: root.snap.cpu > 0.8 ? "#f0705f" : "#8fc7e8"
+        rise: 0.06 + root.snap.cpu * 0.16
         alive: Planet.pageEmpty
     }
 
-    Row {
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 16
-        spacing: 26
+    CoreConstellation {
+        x: 20
+        y: 18
+        width: parent.width - 40
+        height: 120
+        ink: Theme.text
+    }
 
-        // Only ids here: values in the model would rebuild both gauges on every reading
+    RowLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 22
+        spacing: 12
+
         Repeater {
             model: [
-                { id: "cpu", label: Lang.t("Processeur") },
-                { id: "memory", label: Lang.t("Mémoire") }
+                { id: "cpu", label: root.snap.cores ? Lang.t("{0} cœurs", root.snap.cores) : Lang.t("Processeur"), value: `${Math.round(root.snap.cpu * 100)} %` },
+                { id: "memory", label: Lang.t("Mémoire"), value: `${Math.round(root.snap.memory * 100)} %` },
+                { id: "network", label: `↑ ${Machine.rate(root.snap.upload)}`, value: `↓ ${Machine.rate(root.snap.download)}` },
+                { id: "temperature", label: Lang.t("Chaleur"), value: root.snap.temperature ? `${Math.round(root.snap.temperature)}°` : "–" }
             ].filter(reading => (root?.readings ?? "").includes(reading.id))
 
-            Item {
-                id: gauge
-
+            ColumnLayout {
                 required property var modelData
 
-                readonly property real value: modelData.id === "cpu" ? Machine.cpu : Machine.memory
-                property real shown: 0
+                Layout.fillWidth: true
+                spacing: 0
 
-                width: 110
-                height: 128
-
-                // Behind windows the gauge holds still
-                Binding on shown {
-                    when: Planet.pageEmpty || gauge.shown === 0
-                    value: gauge.value
-                    restoreMode: Binding.RestoreNone
-                }
-
-                Behavior on shown {
-                    NumberAnimation { duration: 900; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
-                }
-
-                Component.onCompleted: shown = value
-
-                onShownChanged: ring.requestPaint()
-
-                Canvas {
-                    id: ring
-
-                    width: 100
-                    height: 100
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    renderStrategy: Canvas.Immediate
-                    onPaint: {
-                        const g = getContext("2d"), c = 50, r = 42, start = -Math.PI / 2;
-                        g.reset();
-                        g.lineCap = "round";
-                        g.strokeStyle = String(Theme.windowLit);
-                        g.globalAlpha = 0.18;
-                        g.lineWidth = Theme.ringThickness;
-                        g.beginPath();
-                        g.arc(c, c, r, 0, Math.PI * 2);
-                        g.stroke();
-                        g.globalAlpha = 0.95;
-                        g.lineWidth = Theme.ringThickness;
-                        g.beginPath();
-                        g.arc(c, c, r, start, start + gauge.shown * Math.PI * 2);
-                        g.stroke();
-                    }
-
-                    Star {
-                        readonly property real angle: gauge.shown * Math.PI * 2 - Math.PI / 2
-
-                        x: 50 + 42 * Math.cos(angle) - size
-                        y: 50 + 42 * Math.sin(angle) - size
-                        size: 7
-                        lit: true
-                        animated: false
-                    }
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: Math.round(gauge.shown * 100)
-                        color: Theme.text
-                        font.family: Theme.font
-                        font.pixelSize: 22
-                    }
+                Text {
+                    text: parent.modelData.label
+                    color: Qt.alpha(Theme.text, 0.6)
+                    font.family: Theme.font
+                    font.pixelSize: 10
                 }
 
                 Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.bottom: parent.bottom
-                    text: gauge.modelData.label
-                    color: Qt.alpha(Theme.text, 0.72)
+                    text: parent.modelData.value
+                    color: Theme.text
                     font.family: Theme.font
-                    font.pixelSize: 11
+                    font.pixelSize: 17
+                    font.features: { "tnum": 1 }
                 }
             }
         }

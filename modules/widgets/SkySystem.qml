@@ -2,85 +2,64 @@ import QtQuick
 import qs.config
 import qs.services
 
-// The machine's vital signs, written straight onto the sky the way the time is.
-Row {
+// The machine written on the sky as a constellation: a star per core, memory as the
+// nebula behind, comets for the network. The numbers sit underneath, small and quiet.
+Column {
     id: root
 
     property real sky: 1080
-    property var options: ({}) // its entry in Config.widgets
-    // Kept as text, so moving the widget doesn't rebuild its gauges
-    readonly property string readings: (options?.readings ?? ["cpu", "memory"]).join()
+    property var options: ({})
+    // Kept as text, so moving the widget doesn't rebuild its readings
+    readonly property string readings: (options?.readings ?? ["cpu", "memory", "network", "temperature"]).join()
 
-    spacing: sky * 0.05
+    // The numbers, held still behind windows like the stars above them
+    property var snap: ({ cpu: 0, memory: 0, download: 0, upload: 0, temperature: 0, cores: 0 })
 
-    Repeater {
-        model: [
-            { id: "cpu", label: Lang.t("Processeur") },
-            { id: "memory", label: Lang.t("Mémoire") }
-        ].filter(reading => (root?.readings ?? "").includes(reading.id))
+    Binding on snap {
+        when: Planet.pageEmpty || root.snap.cores === 0
+        value: ({ cpu: Machine.cpu, memory: Machine.memory, download: Machine.download, upload: Machine.upload, temperature: Machine.temperature, cores: Machine.cores.length })
+        restoreMode: Binding.RestoreNone
+    }
 
-        Column {
-            id: reading
+    spacing: sky * 0.014
+    width: sky * 0.36
 
-            required property var modelData
+    CoreConstellation {
+        width: parent.width
+        height: root.sky * 0.15
+        ink: Theme.skyInk
+    }
 
-            readonly property real value: modelData.id === "cpu" ? Machine.cpu : Machine.memory
-            readonly property color ink: shown > 0.85 ? "#f0947c" : Theme.skyInk
-            property real shown: 0
+    Row {
+        spacing: root.sky * 0.032
 
-            spacing: root.sky * 0.008
+        Repeater {
+            model: [
+                { id: "cpu", label: root.snap.cores ? Lang.t("{0} cœurs", root.snap.cores) : Lang.t("Processeur"), value: `${Math.round(root.snap.cpu * 100)} %` },
+                { id: "memory", label: Lang.t("Mémoire"), value: `${Math.round(root.snap.memory * 100)} %` },
+                { id: "network", label: `↑ ${Machine.rate(root.snap.upload)}`, value: `↓ ${Machine.rate(root.snap.download)}` },
+                { id: "temperature", label: Lang.t("Chaleur"), value: root.snap.temperature ? `${Math.round(root.snap.temperature)}°` : "–" }
+            ].filter(reading => (root?.readings ?? "").includes(reading.id))
 
-            // Behind windows the reading holds still: each glide redraws the whole sky
-            // Until the first reading comes in it follows anyway, or it would sit at zero
-            Binding on shown {
-                when: Planet.pageEmpty || reading.shown === 0
-                value: reading.value
-                restoreMode: Binding.RestoreNone
-            }
+            Column {
+                required property var modelData
 
-            Behavior on shown {
-                NumberAnimation { duration: 900; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
-            }
+                spacing: root.sky * 0.002
 
-            Component.onCompleted: shown = value
-
-            Text {
-                text: reading.modelData.label
-                color: reading.ink
-                font.family: Theme.font
-                font.pixelSize: root.sky * 0.016
-                font.weight: Font.Medium
-            }
-
-            Rectangle {
-                width: root.sky * 0.125
-                height: Theme.barThickness
-                radius: height / 2
-                color: Qt.alpha(reading.ink, 0.2)
-
-                Rectangle {
-                    width: Math.max(parent.height, parent.width * reading.shown)
-                    height: parent.height
-                    radius: parent.radius
-                    color: reading.ink
+                Text {
+                    text: parent.modelData.label
+                    color: Qt.alpha(Theme.skyInk, 0.65)
+                    font.family: Theme.font
+                    font.pixelSize: root.sky * 0.013
                 }
-            }
 
-            Text {
-                text: Math.round(reading.shown * 100)
-                color: reading.ink
-                font.family: Theme.font
-                font.pixelSize: root.sky * 0.125
-                font.weight: Font.Medium
-                font.letterSpacing: -root.sky * 0.003
-                renderType: Text.CurveRendering
-
-                layer.enabled: true
-                layer.smooth: true
-                layer.textureSize: Qt.size(width * 2, height * 2) // drawn at double size so the curves come out smooth
-                layer.effect: Dissolve {
-                    from: 0.34
-                    to: 0.92
+                Text {
+                    text: parent.modelData.value
+                    color: Theme.skyInk
+                    font.family: Theme.font
+                    font.pixelSize: root.sky * 0.03
+                    font.weight: Font.Medium
+                    font.features: { "tnum": 1 }
                 }
             }
         }
