@@ -22,7 +22,7 @@ Scope {
         id: panel
 
         screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-        visible: Menus.open !== ""
+        visible: shown !== ""
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         implicitHeight: 640
@@ -48,25 +48,47 @@ Scope {
         }
 
         property real reveal: 0
+        // The menu on screen, which stays a little longer than Menus.open so it can fold away
+        property string shown: ""
 
-        // Menus open through the same star as everything else, from under what you clicked
+        // Menus open through the same star as everything else, from under what you clicked,
+        // and close by folding back into it
         NumberAnimation {
             id: unfold
 
             target: panel
             property: "reveal"
-            from: 0
             to: 1
             duration: Theme.cardOpen
             easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            id: fold
+
+            target: panel
+            property: "reveal"
+            to: 0
+            // The star covers the whole card for a while, so it has to start shrinking right away
+            duration: Theme.cardOpen * 0.8
+            easing.type: Easing.OutQuad
+            onFinished: panel.shown = ""
         }
 
         Connections {
             target: Menus
 
             function onOpenChanged() {
-                if (Menus.open)
+                fold.stop();
+                if (Menus.open) {
+                    if (panel.shown !== Menus.open)
+                        panel.reveal = 0;
+                    panel.shown = Menus.open;
                     unfold.restart();
+                } else {
+                    unfold.stop();
+                    fold.restart();
+                }
             }
         }
 
@@ -89,7 +111,7 @@ Scope {
 
             HandCard {
                 anchors.fill: parent
-                seed: Menus.open
+                seed: panel.shown
                 tint: Menus.tint
                 rise: menu.item?.cardRise ?? 0.08
             }
@@ -112,7 +134,7 @@ Scope {
                         network: "NetworkMenu.qml",
                         bluetooth: "BluetoothMenu.qml",
                         power: "PowerMenu.qml"
-                    })[Menus.open] ?? ""
+                    })[panel.shown] ?? ""
             }
         }
     }

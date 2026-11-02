@@ -7,7 +7,8 @@ import qs.modules.bar
 import qs.modules.stage
 import qs.services
 
-// A side panel, opened like the bar menus: the card unfolds through a star from its top corner.
+// A side panel, opened like the bar menus: the card unfolds through a star from its top
+// corner, and folds back into it when it closes.
 Scope {
     id: root
 
@@ -24,7 +25,7 @@ Scope {
         property real reveal: 0
 
         screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-        visible: root.open
+        visible: root.open || reveal > 0
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         implicitWidth: Theme.panelWidth + Theme.barSide
@@ -55,18 +56,29 @@ Scope {
 
             target: window
             property: "reveal"
-            from: 0
             to: 1
             duration: Theme.cardOpen
             easing.type: Easing.OutCubic
+        }
+
+        // Closing is the same star, folding back into the corner
+        NumberAnimation {
+            id: fold
+
+            target: window
+            property: "reveal"
+            to: 0
+            // The star covers the whole card for a while, so it has to start shrinking right away
+            duration: Theme.cardOpen * 0.8
+            easing.type: Easing.OutQuad
         }
 
         Connections {
             target: root
 
             function onOpenChanged() {
-                if (root.open)
-                    unfold.restart();
+                (root.open ? fold : unfold).stop();
+                (root.open ? unfold : fold).restart();
             }
         }
 
