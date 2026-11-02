@@ -97,12 +97,19 @@ take_pages() {
         /usr/bin/hyprctl eval "hl.gesture({ fingers = 4, direction = \"$direction\", action = \"unset\" })" >/dev/null 2>&1 || true
     done
     /usr/bin/hyprctl eval '
-        hl.gesture({ fingers = 4, direction = "left", action = function()
-            hl.dispatch(hl.dsp.global("etea:pageNext"))
-        end })
-        hl.gesture({ fingers = 4, direction = "right", action = function()
-            hl.dispatch(hl.dsp.global("etea:pagePrevious"))
-        end })
+        -- Sideways the planet follows the fingers: the start of the swipe, every move and
+        -- its end reach the shell as events, and it decides on letting go
+        hl.gesture({ fingers = 4, direction = "horizontal", action = {
+            start = function()
+                hl.dispatch(hl.dsp.event("etea:swipe,start"))
+            end,
+            update = function(e)
+                hl.dispatch(hl.dsp.event("etea:swipe,move," .. (e.delta and e.delta.x or 0)))
+            end,
+            finish = function(e)
+                hl.dispatch(hl.dsp.event("etea:swipe,end," .. tostring(e.cancelled == true)))
+            end
+        } })
         hl.gesture({ fingers = 4, direction = "up", action = function()
             hl.dispatch(hl.dsp.global("etea:orbit"))
         end })

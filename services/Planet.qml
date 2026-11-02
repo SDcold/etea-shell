@@ -93,6 +93,81 @@ Singleton {
 
     onFocusQuietChanged: quiet()
 
+    // Turning the planet with the fingers: it follows the swipe, and only on letting go
+    // does Hyprland change page, or the planet rolls back if it wasn't far enough
+    property bool following: false // a swipe is under way
+    property bool fingerDriven: false // this page change is the swipe's, not a key's
+    property real swiped: 0 // how far the fingers have gone, in Hyprland's swipe units
+    property real swipeSpeed: 0 // units per second, at the last update
+    property real swipeTime: 0
+    property int swipeDirection: 0 // +1 towards the next page, -1 the previous one
+    property var swipeEnd: null // let go before the stand-ins were ready: { commit }
+    readonly property real swipeDistance: 620 // a full page, in swipe units
+    readonly property real swipeProgress: swipeDirection === 0 ? 0 : Math.max(0, Math.min(1, -swiped * swipeDirection / swipeDistance))
+
+    function swipeStart() {
+        if (phase !== Planet.Phase.Idle)
+            return;
+        following = true;
+        swiped = 0;
+        swipeSpeed = 0;
+        swipeTime = Date.now();
+        swipeDirection = 0;
+        swipeEnd = null;
+    }
+
+    function swipeMove(dx) {
+        if (!following)
+            return;
+        // Speed smoothed over the last few moves: one quick event isn't a flick
+        const now = Date.now(), instant = dx / Math.max(8, now - swipeTime) * 1000;
+        swiped += dx;
+        swipeSpeed = swipeSpeed * 0.7 + instant * 0.3;
+        swipeTime = now;
+        // The first clear move picks the way: fingers to the left go to the next page
+        if (swipeDirection === 0 && Math.abs(swiped) > 14) {
+            const way = swiped < 0 ? 1 : -1, page = current + way;
+            if (page < 1 || page > lastPage) {
+                following = false;
+                return;
+            }
+            swipeDirection = way;
+            fingerDriven = true;
+            request(page);
+        }
+        if (fingerDriven && phase === Planet.Phase.Spinning && !glide.running)
+            travel = swipeProgress * distance;
+    }
+
+    function swipeFinish(cancelled) {
+        if (!following)
+            return;
+        following = false;
+        if (!fingerDriven)
+            return;
+        // Far enough, or flicked that way: go. Otherwise the planet rolls back. Fingers that
+        // stopped before letting go aren't flicking anything.
+        const flick = Date.now() - swipeTime > 90 ? 0 : -swipeSpeed * swipeDirection;
+        const commit = !cancelled && (swipeProgress > 0.33 || (flick > 1400 && swipeProgress > 0.08));
+        if (phase === Planet.Phase.Spinning)
+            letGoOfSwipe(commit);
+        else
+            swipeEnd = { commit: commit };
+    }
+
+    function letGoOfSwipe(commit) {
+        swipeEnd = null;
+        if (commit)
+            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${target} })`);
+        glide.stop();
+        glide.committed = commit;
+        glide.from = travel;
+        glide.to = commit ? distance : 0;
+        // The rest of the way at the speed the fingers had, never sluggish
+        glide.duration = Math.max(140, Theme.pageSpin * 0.8 * Math.abs(glide.to - travel) / Math.max(0.001, Math.abs(distance)));
+        glide.start();
+    }
+
     signal photoNeeded(int page, int slot)
     signal worldWanted(string id) // a new world picked outside orbit, the stage wipes it in
     signal finished(real prepareMs)
@@ -324,7 +399,24 @@ Singleton {
         // The stand-ins leaving are cut from the photo, so they wait until it exists
         leaving = leavingNext;
         phase = Planet.Phase.Spinning;
+        if (fingerDriven) {
+            // The fingers turn it from here; Hyprland stays put until they let go
+            finished(Date.now() - pressedAt);
+            travel = swipeProgress * distance;
+            if (swipeEnd)
+                letGoOfSwipe(swipeEnd.commit);
+            else if (!following)
+                letGoOfSwipe(false);
+            return;
+        }
         coverDelay.restart();
+    }
+
+    // The swipe came back: nothing changed page, the scene just steps aside
+    function rollBack() {
+        distance = 0;
+        travel = 0;
+        settle();
     }
 
     function settle() {
@@ -363,6 +455,8 @@ Singleton {
     }
 
     function reset() {
+        fingerDriven = false;
+        swipeEnd = null;
         leaving = [];
         arriving = [];
         orbitPages = [];
@@ -448,7 +542,7 @@ Singleton {
     // The scene covers every window while a transition runs, so a transition that gets
     // stuck would hide the whole desktop. However it went wrong, this gives the screen back.
     Timer {
-        running: root.phase !== Planet.Phase.Idle && root.phase !== Planet.Phase.Orbit
+        running: root.phase !== Planet.Phase.Idle && root.phase !== Planet.Phase.Orbit && !root.following
         interval: 6000
         onTriggered: {
             console.warn("ETEA: transition stuck, giving the screen back");
@@ -551,6 +645,18 @@ Singleton {
         }
     }
 
+    // Finishing a swipe: on to the page, or back where it started
+    NumberAnimation {
+        id: glide
+
+        property bool committed: false
+
+        target: root
+        property: "travel"
+        easing.type: Easing.OutCubic
+        onFinished: committed ? root.settle() : root.rollBack()
+    }
+
     NumberAnimation {
         id: spin
 
@@ -582,6 +688,19 @@ Singleton {
     // If something else moved us, like a gesture, just follow along
     Connections {
         target: Hyprland
+
+        // The swipe's start, moves and end, sent by the gesture scripts/dev.sh sets up
+        function onRawEvent(event) {
+            if (event.name !== "custom" || !event.data.startsWith("etea:swipe,"))
+                return;
+            const [, step, value] = event.data.split(",");
+            if (step === "start")
+                root.swipeStart();
+            else if (step === "move")
+                root.swipeMove(Number(value));
+            else if (step === "end")
+                root.swipeFinish(value === "true");
+        }
 
         function onFocusedWorkspaceChanged() {
             if (root.phase === Planet.Phase.Idle)
