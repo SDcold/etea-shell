@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import qs.config
+import qs.services
 
 // The bar: pages on the left, time in the middle, system on the right.
 Variants {
@@ -11,6 +12,8 @@ Variants {
         id: bar
 
         required property var modelData
+        property Item leftCorner: null
+        property Item rightCorner: null
 
         screen: modelData
         color: "transparent"
@@ -30,6 +33,40 @@ Variants {
             Region { item: left }
             Region { item: center }
             Region { item: right }
+            Region { item: bar.leftCorner }
+            Region { item: bar.rightCorner }
+        }
+
+        // The top corners open the side panels, which pour out of them
+        Repeater {
+            model: ["left", "right"]
+
+            MouseArea {
+                id: corner
+
+                required property string modelData
+                readonly property bool isLeft: modelData === "left"
+
+                x: isLeft ? 0 : bar.width - width
+                width: Theme.barSide
+                height: Theme.barGap + Theme.barHeight
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onPressed: Menus.togglePanel(modelData, Qt.rect(isLeft ? 0 : bar.width - 48, Theme.barGap, 48, Theme.barHeight))
+                Component.onCompleted: isLeft ? bar.leftCorner = corner : bar.rightCorner = corner
+
+                Star {
+                    anchors.centerIn: parent
+                    size: 5
+                    lit: true
+                    animated: false
+                    opacity: corner.containsMouse ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation { duration: Theme.fast }
+                    }
+                }
+            }
         }
 
         Pages {
