@@ -8,6 +8,7 @@ ColumnLayout {
     id: root
 
     property color tint: Theme.windowLit
+    property bool entering: true // false on the desktop, where it's simply there
     readonly property var player: Music.player
     readonly property bool known: (player?.lengthSupported ?? false) && player.length > 0
 
@@ -17,6 +18,7 @@ ColumnLayout {
     MenuSlider {
         Layout.fillWidth: true
         tint: root.tint
+        entering: root.entering
         value: root.player?.position ?? 0
         maximum: root.player?.length || 1
         onMoved: value => {

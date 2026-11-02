@@ -6,6 +6,7 @@ SequentialAnimation {
     id: root
 
     required property Item item
+    property bool active: true // things that are simply there, like on a widget, skip it
     property int wait: 0
 
     function begin() {
@@ -36,6 +37,8 @@ SequentialAnimation {
     }
 
     Component.onCompleted: {
+        if (!active)
+            return;
         item.opacity = 0;
         Qt.callLater(begin);
     }

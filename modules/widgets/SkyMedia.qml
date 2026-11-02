@@ -77,6 +77,7 @@ RowLayout {
         }
 
         MediaProgress {
+            entering: false
             visible: known
             Layout.fillWidth: true
             tint: Theme.skyInk

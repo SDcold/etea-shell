@@ -108,6 +108,7 @@ Item {
         }
 
         MediaProgress {
+            entering: false
             Layout.fillWidth: true
             tint: colour.color
         }

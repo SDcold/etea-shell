@@ -10,6 +10,7 @@ Item {
     property real value: 0
     property real maximum: 1
     property color tint: Menus.tint
+    property bool entering: true // settles in like the rest of a menu
     readonly property real ratio: Math.max(0, Math.min(1, value / maximum))
 
     signal moved(real value)
@@ -19,6 +20,7 @@ Item {
 
     Entrance {
         item: root
+        active: root.entering
     }
 
     // A proper track you can see from across the room, not just a line
