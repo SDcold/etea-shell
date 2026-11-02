@@ -28,6 +28,51 @@ Row {
         objects: root.sink ? [root.sink] : []
     }
 
+    // Filming: a beating red dot and the time so far, a click stops it
+    Item {
+        visible: Recorder.recording
+        anchors.verticalCenter: parent.verticalCenter
+        implicitWidth: rolling.implicitWidth
+        implicitHeight: rolling.implicitHeight
+
+        Row {
+            id: rolling
+
+            spacing: 6
+
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 8
+                height: 8
+                radius: 4
+                color: "#f0705f"
+
+                SequentialAnimation on opacity {
+                    running: Recorder.recording
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.3; duration: 700; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 1; duration: 700; easing.type: Easing.InOutSine }
+                }
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Recorder.elapsed(Recorder.seconds)
+                color: "#f0947c"
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize
+                font.features: { "tnum": 1 }
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -6
+            cursorShape: Qt.PointingHandCursor
+            onPressed: Recorder.stop()
+        }
+    }
+
     Repeater {
         model: Config.status
 
