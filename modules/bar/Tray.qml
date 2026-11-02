@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
@@ -30,9 +31,22 @@ Row {
             }
 
             IconImage {
+                id: picture
+
                 anchors.fill: parent
+                visible: !Config.trayTint
                 source: entry.modelData.icon
                 implicitSize: Theme.iconSize - 1
+            }
+
+            // In the shell's colours, they read like the rest of the bar
+            MultiEffect {
+                visible: Config.trayTint
+                anchors.fill: parent
+                source: picture
+                colorization: 1
+                colorizationColor: Theme.text
+                brightness: 1
             }
 
             MouseArea {

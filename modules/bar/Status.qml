@@ -55,13 +55,13 @@ Row {
                 case "volume":
                     if (!root.sink?.audio)
                         return ["", ""];
-                    return [root.sink.audio.muted ? "speaker-x" : root.sink.audio.volume > 0.5 ? "speaker-high" : "speaker-low", Math.round(root.sink.audio.volume * 100) + "%"];
+                    return [root.sink.audio.muted ? "speaker-x" : root.sink.audio.volume > 0.5 ? "speaker-high" : "speaker-low", Config.barPercent ? Math.round(root.sink.audio.volume * 100) + "%" : ""];
                 case "battery":
                     if (!root.battery?.isLaptopBattery)
                         return ["", ""];
                     const level = root.battery.percentage;
                     const icon = !UPower.onBattery ? "battery-charging" : level > 0.8 ? "battery-full" : level > 0.5 ? "battery-high" : level > 0.25 ? "battery-medium" : level > 0.12 ? "battery-low" : "battery-warning";
-                    return [icon, Math.round(level * 100) + "%"];
+                    return [icon, Config.barPercent ? Math.round(level * 100) + "%" : ""];
                 }
                 return ["", ""];
             }
