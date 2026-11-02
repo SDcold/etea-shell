@@ -201,18 +201,20 @@ Item {
                 board.carriedAt = chip.mapToItem(board, mouse.x, mouse.y);
                 board.landingZone = board.zoneAt(board.carriedAt)?.zoneId ?? "";
             }
+            // Moving rebuilds the chips, this one included, so tidy up before anything moves
             onReleased: {
-                if (board.carried) {
-                    const zone = board.zoneAt(board.carriedAt);
+                const owner = board, carried = board.carried, at = board.carriedAt, id = chip.chipId;
+                owner.carried = "";
+                owner.landingZone = "";
+                if (carried) {
+                    const zone = owner.zoneAt(at);
                     if (zone)
-                        board.move(board.carried, zone.zoneId, board.indexAt(zone, board.carriedAt));
-                } else if (board.clickMoves) {
-                    const other = board.zones.find(zone => !zone.items.includes(chip.chipId));
+                        owner.move(carried, zone.zoneId, owner.indexAt(zone, at));
+                } else if (owner.clickMoves) {
+                    const other = owner.zones.find(zone => !zone.items.includes(id));
                     if (other)
-                        board.move(chip.chipId, other.id, other.items.length);
+                        owner.move(id, other.id, other.items.length);
                 }
-                board.carried = "";
-                board.landingZone = "";
             }
             onCanceled: {
                 board.carried = "";
