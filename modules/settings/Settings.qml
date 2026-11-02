@@ -20,6 +20,7 @@ Scope {
             { label: Lang.t("Barre"), page: "BarPage.qml" },
             { label: Lang.t("Fenêtres"), page: "WindowsPage.qml" },
             { label: Lang.t("Mouvement"), page: "MotionPage.qml" },
+            { label: Lang.t("Verrouillage"), page: "LockPage.qml" },
             { label: Lang.t("Langue"), page: "LanguagePage.qml" }
         ]
 

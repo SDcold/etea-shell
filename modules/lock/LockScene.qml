@@ -37,6 +37,18 @@ Item {
         NumberAnimation { duration: root.lock.revealed ? 1100 : 700; easing.type: Easing.InOutCubic }
     }
 
+    // Which of the two lights belongs to the newest star
+    property int glowTurn: 0
+
+    Connections {
+        target: root.lock
+
+        function onStarsChanged() {
+            if (root.lock.stars > 0)
+                root.glowTurn = 1 - root.glowTurn;
+        }
+    }
+
     // The same tiny wobble for star number n every time, whatever key made it
     function jitter(n, salt) {
         const x = Math.sin(n * 12.9898 + salt * 78.233) * 43758.5453;
@@ -167,62 +179,70 @@ Item {
             }
         }
 
-        // The newest star burns warm behind her hand and shines out between the fingers
-        Canvas {
-            id: glint
+        // The newest star burns warm, and her hand comes over to hide it. Two lights take
+        // turns, so each one is born with its star and the last one fades where it was.
+        Repeater {
+            model: root.main ? 2 : 0
 
-            readonly property var spot: root.lock.stars > 0 ? root.starAt(root.lock.stars - 1) : null
-            readonly property color tint: root.scene?.glow?.color ?? "#ffcf8a"
+            Canvas {
+                id: glint
 
-            width: (root.scene?.glow?.size ?? 0.2) * root.unit
-            height: width
-            x: (spot?.x ?? 0) - width / 2
-            y: (spot?.y ?? 0) - height / 2
-            visible: root.main && spot !== null
-            opacity: root.lock.vanishing ? 0 : root.lock.checking ? 0.6 + 0.4 * root.pulse : 1
-            scale: root.lock.capsLock ? 1.3 : 1
-            renderStrategy: Canvas.Immediate
-            // A hidden canvas drops paint requests, so ask again whenever it shows up
-            onWidthChanged: requestPaint()
-            onTintChanged: requestPaint()
-            onVisibleChanged: requestPaint()
-            onAvailableChanged: requestPaint()
-            // Canvas wants CSS colours, so transparency goes through rgba()
-            function rgba(color, alpha) {
-                return `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${alpha})`;
-            }
+                required property int index
+                readonly property bool lit: root.lock.stars > 0 && root.glowTurn === index && !root.lock.vanishing
+                readonly property color tint: root.scene?.glow?.color ?? "#ffcf8a"
+                property point spot
 
-            onPaint: {
-                const g = getContext("2d"), c = width / 2;
-                g.reset();
-                const halo = g.createRadialGradient(c, c, 0, c, c, c * 0.62);
-                halo.addColorStop(0, "rgba(255, 250, 240, 1)");
-                halo.addColorStop(0.14, rgba(tint, 0.95));
-                halo.addColorStop(0.45, rgba(tint, 0.4));
-                halo.addColorStop(1, rgba(tint, 0));
-                g.fillStyle = halo;
-                g.fillRect(0, 0, width, height);
-                // Long thin rays, the way a bright star looks through a lens
-                for (const [w, h] of [[c * 0.8, 1.6], [1.6, c]]) {
-                    const ray = g.createRadialGradient(c, c, 0, c, c, Math.max(w, h));
-                    ray.addColorStop(0, "rgba(255, 243, 220, 0.95)");
-                    ray.addColorStop(1, rgba(tint, 0));
-                    g.fillStyle = ray;
-                    g.fillRect(c - w, c - h, w * 2, h * 2);
+                width: (root.scene?.glow?.size ?? 0.2) * root.unit
+                height: width
+                x: spot.x - width / 2
+                y: spot.y - height / 2
+                visible: opacity > 0
+                opacity: !lit ? 0 : root.lock.checking ? 0.6 + 0.4 * root.pulse : 1
+                scale: !lit ? 0.6 : root.lock.capsLock ? 1.3 : 1
+                renderStrategy: Canvas.Immediate
+                onLitChanged: {
+                    if (lit) {
+                        const star = root.starAt(root.lock.stars - 1);
+                        spot = Qt.point(star.x, star.y);
+                    }
                 }
-            }
+                // A hidden canvas drops paint requests, so ask again whenever it shows up
+                onWidthChanged: requestPaint()
+                onTintChanged: requestPaint()
+                onVisibleChanged: requestPaint()
+                onAvailableChanged: requestPaint()
+                // Canvas wants CSS colours, so transparency goes through rgba()
+                function rgba(color, alpha) {
+                    return `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${alpha})`;
+                }
 
-            Behavior on x {
-                NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
-            }
-            Behavior on y {
-                NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
-            }
-            Behavior on opacity {
-                NumberAnimation { duration: 300 }
-            }
-            Behavior on scale {
-                NumberAnimation { duration: 260 }
+                onPaint: {
+                    const g = getContext("2d"), c = width / 2;
+                    g.reset();
+                    const halo = g.createRadialGradient(c, c, 0, c, c, c * 0.62);
+                    halo.addColorStop(0, "rgba(255, 250, 240, 1)");
+                    halo.addColorStop(0.14, rgba(tint, 0.95));
+                    halo.addColorStop(0.45, rgba(tint, 0.4));
+                    halo.addColorStop(1, rgba(tint, 0));
+                    g.fillStyle = halo;
+                    g.fillRect(0, 0, width, height);
+                    // Long thin rays, the way a bright star looks through a lens
+                    for (const [w, h] of [[c * 0.8, 1.6], [1.6, c]]) {
+                        const ray = g.createRadialGradient(c, c, 0, c, c, Math.max(w, h));
+                        ray.addColorStop(0, "rgba(255, 243, 220, 0.95)");
+                        ray.addColorStop(1, rgba(tint, 0));
+                        g.fillStyle = ray;
+                        g.fillRect(c - w, c - h, w * 2, h * 2);
+                    }
+                }
+
+                // Born quick and a little too big; going out slower
+                Behavior on opacity {
+                    NumberAnimation { duration: glint.lit ? 140 : 420 }
+                }
+                Behavior on scale {
+                    NumberAnimation { duration: glint.lit ? 360 : 420; easing.type: glint.lit ? Easing.OutBack : Easing.InQuad }
+                }
             }
         }
 
@@ -253,9 +273,10 @@ Item {
                 readonly property var info: root.scene?.arm ?? { width: 0.5, pivot: [0, 0.5] }
                 readonly property real pivotX: width * info.pivot[0]
                 readonly property real pivotY: height * info.pivot[1]
-                readonly property var target: root.lock.stars > 0 ? root.starAt(root.lock.stars - 1) : null
-                property real angle: target ? target.angle : root.scene?.rest ?? 70
-                property real stretch: target ? target.radius / root.reach : 1
+                // She chases the stars along the first row only, then lets them go
+                readonly property int follow: root.scene?.follow ?? 8
+                readonly property var target: root.lock.stars > 0 ? root.starAt(Math.min(root.lock.stars, follow) - 1) : null
+                property real angle: target ? target.angle : root.scene?.rest ?? -84
 
                 width: info.width * root.unit
                 height: width * (implicitWidth > 0 ? implicitHeight / implicitWidth : 0.2)
@@ -265,24 +286,18 @@ Item {
                 sourceSize.width: width * 2
                 asynchronous: true
                 smooth: true
-                transform: [
-                    Scale {
-                        origin.x: arm.pivotX
-                        origin.y: arm.pivotY
-                        xScale: arm.stretch
-                    },
-                    Rotation {
-                        origin.x: arm.pivotX
-                        origin.y: arm.pivotY
-                        angle: arm.angle
-                    }
-                ]
-
-                Behavior on angle {
-                    NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+                transform: Rotation {
+                    origin.x: arm.pivotX
+                    origin.y: arm.pivotY
+                    angle: arm.angle
                 }
-                Behavior on stretch {
-                    NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+
+                // The star lights up first, then her hand comes over it
+                Behavior on angle {
+                    SequentialAnimation {
+                        PauseAnimation { duration: 110 }
+                        NumberAnimation { duration: 340; easing.type: Easing.OutCubic }
+                    }
                 }
             }
 

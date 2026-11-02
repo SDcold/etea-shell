@@ -28,6 +28,7 @@ middle of the screen, so the scene fits any screen.
   (where the middle of the hand is along the image, as a share of its width).
 - `shoulder`: where the pivot lands on screen.
 - `rest`: the arm's angle with no stars, in degrees. 0 points right, -90 points up.
+- `follow`: how many stars her hand chases before it stays put and lets the rest shine.
 - `arc`: the angles of the first and last star of a row. `step` is the gap between two
   stars, `rowGap` how far in the next row sits once one is full.
 
