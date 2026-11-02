@@ -42,9 +42,7 @@ Item {
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
+    Hover {
         onPressed: Menus.togglePanel("left")
     }
 }

@@ -53,10 +53,7 @@ Row {
                 tint: tool.on ? Theme.windowLit : Theme.text
             }
 
-            MouseArea {
-                anchors.fill: parent
-                anchors.margins: -5
-                cursorShape: Qt.PointingHandCursor
+            Hover {
                 onPressed: {
                     switch (tool.modelData) {
                     case "capture":

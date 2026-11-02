@@ -24,12 +24,6 @@ Row {
             anchors.verticalCenter: parent.verticalCenter
             width: Theme.iconSize - 1
             height: Theme.iconSize - 1
-            scale: pointer.containsMouse ? 1.18 : 1
-
-            Behavior on scale {
-                NumberAnimation { duration: Theme.fast; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
-            }
-
             IconImage {
                 id: picture
 
@@ -49,14 +43,9 @@ Row {
                 brightness: 1
             }
 
-            MouseArea {
-                id: pointer
-
-                anchors.fill: parent
+            Hover {
                 anchors.margins: -4
-                hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                cursorShape: Qt.PointingHandCursor
                 onPressed: mouse => {
                     if (mouse.button === Qt.MiddleButton) {
                         entry.modelData.secondaryActivate();

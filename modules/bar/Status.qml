@@ -84,21 +84,22 @@ Row {
                     tint: item.tint
                 }
 
+                // The numbers come second, a touch smaller and softer than the icons
                 Text {
                     visible: text !== ""
                     anchors.verticalCenter: parent.verticalCenter
                     text: item.info[1]
-                    color: item.tint
+                    color: item.modelData === "battery" && item.tint !== Theme.text ? item.tint : Theme.textSoft
                     font.family: Theme.font
-                    font.pixelSize: Theme.textSize
+                    font.pixelSize: Theme.textSize - 1
+                    font.features: { "tnum": 1 }
                 }
             }
 
             // On the volume: click to mute, scroll to adjust
-            MouseArea {
-                anchors.fill: parent
+            Hover {
+                anchors.margins: -4
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                cursorShape: Qt.PointingHandCursor
                 onPressed: mouse => {
                     if (item.modelData === "settings") {
                         Menus.settingsOpen = !Menus.settingsOpen;
