@@ -8,8 +8,9 @@ import qs.config
 import qs.modules.bar
 import qs.services
 
-// "Where do you want to go?" Your apps are a map of the sky: a constellation per kind of
-// thing you do, your favourites burning brightest. Typing searches apps, open windows
+// "Where do you want to go?" Your apps are a map of the sky: every one of them, a
+// constellation per kind of thing you do, your favourites burning brightest at its heart.
+// The constellations float at different depths and drift against the pointer. Typing searches apps, open windows
 // and sums, and ">" runs a command. A star can be carried to a page in the bar.
 Scope {
     id: root
@@ -56,22 +57,61 @@ Scope {
 
         readonly property bool mapping: input.text.trim() === ""
 
-        // Where the constellations sit, and the shape each one draws
-        readonly property var homes: [[0.17, 0.5], [0.39, 0.72], [0.6, 0.5], [0.8, 0.72]]
-        readonly property var shape: [[0, 0], [100, -66], [186, 26], [66, 104], [-78, 84]]
+        // Where the constellations sit, and how much room each has: four across the top, three
+        // below with the biggest, the system, in the middle. Each one floats at its own depth.
+        readonly property var homes: [[0.125, 0.47, 4], [0.375, 0.44, 4], [0.625, 0.47, 4], [0.875, 0.44, 4], [0.5, 0.8, 3], [0.167, 0.8, 3], [0.833, 0.8, 3]]
+        readonly property var depths: [1, 0.7, 1.25, 0.85, 1.1, 0.8, 1.2]
+
+        // Joined like a real constellation: each star to its nearest neighbour, no loops
+        function tree(stars, first, last) {
+            const joined = [first], lines = [], best = {};
+            for (let i = first + 1; i <= last; i++)
+                best[i] = { from: first, length: Math.hypot(stars[i].x - stars[first].x, stars[i].y - stars[first].y) };
+            while (joined.length <= last - first) {
+                let next = -1;
+                for (const i in best) {
+                    if (next < 0 || best[i].length < best[next].length)
+                        next = Number(i);
+                }
+                lines.push([best[next].from, next]);
+                joined.push(next);
+                delete best[next];
+                for (const i in best) {
+                    const length = Math.hypot(stars[i].x - stars[next].x, stars[i].y - stars[next].y);
+                    if (length < best[i].length)
+                        best[i] = { from: next, length: length };
+                }
+            }
+            return lines;
+        }
 
         function refresh() {
             const stars = [], groups = [], wide = screen.width, tall = screen.height;
             if (mapping) {
+                // A sunflower spiral per family: the most used at the heart, the rest winding out
                 Apps.map().forEach((family, group) => {
-                    const home = homes[group], first = stars.length;
-                    family.stars.forEach((entry, rank) => stars.push(Object.assign({}, entry, {
-                        x: wide * home[0] + shape[rank][0],
-                        y: tall * home[1] + shape[rank][1],
-                        rank: rank
-                    })));
-                    if (family.stars.length)
-                        groups.push({ name: family.name, first: first, last: stars.length - 1, x: wide * home[0] + 60, y: tall * home[1] + 164 });
+                    if (!family.stars.length)
+                        return;
+                    const home = homes[group % homes.length], cx = wide * home[0], cy = tall * home[1];
+                    // The spiral fills an ellipse of its slot: spaced so it all fits, never sparse
+                    const rx = wide / home[2] / 2 * 0.82, ry = tall * 0.135, count = family.stars.length;
+                    const step = Math.min(34, Math.sqrt(rx * ry / count));
+                    const sx = Math.sqrt(rx / ry), sy = Math.sqrt(ry / rx);
+                    const first = stars.length;
+                    family.stars.forEach((entry, rank) => {
+                        const angle = rank * 2.39996, reach = step * Math.sqrt(rank + (rank ? 0.6 : 0));
+                        stars.push(Object.assign({}, entry, { x: cx + Math.cos(angle) * reach * sx, y: cy + Math.sin(angle) * reach * sy, rank: rank, fit: Math.min(1, step / 30) }));
+                    });
+                    const last = stars.length - 1;
+                    groups.push({
+                        name: family.name,
+                        first: first,
+                        last: last,
+                        x: cx,
+                        y: cy + step * Math.sqrt(count) * sy + 22,
+                        depth: depths[group % depths.length],
+                        lines: tree(stars, first, last)
+                    });
                 });
             } else {
                 const results = Apps.search(input.text);
@@ -83,13 +123,12 @@ Scope {
                         rank: index === 0 ? 0 : 2
                     }));
                 });
-                if (results.length > 1)
-                    groups.push({ name: "", first: 0, last: results.length - 1 });
+                if (results.length)
+                    groups.push({ name: "", first: 0, last: results.length - 1, depth: 1, lines: results.slice(1).map((entry, index) => [index, index + 1]) });
             }
             found = stars;
             clusters = groups;
             chosen = 0;
-            links.requestPaint();
         }
 
         function move(step) {
@@ -143,6 +182,37 @@ Scope {
             }
         }
 
+        // Every app's icon, held in memory for good and loaded a few at a time after start:
+        // the map shows them all, and fetching 150 icons when it opens left stars empty
+        Item {
+            visible: false
+
+            ListModel {
+                id: warm
+            }
+
+            Timer {
+                running: warm.count < Apps.everything.length
+                repeat: true
+                interval: 60
+                onTriggered: {
+                    for (const app of Apps.everything.slice(warm.count, warm.count + 12))
+                        warm.append({ icon: Quickshell.iconPath(app.icon, "application-x-executable") });
+                }
+            }
+
+            Repeater {
+                model: warm
+
+                Image {
+                    required property string icon
+
+                    sourceSize: Qt.size(96, 96)
+                    source: icon
+                }
+            }
+        }
+
         Rectangle {
             anchors.fill: parent
             color: Theme.launcherShade
@@ -162,172 +232,225 @@ Scope {
             anchors.fill: parent
             opacity: panel.shown
 
-            // The sky drifts gently against the pointer, so it feels deep
             transform: Translate {
-                x: (panel.width / 2 - panel.pointer.x) * 0.018
-                y: (panel.height / 2 - panel.pointer.y) * 0.018 + (1 - panel.shown) * 16
+                y: (1 - panel.shown) * 16
             }
 
-            // Only as big as the threads it holds: a full-screen canvas meant drawing and
-            // uploading a whole screen of pixels on every key
+            // Far-off dust, barely moving with the pointer, so the constellations feel near.
+            // Painted once each time the launcher opens.
             Canvas {
-                id: links
+                id: dust
 
-                readonly property rect area: {
-                    const xs = panel.found.map(star => star.x), ys = panel.found.map(star => star.y);
-                    if (!xs.length)
-                        return Qt.rect(0, 0, 1, 1);
-                    const left = Math.min(...xs) - 2, top = Math.min(...ys) - 2;
-                    return Qt.rect(left, top, Math.max(...xs) + 2 - left, Math.max(...ys) + 2 - top);
+                anchors.fill: parent
+                anchors.margins: -40
+                renderStrategy: Canvas.Immediate
+
+                transform: Translate {
+                    x: (panel.width / 2 - panel.pointer.x) * 0.012
+                    y: (panel.height / 2 - panel.pointer.y) * 0.012
                 }
 
-                x: area.x
-                y: area.y
-                width: area.width
-                height: area.height
-                renderStrategy: Canvas.Immediate
+                Connections {
+                    target: Apps
+
+                    function onOpenChanged() {
+                        if (Apps.open)
+                            dust.requestPaint();
+                    }
+                }
+
                 onPaint: {
                     const g = getContext("2d");
                     g.reset();
-                    g.translate(-x, -y);
-                    g.strokeStyle = String(Theme.link);
-                    g.globalAlpha = 0.32;
-                    g.lineWidth = 1;
-                    for (const group of panel.clusters) {
+                    g.fillStyle = String(Theme.starAsleep);
+                    for (let i = 0; i < 260; i++) {
+                        g.globalAlpha = 0.08 + Math.random() * 0.3;
                         g.beginPath();
-                        for (let i = group.first; i <= group.last; i++) {
-                            const star = panel.found[i];
-                            i === group.first ? g.moveTo(star.x, star.y) : g.lineTo(star.x, star.y);
-                        }
-                        g.stroke();
+                        g.arc(Math.random() * width, Math.random() * height, 0.5 + Math.random() * 1.1, 0, Math.PI * 2);
+                        g.fill();
                     }
                 }
             }
 
+            // One layer per constellation, each drifting against the pointer by its own depth
             Repeater {
                 model: panel.clusters
 
-                Text {
-                    required property var modelData
-
-                    visible: modelData.name !== ""
-                    x: (modelData.x ?? 0) - width / 2
-                    y: modelData.y ?? 0
-                    text: modelData.name
-                    color: Qt.alpha(Theme.text, 0.5)
-                    font.family: Theme.font
-                    font.pixelSize: 13
-                    font.letterSpacing: 1.5
-                }
-            }
-
-            Repeater {
-                model: panel.found
-
                 Item {
-                    id: node
+                    id: cluster
 
                     required property var modelData
-                    required property int index
 
-                    readonly property bool chosen: index === panel.chosen
-                    readonly property real reach: Math.hypot(panel.pointer.x - modelData.x, panel.pointer.y - modelData.y)
-                    // Stars swell as the pointer gets close, your favourites are already bigger
-                    readonly property real swell: 1 + 0.5 * Math.exp(-reach * reach / 14000)
-                    readonly property real weight: modelData.rank === 0 ? 1.25 : modelData.rank === 1 ? 1 : 0.85
-                    property bool carried: false
+                    readonly property real shiftX: (panel.width / 2 - panel.pointer.x) * 0.05 * modelData.depth
+                    readonly property real shiftY: (panel.height / 2 - panel.pointer.y) * 0.05 * modelData.depth
 
-                    x: carried ? panel.pointer.x : modelData.x
-                    y: carried ? panel.pointer.y : modelData.y
-                    z: carried ? 5 : chosen ? 2 : 1
+                    anchors.fill: parent
 
-                    Behavior on x {
-                        enabled: !node.carried
-                        NumberAnimation { duration: Theme.normal; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
-                    }
-                    Behavior on y {
-                        enabled: !node.carried
-                        NumberAnimation { duration: Theme.normal; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
+                    transform: Translate {
+                        x: cluster.shiftX
+                        y: cluster.shiftY
                     }
 
-                    Item {
-                        scale: node.swell * node.weight * (node.chosen ? 1.2 : 1)
+                    // Only as big as the threads it holds, and drawn once: the layer moves, not the ink
+                    Canvas {
+                        id: links
 
-                        Behavior on scale {
-                            NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                        readonly property var members: panel.found.slice(cluster.modelData.first, cluster.modelData.last + 1)
+                        readonly property rect area: {
+                            const xs = members.map(star => star.x), ys = members.map(star => star.y);
+                            if (!xs.length)
+                                return Qt.rect(0, 0, 1, 1);
+                            const left = Math.min(...xs) - 2, top = Math.min(...ys) - 2;
+                            return Qt.rect(left, top, Math.max(...xs) + 2 - left, Math.max(...ys) + 2 - top);
                         }
 
-                        Star {
-                            x: -size
-                            y: -size
-                            size: 38
-                            lit: node.chosen
-                            animated: false
-                            opacity: node.chosen ? 0.85 : 0.22
-                        }
-
-                        Image {
-                            visible: !node.modelData.glyph
-                            x: -width / 2
-                            y: -height / 2
-                            width: 44
-                            height: 44
-                            sourceSize: Qt.size(96, 96)
-                            smooth: true
-                            source: node.modelData.icon ?? ""
-                            opacity: node.chosen ? 1 : 0.8
-                        }
-
-                        // An emoji is its own icon
-                        Text {
-                            visible: !!node.modelData.glyph
-                            anchors.centerIn: parent
-                            text: node.modelData.glyph ?? ""
-                            font.pixelSize: 36
-                            opacity: node.chosen ? 1 : 0.8
+                        x: area.x
+                        y: area.y
+                        width: area.width
+                        height: area.height
+                        renderStrategy: Canvas.Immediate
+                        onAreaChanged: requestPaint()
+                        Component.onCompleted: requestPaint()
+                        onPaint: {
+                            const g = getContext("2d");
+                            g.reset();
+                            g.translate(-x, -y);
+                            g.strokeStyle = String(Theme.link);
+                            g.globalAlpha = 0.28;
+                            g.lineWidth = 1;
+                            g.beginPath();
+                            for (const [a, b] of cluster.modelData.lines) {
+                                g.moveTo(panel.found[a].x, panel.found[a].y);
+                                g.lineTo(panel.found[b].x, panel.found[b].y);
+                            }
+                            g.stroke();
                         }
                     }
 
                     Text {
-                        visible: node.chosen
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        y: 58
-                        text: node.modelData.label
-                        color: Theme.text
+                        visible: cluster.modelData.name !== ""
+                        x: (cluster.modelData.x ?? 0) - width / 2
+                        y: cluster.modelData.y ?? 0
+                        text: cluster.modelData.name
+                        color: Qt.alpha(Theme.text, 0.5)
                         font.family: Theme.font
-                        font.pixelSize: 18
-                        style: Text.Outline
-                        styleColor: Qt.alpha("#000000", 0.35)
+                        font.pixelSize: 13
+                        font.letterSpacing: 1.5
                     }
 
-                    // Point to choose, click to open, carry it to a page of the bar to open it there
-                    MouseArea {
-                        x: -46
-                        y: -46
-                        width: 92
-                        height: 92
-                        hoverEnabled: true
-                        preventStealing: true
-                        cursorShape: Qt.PointingHandCursor
-                        property point pressedAt: Qt.point(0, 0)
+                    Repeater {
+                        model: cluster.modelData.last - cluster.modelData.first + 1
 
-                        onEntered: panel.chosen = node.index
-                        onPressed: mouse => pressedAt = Qt.point(mouse.x, mouse.y)
-                        onPositionChanged: mouse => {
-                            const spot = mapToItem(null, mouse.x, mouse.y);
-                            panel.pointer = spot;
-                            if (pressed && node.modelData.kind === "app" && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) > 10)
-                                node.carried = true;
-                        }
-                        onReleased: mouse => {
-                            const spot = mapToItem(null, mouse.x, mouse.y);
-                            if (!node.carried) {
-                                Apps.run(node.modelData);
-                            } else {
-                                node.carried = false;
-                                const page = panel.pageUnder(spot.x, spot.y);
-                                if (page)
-                                    Apps.launch(node.modelData.app, page);
+                        Item {
+                            id: node
+
+                            required property int index
+                            readonly property int number: cluster.modelData.first + index
+                            readonly property var modelData: panel.found[number] ?? ({})
+
+                            readonly property bool chosen: number === panel.chosen
+                            readonly property real reach: Math.hypot(panel.pointer.x - cluster.shiftX - modelData.x, panel.pointer.y - cluster.shiftY - modelData.y)
+                            // Stars swell as the pointer gets close. Your favourites sit at the heart,
+                            // bigger; the rest get smaller as they wind out.
+                            readonly property real swell: 1 + 0.5 * Math.exp(-reach * reach / 9000)
+                            readonly property real weight: (modelData.rank === 0 ? 1.25 : modelData.rank < 5 ? 1 : Math.max(0.5, 0.8 - modelData.rank * 0.006)) * (modelData.fit ?? 1)
+                            property bool carried: false
+
+                            x: carried ? panel.pointer.x - cluster.shiftX : modelData.x
+                            y: carried ? panel.pointer.y - cluster.shiftY : modelData.y
+                            z: carried ? 5 : chosen ? 2 : 1
+
+                            Behavior on x {
+                                enabled: !node.carried
+                                NumberAnimation { duration: Theme.normal; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
+                            }
+                            Behavior on y {
+                                enabled: !node.carried
+                                NumberAnimation { duration: Theme.normal; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
+                            }
+
+                            Item {
+                                scale: node.swell * node.weight * (node.chosen ? 1.2 : 1)
+
+                                Behavior on scale {
+                                    NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                                }
+
+                                Star {
+                                    x: -size
+                                    y: -size
+                                    size: 38
+                                    lit: node.chosen
+                                    animated: false
+                                    opacity: node.chosen ? 0.85 : 0.22
+                                }
+
+                                Image {
+                                    visible: !node.modelData.glyph
+                                    x: -width / 2
+                                    y: -height / 2
+                                    width: 44
+                                    height: 44
+                                    sourceSize: Qt.size(96, 96)
+                                    smooth: true
+                                    source: node.modelData.icon ?? ""
+                                    opacity: node.chosen ? 1 : 0.8
+                                }
+
+                                // An emoji is its own icon
+                                Text {
+                                    visible: !!node.modelData.glyph
+                                    anchors.centerIn: parent
+                                    text: node.modelData.glyph ?? ""
+                                    font.pixelSize: 36
+                                    opacity: node.chosen ? 1 : 0.8
+                                }
+                            }
+
+                            Text {
+                                visible: node.chosen
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                y: 30 + 28 * node.weight
+                                text: node.modelData.label ?? ""
+                                color: Theme.text
+                                font.family: Theme.font
+                                font.pixelSize: 18
+                                style: Text.Outline
+                                styleColor: Qt.alpha("#000000", 0.35)
+                            }
+
+                            // Point to choose, click to open, carry it to a page of the bar to open it there
+                            MouseArea {
+                                readonly property real hand: Math.max(36, 92 * node.weight)
+
+                                x: -hand / 2
+                                y: -hand / 2
+                                width: hand
+                                height: hand
+                                hoverEnabled: true
+                                preventStealing: true
+                                cursorShape: Qt.PointingHandCursor
+                                property point pressedAt: Qt.point(0, 0)
+
+                                onEntered: panel.chosen = node.number
+                                onPressed: mouse => pressedAt = Qt.point(mouse.x, mouse.y)
+                                onPositionChanged: mouse => {
+                                    const spot = mapToItem(null, mouse.x, mouse.y);
+                                    panel.pointer = spot;
+                                    if (pressed && node.modelData.kind === "app" && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) > 10)
+                                        node.carried = true;
+                                }
+                                onReleased: mouse => {
+                                    const spot = mapToItem(null, mouse.x, mouse.y);
+                                    if (!node.carried) {
+                                        Apps.run(node.modelData);
+                                    } else {
+                                        node.carried = false;
+                                        const page = panel.pageUnder(spot.x, spot.y);
+                                        if (page)
+                                            Apps.launch(node.modelData.app, page);
+                                    }
+                                }
                             }
                         }
                     }

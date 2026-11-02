@@ -23,6 +23,9 @@ Singleton {
         { name: Lang.t("Création"), categories: ["Graphics", "AudioVideo", "Audio", "Video"] },
         { name: "Code", categories: ["Development"] },
         { name: Lang.t("Internet"), categories: ["Network", "WebBrowser", "Chat", "Email"] },
+        { name: Lang.t("Travail"), categories: ["Office", "Education", "Science"] },
+        { name: Lang.t("Système"), categories: ["System", "Settings", "Utility", "FileTools", "Monitor"] },
+        { name: Lang.t("Jeux"), categories: ["Game"] },
         { name: Lang.t("Le reste"), categories: [] }
     ]
 
@@ -43,11 +46,11 @@ Singleton {
         return { kind: "app", label: app.name, icon: Quickshell.iconPath(app.icon, "application-x-executable"), app: app };
     }
 
-    // Nothing typed: the whole map, your favourites at the heart of each constellation
+    // Nothing typed: the whole map, every app, your favourites at the heart of each constellation
     function map() {
         return families.map((family, index) => ({
             name: family.name,
-            stars: everything.filter(app => familyOf(app) === index).sort(byUse).slice(0, 5).map(appEntry)
+            stars: everything.filter(app => familyOf(app) === index).sort(byUse).map(appEntry)
         }));
     }
 
