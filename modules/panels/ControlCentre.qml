@@ -27,6 +27,7 @@ ColumnLayout {
     readonly property var paired: Bluetooth.devices.values.find(device => device.connected) ?? null
     readonly property var profiles: [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance]
     readonly property var profileNames: [Lang.t("Économie"), Lang.t("Équilibré"), "Performance"]
+    property var unfolded: [] // apps whose whole stack of signals is open
 
     spacing: 14
 
@@ -302,16 +303,76 @@ ColumnLayout {
         font.pixelSize: 13
     }
 
+    // One stack per app: its two latest, the rest folded behind them
     Repeater {
-        model: Notifs.log.slice(0, 20)
+        model: Notifs.groups.slice(0, 12)
 
-        NotificationCard {
+        ColumnLayout {
+            id: group
+
             required property var modelData
+            readonly property bool open: root.unfolded.includes(modelData.app)
+            readonly property int hidden: modelData.entries.length - 2
 
             Layout.fillWidth: true
-            width: root.width
-            entry: modelData
-            inJournal: true
+            spacing: 10
+
+            RowLayout {
+                visible: group.modelData.entries.length > 1
+                Layout.fillWidth: true
+                Layout.topMargin: 4
+
+                Text {
+                    Layout.fillWidth: true
+                    text: `${group.modelData.app || Lang.t("Sans nom")} · ${group.modelData.entries.length}`
+                    elide: Text.ElideRight
+                    color: Qt.alpha(Theme.text, 0.6)
+                    font.family: Theme.font
+                    font.pixelSize: 12
+                }
+
+                Text {
+                    text: Lang.t("Effacer")
+                    color: Theme.windowLit
+                    font.family: Theme.font
+                    font.pixelSize: 12
+
+                    MouseArea {
+                        anchors.fill: parent
+                        anchors.margins: -6
+                        cursorShape: Qt.PointingHandCursor
+                        onPressed: Notifs.clear(group.modelData.app)
+                    }
+                }
+            }
+
+            Repeater {
+                model: group.open ? group.modelData.entries : group.modelData.entries.slice(0, 2)
+
+                NotificationCard {
+                    required property var modelData
+
+                    Layout.fillWidth: true
+                    width: root.width
+                    entry: modelData
+                    inJournal: true
+                }
+            }
+
+            Text {
+                visible: group.hidden > 0
+                text: group.open ? Lang.t("Replier") : Lang.t("{0} de plus", group.hidden)
+                color: Theme.windowLit
+                font.family: Theme.font
+                font.pixelSize: 12
+
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    cursorShape: Qt.PointingHandCursor
+                    onPressed: root.unfolded = group.open ? root.unfolded.filter(app => app !== group.modelData.app) : root.unfolded.concat([group.modelData.app])
+                }
+            }
         }
     }
 }

@@ -16,7 +16,8 @@ Item {
     required property var entry
     property bool inJournal: false
 
-    readonly property var notification: entry.notification
+    // After a restart only the copy is left: same words, no buttons
+    readonly property var notification: entry.notification ?? entry.saved
     readonly property bool critical: notification?.urgency === NotificationUrgency.Critical
     readonly property string picture: {
         if (notification?.image)

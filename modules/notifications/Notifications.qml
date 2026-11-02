@@ -34,6 +34,10 @@ Scope {
         function clear(): void {
             Notifs.clear();
         }
+
+        function clearApp(app: string): void {
+            Notifs.clear(app);
+        }
     }
 
     PanelWindow {
