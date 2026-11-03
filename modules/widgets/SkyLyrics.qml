@@ -3,7 +3,8 @@ import qs.config
 import qs.services
 
 // The song's words written on the sky as it plays, karaoke style: the line being sung
-// fills with light, the one before fades above, the next waits below.
+// takes your world's light while a star rides the thread under it, the one before
+// fades above, the next waits below.
 Column {
     id: root
 
@@ -54,7 +55,7 @@ Column {
         horizontalAlignment: Text.AlignHCenter
         text: Lyrics.line(-1)
         elide: Text.ElideRight
-        color: Qt.alpha(Theme.skyInk, 0.4)
+        color: Qt.alpha(Theme.skyInk, 0.3)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.02
     }
@@ -62,8 +63,9 @@ Column {
     KaraokeLine {
         visible: root.singing
         width: parent.width
-        // Between two lines, or before the first, a note holds the place
-        text: Lyrics.index >= 0 ? Lyrics.line(0) || "♪" : "♪"
+        // Between two lines, or before the first, three stars hold the place
+        text: Lyrics.line(0)
+        resting: Lyrics.index < 0 || Lyrics.line(0) === ""
         progress: Lyrics.progress
         ink: Theme.skyInk
         size: root.sky * 0.046
@@ -80,7 +82,7 @@ Column {
         horizontalAlignment: Text.AlignHCenter
         text: Lyrics.line(1)
         elide: Text.ElideRight
-        color: Qt.alpha(Theme.skyInk, 0.6)
+        color: Qt.alpha(Theme.skyInk, 0.5)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.022
     }

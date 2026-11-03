@@ -4,8 +4,8 @@ import qs.config
 import qs.modules.bar
 import qs.services
 
-// The song's words in a porthole that takes the cover's colour, karaoke style: the line
-// being sung fills with light, the one before fades above, the next waits below.
+// The song's words in a porthole lit by your world, with a touch of the cover, karaoke
+// style: the sung line takes the light and a star rides the thread under it.
 Item {
     id: root
 
@@ -40,7 +40,8 @@ Item {
     HandCard {
         anchors.fill: parent
         seed: "lyrics"
-        tint: Music.player ? colour.color : "#a9a4ad"
+        // Your world's light, with a touch of the cover in it
+        tint: Music.player ? Qt.tint(Theme.windowLit, Qt.alpha(colour.color, 0.35)) : Theme.windowLit
         rise: 0.05
         alive: Planet.pageEmpty
     }
@@ -82,7 +83,8 @@ Item {
 
         KaraokeLine {
             Layout.fillWidth: true
-            text: Lyrics.index >= 0 ? Lyrics.line(0) || "♪" : "♪"
+            text: Lyrics.line(0)
+            resting: Lyrics.index < 0 || Lyrics.line(0) === ""
             progress: Lyrics.progress
             size: 24
             opacity: 1 - root.enter * 0.7
