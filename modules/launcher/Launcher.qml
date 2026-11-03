@@ -393,8 +393,8 @@ Scope {
                             readonly property real weight: (modelData.rank === 0 ? 1.3 : modelData.rank < 5 ? 1.05 : Math.max(0.75, 0.92 - modelData.rank * 0.004)) * (modelData.fit ?? 1)
                             property bool carried: false
 
-                            x: carried ? panel.pointer.x - cluster.shiftX : modelData.x
-                            y: carried ? panel.pointer.y - cluster.shiftY : modelData.y
+                            x: carried ? panel.pointer.x - cluster.shiftX : modelData.x ?? 0
+                            y: carried ? panel.pointer.y - cluster.shiftY : modelData.y ?? 0
                             z: carried ? 5 : chosen ? 2 : 1
 
                             Behavior on x {
