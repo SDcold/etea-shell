@@ -68,6 +68,7 @@ Singleton {
 
     onSongChanged: {
         anchor();
+        ask();
         fetch();
     }
     onWantedChanged: fetch()
@@ -118,20 +119,77 @@ Singleton {
         now = anchorPosition;
     }
 
+    function guess() {
+        return anchorPosition + (Date.now() - anchorTime) / 1000 * (player?.isPlaying ? player.rate || 1 : 0);
+    }
+
+    // Quickshell reads the position once and counts on from there, so a player slow to get
+    // going leaves it ahead for the whole song. Words sung need better: we ask the player.
+    function ask() {
+        if (!player?.dbusName || clock.running)
+            return;
+        clock.command = ["bash", "-c", 'echo $EPOCHREALTIME; busctl --user get-property "$1" /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player Position; echo $EPOCHREALTIME', "-", player.dbusName];
+        clock.running = true;
+    }
+
+    Process {
+        id: clock
+
+        stdout: StdioCollector {
+            id: told
+        }
+        // The position, with the moments just before and after it was read: hearing the
+        // process end comes much later, and never twice the same
+        onExited: code => {
+            // In a French session the seconds come with a comma
+            const [before, reading, after] = told.text.trim().replace(/,/g, ".").split("\n");
+            const micro = Number(reading?.split(" ")[1]);
+            if (code !== 0 || !isFinite(micro) || !after)
+                return;
+            root.anchorPosition = micro / 1e6;
+            root.anchorTime = (Number(before) + Number(after)) * 500;
+            if (!root.player?.isPlaying)
+                root.now = root.anchorPosition;
+        }
+    }
+
     Connections {
         target: root.player
 
+        // Only a jump means something: a seek. The rest is Quickshell's own count.
         function onPositionChanged() {
-            root.anchor();
+            if (Math.abs(root.player.position - root.guess()) > 1.5) {
+                root.anchor();
+                root.ask();
+            }
         }
 
         function onIsPlayingChanged() {
             root.anchor();
+            root.ask();
         }
     }
 
+    readonly property bool singing: wanted && lookup === "found" && (player?.isPlaying ?? false)
+
+    Timer {
+        running: root.singing
+        interval: 2000
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: root.ask()
+    }
+
+    // Smooth on an empty page; behind windows, a step a second is plenty
     FrameAnimation {
-        running: root.wanted && root.lookup === "found" && (root.player?.isPlaying ?? false) && Planet.pageEmpty
-        onTriggered: root.now = root.anchorPosition + (Date.now() - root.anchorTime) / 1000 * (root.player?.rate || 1)
+        running: root.singing && Planet.pageEmpty
+        onTriggered: root.now = root.guess()
+    }
+
+    Timer {
+        running: root.singing && !Planet.pageEmpty
+        interval: 1000
+        repeat: true
+        onTriggered: root.now = root.guess()
     }
 }
