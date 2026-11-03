@@ -87,7 +87,7 @@ Singleton {
         if (fades.running || quieted === focusQuiet)
             return;
         quieted = focusQuiet;
-        fades.command = ["/usr/bin/hyprctl", "eval", quieted ? fadesOff : fadesOn];
+        fades.command = ["hyprctl", "eval", quieted ? fadesOff : fadesOn];
         fades.running = true;
     }
 

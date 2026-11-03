@@ -146,7 +146,7 @@ Scope {
     Process {
         id: apply
 
-        command: ["/usr/bin/hyprctl", "eval", root.settings]
+        command: ["hyprctl", "eval", root.settings]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim() !== "ok")

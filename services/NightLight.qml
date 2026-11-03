@@ -17,13 +17,13 @@ Singleton {
     // Moving the slider while it's on warms the screen right away
     onWarmChanged: {
         if (on) {
-            writer.exec(["/usr/bin/hyprctl", "hyprsunset", "temperature", String(warm)]);
+            writer.exec(["hyprctl", "hyprsunset", "temperature", String(warm)]);
             temperature = warm;
         }
     }
 
     function toggle() {
-        writer.exec(["/usr/bin/hyprctl", "hyprsunset", ...(on ? ["identity"] : ["temperature", String(warm)])]);
+        writer.exec(["hyprctl", "hyprsunset", ...(on ? ["identity"] : ["temperature", String(warm)])]);
         temperature = on ? 6500 : warm;
     }
 
@@ -34,7 +34,7 @@ Singleton {
     Process {
         id: reader
 
-        command: ["/usr/bin/hyprctl", "hyprsunset", "temperature"]
+        command: ["hyprctl", "hyprsunset", "temperature"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const value = parseInt(text);

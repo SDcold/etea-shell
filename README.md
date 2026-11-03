@@ -47,7 +47,7 @@ It started as "I want my desktop to feel like my drawings" and kind of got out o
 - **Quickshell 0.2.1 or newer**, with its Pipewire, Mpris, UPower, Bluetooth, Networking, Pam,
   Polkit and Notifications services (the AUR `quickshell-git` package has them all).
 - PipeWire with `pactl`, NetworkManager, BlueZ, UPower and power-profiles-daemon.
-- Command-line helpers: `cava`, `cliphist`, `wl-clipboard`, `grim`, `wf-recorder`, `hyprpicker`,
+- Command-line helpers: `cava`, `cliphist`, `wl-clipboard`, `grim`, `slurp`, `wf-recorder`, `hyprpicker`,
   `hyprsunset`, `brightnessctl`, `jq`, `curl`, `libnotify`, `xdg-user-dirs`, and `kdialog` or
   `zenity` for file pickers.
 - Optional: `hypridle` and `hyprlock` (idle locking, and a fallback lock), `fprintd` for
@@ -58,7 +58,7 @@ The Poppins font and the icons ship with the shell, nothing to install there.
 On Arch, something like:
 
 ```sh
-yay -S quickshell-git cava cliphist wl-clipboard grim wf-recorder hyprpicker hyprsunset \
+yay -S quickshell-git cava cliphist wl-clipboard grim slurp wf-recorder hyprpicker hyprsunset \
     brightnessctl jq curl libnotify xdg-user-dirs zenity networkmanager bluez upower \
     power-profiles-daemon pipewire-pulse libpulse hypridle hyprlock fprintd
 ```

@@ -254,7 +254,7 @@ Scope {
     Process {
         id: caps
 
-        command: ["/usr/bin/hyprctl", "devices", "-j"]
+        command: ["hyprctl", "devices", "-j"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {

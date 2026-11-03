@@ -20,11 +20,11 @@ Singleton {
     signal switched()
 
     function next() {
-        switcher.exec(["/usr/bin/hyprctl", "switchxkblayout", "all", "next"]);
+        switcher.exec(["hyprctl", "switchxkblayout", "all", "next"]);
     }
 
     function select(index) {
-        switcher.exec(["/usr/bin/hyprctl", "switchxkblayout", "all", String(index)]);
+        switcher.exec(["hyprctl", "switchxkblayout", "all", String(index)]);
     }
 
     function choose(list) {
@@ -35,7 +35,7 @@ Singleton {
     function apply() {
         if (!Config.keyboardLayouts.length)
             return;
-        applier.exec(["/usr/bin/hyprctl", "eval", `hl.config({ input = { kb_layout = "${Config.keyboardLayouts.join(",")}" } })`]);
+        applier.exec(["hyprctl", "eval", `hl.config({ input = { kb_layout = "${Config.keyboardLayouts.join(",")}" } })`]);
     }
 
     function nameOf(code) {
@@ -56,7 +56,7 @@ Singleton {
     Process {
         id: reader
 
-        command: ["/usr/bin/hyprctl", "devices", "-j"]
+        command: ["hyprctl", "devices", "-j"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {

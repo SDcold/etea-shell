@@ -74,7 +74,7 @@ Singleton {
         if (swap.running || lifted === liftWanted)
             return;
         lifted = liftWanted;
-        swap.command = ["/usr/bin/hyprctl", "eval", lifted ? 'hl.unbind("SUPER + mouse:272") hl.bind("SUPER + mouse:272", hl.dsp.global("etea:deskGrab"), { non_consuming = true }) ETEA_LIFTED = true' : root.putBack];
+        swap.command = ["hyprctl", "eval", lifted ? 'hl.unbind("SUPER + mouse:272") hl.bind("SUPER + mouse:272", hl.dsp.global("etea:deskGrab"), { non_consuming = true }) ETEA_LIFTED = true' : root.putBack];
         swap.running = true;
     }
 
@@ -176,7 +176,7 @@ Singleton {
     // Anything a previous run left lifted comes back before we look
     Process {
         running: true
-        command: ["/usr/bin/hyprctl", "eval", root.putBack]
+        command: ["hyprctl", "eval", root.putBack]
         onExited: binds.running = true
     }
 
@@ -184,7 +184,7 @@ Singleton {
     Process {
         id: binds
 
-        command: ["/usr/bin/hyprctl", "binds", "-j"]
+        command: ["hyprctl", "binds", "-j"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {

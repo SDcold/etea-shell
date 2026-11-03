@@ -33,7 +33,7 @@ Scope {
         readonly property var actions: [
             { icon: "lock", label: Lang.t("Verrouiller"), tint: "#8fc7e8", run: () => Menus.locked = true },
             { icon: "sleep", label: Lang.t("Veille"), tint: "#b9a2f0", command: ["systemctl", "suspend"] },
-            { icon: "logout", label: Lang.t("Déconnecter"), tint: "#ffc98a", confirm: true, command: ["/usr/bin/hyprctl", "dispatch", "hl.dsp.exit()"] },
+            { icon: "logout", label: Lang.t("Déconnecter"), tint: "#ffc98a", confirm: true, command: ["hyprctl", "dispatch", "hl.dsp.exit()"] },
             { icon: "restart", label: Lang.t("Redémarrer"), tint: "#e98fb0", confirm: true, command: ["systemctl", "reboot"] },
             { icon: "power", label: Lang.t("Éteindre"), tint: "#f0705f", confirm: true, command: ["systemctl", "poweroff"] }
         ]

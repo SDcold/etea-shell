@@ -145,7 +145,7 @@ Scope {
     Process {
         id: reader
 
-        command: ["/usr/bin/hyprctl", "binds", "-j"]
+        command: ["hyprctl", "binds", "-j"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
