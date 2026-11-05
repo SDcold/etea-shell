@@ -90,6 +90,7 @@ Singleton {
     property alias barPercent: saved.barPercent // numbers beside the volume and battery
     property alias mediaTitle: saved.mediaTitle // "scroll", "short" or "off"
     property alias hotCorners: saved.hotCorners
+    property alias barAutoHide: saved.barAutoHide
     property alias pageStyle: saved.pageStyle // "constellation" or "numbers"
     property alias trayTint: saved.trayTint // background apps drawn in the shell's colours
     property alias glassApps: saved.glassApps // windows blurred behind; with an opacity, Hyprland also fades them
@@ -185,6 +186,7 @@ Singleton {
             property bool barPercent: true
             property string mediaTitle: "scroll"
             property bool hotCorners: true
+            property bool barAutoHide: false
             property string pageStyle: "constellation"
             property bool trayTint: false
             property int nightWarmth: 4200

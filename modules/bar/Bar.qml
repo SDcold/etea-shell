@@ -16,13 +16,17 @@ Variants {
         property Item rightCorner: null
         // Where the bar itself sits in this taller surface: the halos need room on the screen side
         readonly property real line: Theme.barOnTop ? Theme.barGap : implicitHeight - Theme.barGap - Theme.barHeight
+        readonly property bool autoHide: Config.barAutoHide
+        property bool shown: !autoHide
+        onAutoHideChanged: shown = !autoHide
         readonly property real windowY: Theme.barOnTop ? 0 : (modelData?.height ?? 0) - implicitHeight
 
         screen: modelData
         color: "transparent"
         // The surface runs taller than the space it reserves, so halos have room to fade out
         implicitHeight: Theme.barReserve + Theme.barGlowRoom
-        exclusiveZone: Theme.barReserve
+        exclusiveZone: autoHide ? 0 : Theme.barReserve
+        contentItem.opacity: shown ? 1 : 0
         WlrLayershell.namespace: "etea:bar"
 
         // Staying awake is tied to a window that's always on screen, and the bar always is
@@ -40,11 +44,38 @@ Variants {
 
         // Clicks fall through the gaps and reach the desktop
         mask: Region {
-            Region { item: left }
-            Region { item: center }
-            Region { item: right }
-            Region { item: bar.leftCorner }
-            Region { item: bar.rightCorner }
+            Region { item: bar.shown ? left : null }
+            Region { item: bar.shown ? center : null }
+            Region { item: bar.shown ? right : null }
+            Region { item: bar.shown ? bar.leftCorner : null }
+            Region { item: bar.shown ? bar.rightCorner : null }
+            Region { item: bar.autoHide ? trigger : null }
+        }
+
+        // A 2px strip at the screen edge that reveals the bar
+        Item {
+            id: trigger
+            x: 0
+            y: Theme.barOnTop ? 0 : bar.implicitHeight - 2
+            width: bar.width
+            height: 2
+        }
+
+        HoverHandler {
+            onHoveredChanged: {
+                if (hovered) {
+                    hideTimer.stop()
+                    bar.shown = true
+                } else if (bar.autoHide) {
+                    hideTimer.restart()
+                }
+            }
+        }
+
+        Timer {
+            id: hideTimer
+            interval: 600
+            onTriggered: bar.shown = false
         }
 
         // The islands: each group of modules on its own little card of sky

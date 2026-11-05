@@ -57,6 +57,13 @@ ColumnLayout {
         onToggled: Config.hotCorners = !Config.hotCorners
     }
 
+    SettingSwitch {
+        label: Lang.t("Barre masquée")
+        hint: Lang.t("La barre se cache et réapparaît quand la souris touche le bord de l’écran.")
+        on: Config.barAutoHide
+        onToggled: Config.barAutoHide = !Config.barAutoHide
+    }
+
     SettingSection {
         text: Lang.t("Disposition")
     }
