@@ -15,13 +15,15 @@ Singleton {
     property real startedAt: 0
     property string file: ""
     property int seconds: 0
+    property string missing: "" // the tool that kept the film from starting
 
     function start(geometry, withSound) {
         if (recording)
             return;
         // What you hear, not your microphone: the default output's monitor
-        film.command = ["sh", "-c", `dir="$(xdg-user-dir VIDEOS)/Captures"; mkdir -p "$dir"; file="$dir/etea-$(date +%Y%m%d-%H%M%S).mp4"; echo "$file"; exec wf-recorder -y -g "$1" ${withSound ? '--audio="$(pactl get-default-sink).monitor"' : ""} -f "$file" >/dev/null 2>&1`, "sh", geometry];
+        film.command = ["sh", "-c", `command -v wf-recorder >/dev/null || { echo "missing wf-recorder"; exit 1; }; dir="$(xdg-user-dir VIDEOS 2>/dev/null || echo "$HOME/Videos")/Captures"; mkdir -p "$dir"; file="$dir/etea-$(date +%Y%m%d-%H%M%S).mp4"; echo "$file"; exec wf-recorder -y -g "$1" ${withSound ? '--audio="$(pactl get-default-sink).monitor"' : ""} -f "$file" >/dev/null 2>&1`, "sh", geometry];
         file = "";
+        missing = "";
         seconds = 0;
         startedAt = Date.now();
         film.running = true;
@@ -42,18 +44,22 @@ Singleton {
 
         stdout: SplitParser {
             onRead: line => {
-                if (!root.file)
+                if (line.startsWith("missing "))
+                    root.missing = line.slice(8).trim();
+                else if (!root.file)
                     root.file = line.trim();
             }
         }
         onExited: {
-            if (root.file)
-                say.exec(["notify-send", "-a", Lang.t("Capture"), Lang.t("Vidéo enregistrée"), root.file]);
+            if (root.missing)
+                root.tell(root.missing);
+            else if (root.file)
+                Notifs.say(Lang.t("Capture"), Lang.t("Vidéo enregistrée"), root.file);
         }
     }
 
-    Process {
-        id: say
+    function tell(tool) {
+        Notifs.say(Lang.t("Capture"), Lang.t("Capture impossible"), Lang.t("Il manque {0}. Installe-le, puis réessaie.", tool));
     }
 
     // A zone drawn with slurp, for the shortcuts that film without the capture overlay
@@ -62,10 +68,12 @@ Singleton {
 
         property bool sound: false
 
-        command: ["slurp"]
+        command: ["sh", "-c", 'command -v slurp >/dev/null && exec slurp || echo "missing slurp"']
         stdout: StdioCollector {
             onStreamFinished: {
-                if (text.trim())
+                if (text.startsWith("missing "))
+                    root.tell("slurp");
+                else if (text.trim())
                     root.start(text.trim(), zone.sound);
             }
         }

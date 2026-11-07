@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Notifications
 
 // Everything that has reached us, and what's currently on screen. The journal and the
 // do not disturb switch outlive a restart: each entry keeps a copy of what it said, since
@@ -51,6 +52,16 @@ Singleton {
         lastId += 1;
         const entry = { id: lastId, notification: notification, saved: copy(notification), time: new Date() };
         notification.closed.connect(() => forget(entry));
+        show(entry);
+    }
+
+    // The shell's own word, with no app behind it, so it gets through even without notify-send
+    function say(appName, summary, body, image) {
+        lastId += 1;
+        show({ id: lastId, notification: null, saved: { appName: appName, appIcon: "", summary: summary, body: body, image: image ?? "", urgency: NotificationUrgency.Normal, actions: [], expireTimeout: 0 }, time: new Date() });
+    }
+
+    function show(entry) {
         log = [entry].concat(log).slice(0, keep);
         if (!quiet && !journalOpen)
             popups = [entry].concat(popups).slice(0, 4);

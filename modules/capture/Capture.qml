@@ -110,15 +110,33 @@ Scope {
             if (job.video) {
                 Recorder.start(job.geometry, job.sound);
             } else {
-                saver.command = ["sh", "-c", `dir="$(xdg-user-dir PICTURES)/Captures"; mkdir -p "$dir"; file="$dir/etea-$(date +%Y%m%d-%H%M%S).png"; grim -g "$1" "$file" && wl-copy < "$file" && notify-send -a "$2" -i "$file" "$3" "$file"`, "sh", job.geometry, Lang.t("Capture"), Lang.t("Capture enregistrée")];
+                saver.command = ["sh", "-c", `
+                    for tool in grim wl-copy; do command -v "$tool" >/dev/null || missing="$missing $tool"; done
+                    [ -n "$missing" ] && { echo "missing$missing"; exit 1; }
+                    dir="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Captures"
+                    file="$dir/etea-$(date +%Y%m%d-%H%M%S).png"
+                    mkdir -p "$dir" && grim -g "$1" "$file" && wl-copy < "$file" >/dev/null 2>&1 && echo "$file"`, "sh", job.geometry];
                 saver.running = true;
             }
             root.pending = null;
         }
     }
 
+    // The path of the photo when it worked, the missing tools when it couldn't, nothing when it failed
     Process {
         id: saver
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const said = text.trim();
+                if (said.startsWith("missing "))
+                    Notifs.say(Lang.t("Capture"), Lang.t("Capture impossible"), Lang.t("Il manque {0}. Installe-le, puis réessaie.", said.slice(8).split(" ").join(", ")));
+                else if (said)
+                    Notifs.say(Lang.t("Capture"), Lang.t("Capture enregistrée"), said, "file://" + said);
+                else
+                    Notifs.say(Lang.t("Capture"), Lang.t("Capture impossible"), Lang.t("La photo n'a pas pu être prise."));
+            }
+        }
     }
 
     PanelWindow {

@@ -27,6 +27,13 @@ Singleton {
         return Math.round(bytes / 1024) + " " + Lang.t("ko/s");
     }
 
+    // A size the way people read it, from kilobytes: MB, then GB once it gets big
+    function size(kib) {
+        if (kib >= 1048576)
+            return (kib / 1048576).toFixed(1).replace(".", Qt.locale(Config.locale).decimalPoint) + " " + Lang.t("Go");
+        return Math.round(kib / 1024) + " " + Lang.t("Mo");
+    }
+
     // Busy time and total time of one "cpu" line of /proc/stat
     function times(line) {
         const values = line.trim().split(/\s+/).slice(1).map(Number);
