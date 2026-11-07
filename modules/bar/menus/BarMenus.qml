@@ -138,6 +138,8 @@ Scope {
                         media: "MediaMenu.qml",
                         sound: "SoundMenu.qml",
                         network: "NetworkMenu.qml",
+                        machine: "MachineMenu.qml",
+                        traffic: "TrafficMenu.qml",
                         bluetooth: "BluetoothMenu.qml",
                         power: "PowerMenu.qml",
                         keyboard: "KeyboardMenu.qml"
