@@ -46,6 +46,7 @@ ColumnLayout {
         label: Lang.t("Style")
         hint: Lang.t("Le texte à même le ciel, chaque groupe sur son îlot, ou une seule bande.")
         options: [{ id: "sky", label: Lang.t("Ciel nu") }, { id: "islands", label: Lang.t("Îlots") }, { id: "band", label: Lang.t("Bande") }]
+        planetOption: true
         current: Config.barStyle
         onPicked: id => Config.barStyle = id
     }
@@ -135,6 +136,7 @@ ColumnLayout {
         label: Lang.t("Pages")
         hint: Lang.t("Une constellation par page, ou simplement son numéro, plus compact.")
         options: [{ id: "constellation", label: Lang.t("Constellations") }, { id: "numbers", label: Lang.t("Numéros") }]
+        planetOption: true
         current: Config.pageStyle
         onPicked: id => Config.pageStyle = id
     }

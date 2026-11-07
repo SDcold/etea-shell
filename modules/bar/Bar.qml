@@ -123,7 +123,7 @@ Variants {
 
             // The islands: each group of modules on its own little card of sky
             Repeater {
-                model: Config.barStyle === "islands" ? [left, center, right] : []
+                model: Theme.barStyle === "islands" ? [left, center, right] : []
 
                 HandCard {
                     required property Item modelData
@@ -145,7 +145,7 @@ Variants {
 
             // The band: one long card of sky across the screen
             HandCard {
-                visible: Config.barStyle === "band"
+                visible: Theme.barStyle === "band"
                 x: 8
                 y: bar.line
                 width: bar.width - 16

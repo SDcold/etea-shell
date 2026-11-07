@@ -59,7 +59,7 @@ Item {
     }
 
     // With numbers on, each page wears its number and the constellation steps back behind it
-    readonly property bool numbered: Config.pageStyle === "numbers"
+    readonly property bool numbered: Theme.pageStyle === "numbers"
 
     // Compact: just the number. Pages with windows stand out, empty ones step back.
     Text {

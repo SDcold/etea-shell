@@ -117,6 +117,7 @@ ColumnLayout {
         label: Lang.t("Scène")
         hint: Lang.t("Ce qui se dessine pendant que tu tapes ton mot de passe.")
         options: [{ id: "hand", label: Lang.t("La main tendue") }, { id: "skyward", label: Lang.t("Sous les étoiles") }]
+        planetOption: true
         current: Config.lockScene
         onPicked: id => Config.lockScene = id
     }

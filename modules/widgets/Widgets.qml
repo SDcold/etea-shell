@@ -12,7 +12,7 @@ Item {
     id: root
 
     property bool interactive: false
-    readonly property bool skyStyle: Config.widgetStyle === "sky"
+    readonly property bool skyStyle: Theme.widgetStyle === "sky"
     readonly property var files: skyStyle ? {
         clock: "GiantClock.qml",
         system: "SkySystem.qml",

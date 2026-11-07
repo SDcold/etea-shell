@@ -26,7 +26,7 @@ Singleton {
     // Where each one stands until you move it, and which of its points stands there:
     // 0 is its left or top edge, 1 the other one. They keep to the sides, the middle
     // belongs to the clock.
-    readonly property var places: Config.widgetStyle === "sky" ? {
+    readonly property var places: Theme.widgetStyle === "sky" ? {
         clock: { x: 0.5, y: 0.5, ax: 0.5, ay: 0.5 },
         system: { x: 0.044, y: 0.085, ax: 0, ay: 0 },
         media: { x: 0.956, y: 0.085, ax: 1, ay: 0 },
@@ -98,7 +98,7 @@ Singleton {
         if (saved.placed)
             return { x: saved.x, y: saved.y, ax: base.ax, ay: base.ay };
         // The celestial style always read x and y from the file
-        if (Config.widgetStyle !== "sky" && saved.x !== undefined)
+        if (Theme.widgetStyle !== "sky" && saved.x !== undefined)
             return { x: saved.x, y: saved.y, ax: base.ax, ay: base.ay };
         return base;
     }
