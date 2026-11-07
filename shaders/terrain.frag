@@ -28,6 +28,8 @@ layout(std140, binding = 0) uniform buf {
     float music; // 0 in silence, 1 while the ground is dancing
     float lift; // how high the ridges can climb
     float bars; // 1 draws bars behind the ground, 0 draws contour lines
+    float arrival; // 0 at rest, then from touching down on a new world to the end of it
+    vec4 arrivalLight;
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -138,6 +140,17 @@ void main() {
         color = vec4(mix(rimColor.rgb, vec3(1.0, 0.97, 0.92), 0.7), light);
     }
 
+    // Touching down: light runs out along the ridges from where we landed, and fades
+    // behind itself in three flat steps, never a blur
+    float shine = 0.0;
+    if (arrival > 0.0) {
+        float run = clamp(arrival / 0.42, 0.0, 1.0);
+        float front = (1.0 - (1.0 - run) * (1.0 - run)) * 980.0;
+        float behind = front - abs(angle) * curve;
+        float lit = behind < 0.0 ? 0.0 : clamp(1.0 - behind / 300.0, 0.0, 1.0);
+        shine = ceil(lit * 3.0) / 3.0 * (1.0 - smoothstep(0.42, 0.7, arrival)) * (1.0 - orbit);
+    }
+
     // Paint the hills from the farthest to the closest
     for (int l = 0; l < 4; l++) {
         float a = angle + planetAngle * (1.0 - float(l) * 0.012);
@@ -148,7 +161,10 @@ void main() {
         float edge = curve * (1.0 - depth[l]) + maxAmp * amp[l] * shape;
 
         float inside = smoothstep(edge + 0.6, edge - 0.6, r);
-        color = mix(color, vec4(colors[l].rgb, 1.0), inside);
+        // The crest catches the light, the slope below barely any
+        float crest = smoothstep(edge - 2.8, edge - 1.6, r);
+        vec3 tone = mix(colors[l].rgb, arrivalLight.rgb, shine * mix(0.05, 0.95, crest));
+        color = mix(color, vec4(tone, 1.0), inside);
     }
 
     // From space it's a real planet: continents, a day side and a night side, and a

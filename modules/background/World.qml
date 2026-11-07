@@ -18,6 +18,7 @@ Item {
     // Keep the sky and the ground as pictures while they hold still, so a widget moving in
     // front doesn't make the GPU paint them again pixel by pixel. Off where they move every frame.
     property bool cached: true
+    property real arrival: Planet.arrival
 
     // Four sound levels at a time, the way the shader wants them
     function bands(first) {
@@ -59,6 +60,48 @@ Item {
         }
     }
 
+    // Landing somewhere new: the same light that runs along the ridges writes the
+    // planet's name on the sky, from the middle out, then it fades
+    Item {
+        readonly property real reveal: {
+            const t = Math.max(0, Math.min(1, (root.arrival - 0.06) / 0.32));
+            return 1 - (1 - t) * (1 - t);
+        }
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.height * root.horizon - height - root.height * 0.13
+        width: words.width * reveal
+        height: words.height
+        clip: true
+        visible: root.arrival > 0 && root.space < 0.01
+        opacity: 1 - Math.max(0, Math.min(1, (root.arrival - 0.78) / 0.22))
+
+        Column {
+            id: words
+
+            x: (parent.width - width) / 2
+            spacing: 6
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Theme.planet.name
+                color: Theme.skyInk
+                font.family: Theme.font
+                font.pixelSize: 44
+                font.weight: Font.Light
+                font.letterSpacing: 2
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Theme.planet.line
+                color: Qt.alpha(Theme.skyInk, 0.75)
+                font.family: Theme.font
+                font.pixelSize: 16
+            }
+        }
+    }
+
     Widgets {
         anchors.fill: parent
         interactive: root.interactive
@@ -93,13 +136,15 @@ Item {
         property real music: Beat.dancing && Beat.shown.length ? 1 : 0
         property real lift: Theme.groundLift
         property real bars: Config.groundMusic === "bars" ? 1 : 0
+        property real arrival: root.arrival
+        property color arrivalLight: Theme.planet.light
 
         Behavior on music {
             NumberAnimation { duration: 1800; easing.type: Easing.InOutSine }
         }
         property real grain: Theme.grain
 
-        layer.enabled: root.cached && music === 0
+        layer.enabled: root.cached && music === 0 && arrival === 0
         fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
     }
 }

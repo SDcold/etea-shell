@@ -63,6 +63,15 @@ Singleton {
             Config.preview = Planets.all[systemChoice].id;
     }
 
+    // Setting foot on another world: light runs along the ridges from where we touched
+    // down, and its name is written on the sky for a moment
+    property real arrival: 0 // 0 at rest, then from the touchdown to the end of it
+    property bool newWorld: false
+
+    function arrive() {
+        arrivalRun.restart();
+    }
+
     // Turning the planet by hand, up in orbit
     property real handTurn: 0
     property int hoveredPage: -1
@@ -309,13 +318,16 @@ Singleton {
             return;
         if (phase !== Planet.Phase.Idle) {
             Config.theme = id;
+            arrive();
             return;
         }
         worldWanted(id);
+        arrive();
     }
 
     // Moving to a new planet: the theme changes and we come down onto it
     function land(id) {
+        newWorld = id !== Config.theme;
         Config.theme = id;
         leaveSystem();
         leaveOrbit(current);
@@ -364,6 +376,10 @@ Singleton {
         // On an empty page Hyprland has nothing to focus and can drift back, so insist
         if (current !== target)
             Hyprland.dispatch(`hl.dsp.focus({ workspace = ${target} })`);
+        if (newWorld) {
+            newWorld = false;
+            arrive();
+        }
         settle();
     }
 
@@ -458,6 +474,7 @@ Singleton {
         systemLevel = 0;
         inSystem = false;
         goingUp = false;
+        newWorld = false;
         hoveredPage = -1;
         Config.preview = "";
         resting = (current - 1) * step;
@@ -589,6 +606,17 @@ Singleton {
         duration: 520
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Theme.expressive
+    }
+
+    NumberAnimation {
+        id: arrivalRun
+
+        target: root
+        property: "arrival"
+        from: 0
+        to: 1
+        duration: 3400 * Theme.pace
+        onFinished: root.arrival = 0
     }
 
     NumberAnimation {
