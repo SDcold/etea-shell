@@ -133,18 +133,21 @@ Singleton {
         if (result !== null)
             found.push({ kind: "sum", label: `= ${result}`, icon: asset("search"), value: String(result) });
 
+        const windows = [];
         for (const window of Hyprland.toplevels.values) {
             const title = window.title ?? "", kind = window.lastIpcObject?.class ?? "";
             if (title.toLowerCase().includes(wanted) || kind.toLowerCase().includes(wanted)) {
                 // Without a class Hyprland can't say which app it is, and a guess goes badly wrong
                 const app = kind ? DesktopEntries.heuristicLookup(kind) : null;
-                found.push({ kind: "window", label: Lang.t("Aller à {0}", app?.name ?? title), icon: Quickshell.iconPath(app?.icon ?? "", "application-x-executable"), window: window });
+                windows.push({ kind: "window", label: Lang.t("Aller à {0}", app?.name ?? title), icon: Quickshell.iconPath(app?.icon ?? "", "application-x-executable"), window: window });
             }
         }
 
         const apps = everything.map(app => ({ app: app, score: score(app, wanted) })).filter(match => match.score > 0);
         apps.sort((a, b) => b.score - a.score || byUse(a.app, b.app));
-        const all = found.concat(apps.map(match => appEntry(match.app))).slice(0, Config.launcherStars);
+        // Typing an app opens it, the windows it already has come after, with room kept for them
+        const room = Math.max(1, Config.launcherStars - found.length - windows.length);
+        const all = found.concat(apps.slice(0, room).map(match => appEntry(match.app)), windows).slice(0, Config.launcherStars);
         // Nothing much matched: the web is the last star
         if (all.length < Config.launcherStars && typed.length > 1 && result === null)
             all.push(webEntry(typed));
