@@ -21,6 +21,17 @@ ColumnLayout {
         onPicked: id => Config.pace = id
     }
 
+    SettingSlider {
+        label: Lang.t("Vitesse de l'orbite")
+        hint: Lang.t("La vitesse de la montée en orbite (balayage à quatre doigts vers le haut, Super + Tab).")
+        value: Config.orbitSpeed
+        minimum: 0.5
+        maximum: 3
+        shownAs: 100
+        unit: " %"
+        onMoved: value => Config.orbitSpeed = Math.round(value * 20) / 20
+    }
+
     SettingChoice {
         label: Lang.t("Changement de page")
         hint: Lang.t("La planète qui tourne, ou le glissement horizontal de Hyprland pour comparer.")
