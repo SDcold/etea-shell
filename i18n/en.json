@@ -409,5 +409,7 @@
     "Éteindre": "Shut down",
     "Éveillé": "Awake",
     "Îlots": "Islands",
-    "…et {0} de plus.": "…and {0} more."
+    "…et {0} de plus.": "…and {0} more.",
+    "Vitesse de l'orbite": "Orbit speed",
+    "La vitesse de la montée en orbite (balayage à quatre doigts vers le haut, Super + Tab).": "How fast you rise into orbit (four-finger swipe up, Super + Tab)."
 }

@@ -55,6 +55,7 @@ Singleton {
     property alias theme: saved.theme
     property alias customPlanets: saved.customPlanets
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
+    property alias orbitSpeed: saved.orbitSpeed // 1 is normal, higher rises into orbit faster
     property alias livePages: saved.livePages // windows keep playing while the page turns
     property alias pageTransition: saved.pageTransition // "planet", or "slide" for Hyprland's own
     property alias status: saved.status
@@ -145,6 +146,7 @@ Singleton {
             property string theme: "aster"
             property var customPlanets: []
             property string pace: "daily"
+            property real orbitSpeed: 1
             property bool livePages: true
             property string pageTransition: "planet"
             property var status: ["notifications", "keyboard", "network", "bluetooth", "volume", "battery", "settings", "session"]
