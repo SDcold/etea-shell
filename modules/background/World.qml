@@ -19,6 +19,8 @@ Item {
     // front doesn't make the GPU paint them again pixel by pixel. Off where they move every frame.
     property bool cached: true
     property real arrival: Planet.arrival
+    property string skyImage: Theme.skyImage
+    property bool ground: Theme.ground
 
     // Four sound levels at a time, the way the shader wants them
     function bands(first) {
@@ -29,6 +31,9 @@ Item {
     ShaderEffect {
         anchors.fill: parent
 
+        // Painted, or while your picture is still on its way
+        visible: root.skyImage === "" || pictureSource.status !== Image.Ready
+
         property color colorTop: Theme.skyTop
         property color colorMid: Theme.skyMid
         property color colorLow: Theme.skyLow
@@ -38,6 +43,32 @@ Item {
 
         layer.enabled: root.cached
         fragmentShader: Qt.resolvedUrl("../../shaders/sky.frag.qsb")
+    }
+
+    // Loaded just big enough to cover the screen, the shader does the cropping
+    Image {
+        id: pictureSource
+
+        visible: false
+        asynchronous: true
+        fillMode: Image.PreserveAspectCrop
+        sourceSize: Qt.size(root.width, root.height)
+        source: root.skyImage ? "file://" + root.skyImage : ""
+    }
+
+    ShaderEffect {
+        anchors.fill: parent
+
+        visible: root.skyImage !== "" && pictureSource.status === Image.Ready
+
+        property var picture: pictureSource
+        property vector2d pictureSize: Qt.vector2d(pictureSource.implicitWidth, pictureSource.implicitHeight)
+        property vector2d resolution: Qt.vector2d(width, height)
+        property real grain: Theme.grain
+        property real space: root.space
+
+        layer.enabled: root.cached
+        fragmentShader: Qt.resolvedUrl("../../shaders/skyimage.frag.qsb")
     }
 
     // Everyone's own images, placed by proportion so they fit on any screen
@@ -112,7 +143,9 @@ Item {
     ShaderEffect {
         anchors.fill: parent
 
-        opacity: root.groundOpacity
+        // Without hills the ground only shows once it has become a planet, up in orbit
+        opacity: root.groundOpacity * (root.ground ? 1 : Math.min(1, root.space * 3))
+        visible: opacity > 0
 
         // planetAngle is what will spin the planet between pages
         property color layer0: Theme.terrainLayers[0]

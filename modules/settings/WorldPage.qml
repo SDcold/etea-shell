@@ -225,4 +225,20 @@ ColumnLayout {
             }
         }
     }
+
+    SettingSwitch {
+        visible: Forge.draft !== null
+        label: Lang.t("Garder l'image comme ciel")
+        hint: Lang.t("Ton image devient le fond. Le terrain, la barre et les fenêtres prennent ses couleurs.")
+        on: Forge.keepSky
+        onToggled: Forge.keepSky = !Forge.keepSky
+    }
+
+    SettingSwitch {
+        visible: Forge.draft !== null
+        label: Lang.t("Garder le relief")
+        hint: Lang.t("Les collines restent devant. Sans elles, ton image est seule à l'écran.")
+        on: Forge.keepGround
+        onToggled: Forge.keepGround = !Forge.keepGround
+    }
 }

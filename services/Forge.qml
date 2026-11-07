@@ -12,6 +12,10 @@ Singleton {
 
     property string image: ""
     property var draft: null // the planet being made, until you keep it or let it go
+    property bool keepSky: true // the picture itself becomes the sky, not only its colours
+    property bool keepGround: true
+    // Pictures kept as skies are copied here, so moving the original doesn't empty the sky
+    readonly property string skies: `${Quickshell.env("XDG_DATA_HOME") || Quickshell.env("HOME") + "/.local/share"}/etea/skies`
 
     function clamp(value, low, high) {
         return Math.max(low, Math.min(high, value));
@@ -61,16 +65,46 @@ Singleton {
         if (!draft)
             return;
         const planet = Object.assign({}, draft, { name: name || draft.name });
-        Config.customPlanets = Config.customPlanets.concat([planet]);
-        Config.theme = planet.id;
+        if (!keepGround)
+            planet.ground = false;
         draft = null;
+        if (keepSky) {
+            const sky = `${skies}/${planet.id}.${image.split(".").pop().toLowerCase()}`;
+            copier.planet = Object.assign(planet, { sky: sky });
+            copier.command = ["sh", "-c", 'mkdir -p "$(dirname "$2")" && cp -f "$1" "$2"', "sh", image, sky];
+            copier.running = true;
+        } else {
+            settle(planet);
+        }
         image = "";
     }
 
+    function settle(planet) {
+        Config.customPlanets = Config.customPlanets.concat([planet]);
+        Planet.changeWorld(planet.id);
+    }
+
     function forget(id) {
+        const planet = Config.customPlanets.find(planet => planet.id === id);
+        if (planet?.sky?.startsWith(skies + "/"))
+            Quickshell.execDetached(["rm", "-f", planet.sky]);
         Config.customPlanets = Config.customPlanets.filter(planet => planet.id !== id);
         if (Config.theme === id)
             Config.theme = "aster";
+    }
+
+    // The picture is in its place before the sky asks for it. If it couldn't be copied,
+    // the planet still comes with the colours it drew from it.
+    Process {
+        id: copier
+
+        property var planet: null
+
+        onExited: code => {
+            if (code !== 0)
+                delete planet.sky;
+            root.settle(planet);
+        }
     }
 
     function chooseImage() {
