@@ -166,6 +166,7 @@ Variants {
                 modules: Config.barLayout.left ?? []
                 monitorName: bar.modelData.name
                 windowY: bar.windowY
+                span: bar.width
             }
 
             BarRegion {
@@ -176,6 +177,7 @@ Variants {
                 modules: Config.barLayout.center ?? []
                 monitorName: bar.modelData.name
                 windowY: bar.windowY
+                span: bar.width
             }
 
             BarRegion {
@@ -187,6 +189,7 @@ Variants {
                 modules: Config.barLayout.right ?? []
                 monitorName: bar.modelData.name
                 windowY: bar.windowY
+                span: bar.width
             }
         }
 

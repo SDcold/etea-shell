@@ -72,6 +72,17 @@ Singleton {
         arrivalRun.restart();
     }
 
+    // How much of that light is passing over a spot, 0 to 1. The spot is given by how far
+    // it sits from the middle of its screen, and the light runs as it does on the ground.
+    function touchdownAt(offset, screenWidth) {
+        if (arrival <= 0)
+            return 0;
+        const run = Math.min(1, arrival / 0.42);
+        const front = (1 - (1 - run) * (1 - run)) * 980;
+        const distance = Math.abs(offset) * 1600 / Math.max(1, screenWidth);
+        return Math.max(0, 1 - Math.abs(front - distance) / 110);
+    }
+
     // Turning the planet by hand, up in orbit
     property real handTurn: 0
     property int hoveredPage: -1

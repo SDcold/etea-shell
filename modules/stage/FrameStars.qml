@@ -1,6 +1,7 @@
 import QtQuick
 import qs.config
 import qs.modules.bar
+import qs.services
 
 // The stars on a window's frame. They sit right on Hyprland's rounded border,
 // and the real window and its stand-in both use this, so they line up exactly.
@@ -10,6 +11,9 @@ Item {
     required property string seed
     required property real windowWidth
     required property real windowHeight
+    // Where the window sits across its screen, for the touchdown light. No span, no light.
+    property real screenLeft: 0
+    property real span: 0
 
     // A little repeatable randomness, so a window keeps its constellation
     function randomFrom(text) {
@@ -60,6 +64,8 @@ Item {
             size: modelData.size * Theme.traceStarScale * root.fit
             lit: true
             animated: false
+            // Each star flares as the light runs past it
+            scale: root.span > 0 ? 1 + 0.8 * Planet.touchdownAt(root.screenLeft + modelData.x - root.span / 2, root.span) : 1
         }
     }
 }
