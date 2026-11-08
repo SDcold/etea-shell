@@ -90,7 +90,8 @@ Variants {
                 id: world
 
                 anchors.fill: parent
-                active: Planet.phase !== Planet.Phase.Idle
+                // Only the focused screen ever shows its stage
+                active: stage.focused && Planet.phase !== Planet.Phase.Idle
 
                 sourceComponent: World {
                     cached: false
