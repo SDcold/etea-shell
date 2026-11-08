@@ -271,6 +271,17 @@ Item {
             font.pixelSize: Math.round(13 * root.unit)
         }
 
+        // Nothing in the folder yet: the night says so, under the two moons that are left
+        Text {
+            x: (root.width - implicitWidth) / 2
+            y: root.center.y - root.radius + Theme.portholeWidth / 2 / root.screenAspect * root.grow * root.unit + 48 * root.unit
+            visible: Skies.items.length > 0 && Skies.items.every(item => item.special)
+            text: Lang.t("Aucune image ici pour l'instant…")
+            color: Qt.alpha(Theme.skyInk, 0.7)
+            font.family: Theme.font
+            font.pixelSize: Math.round(15 * root.unit)
+        }
+
         // What the belt was opened for, top left
         Text {
             x: 28 * root.unit
@@ -321,7 +332,7 @@ Item {
             hovered: Skies.hovered === item && Math.abs(offset) < 6
             inked: yours ? Skies.formed : 1
             // Off the screen, still behind the folding sky, or growing into one
-            visible: !((Skies.looking || Skies.landing) && item === Skies.chosen && Math.abs(offset - Skies.chosenAt) < 0.5) && entry !== null && Math.abs(offset) < 6.6 && (!yours || root.showYours) && y < root.height && y + height > 0 && x + width > 0 && x < root.width
+            visible: !((Skies.looking || Skies.landing || Skies.homing) && item === Skies.chosen && Math.abs(offset - Skies.chosenAt) < 0.5) && entry !== null && Math.abs(offset) < 6.6 && (!yours || root.showYours) && y < root.height && y + height > 0 && x + width > 0 && x < root.width
         }
     }
 }

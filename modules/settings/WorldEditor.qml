@@ -223,8 +223,10 @@ ColumnLayout {
             spacing: 8
 
             SettingButton {
+                id: chooseSky
+
                 label: root.planet.sky ? Lang.t("Changer") : Lang.t("Choisir une image")
-                onPicked: Forge.chooseSky(root.planetId)
+                onPicked: Forge.chooseSky(root.planetId, chooseSky)
             }
 
             SettingButton {

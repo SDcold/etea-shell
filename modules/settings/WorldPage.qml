@@ -197,8 +197,10 @@ ColumnLayout {
     }
 
     SettingButton {
+        id: chooseImage
+
         label: Forge.draft ? Lang.t("Choisir une autre image") : Lang.t("Choisir une image")
-        onPicked: Forge.chooseImage()
+        onPicked: Forge.chooseImage(chooseImage)
     }
 
     // The new world, waiting for your decision

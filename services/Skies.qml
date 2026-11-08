@@ -60,6 +60,10 @@ Singleton {
     property real chosenAt: 0
     property bool committed: false
     property bool rehearsal: false // lands it all the way without wearing it, to check how it goes
+    // Asked for a path, the chosen moon folds into a star and flies home to the control
+    // that asked, `request.from` on the screen, as your page comes back down
+    property bool homing: false
+    property bool answered: false
     // Every sky is worn from a copy the size of the screen, made by vips: what the lens
     // shows is then exactly what the background will load, and moving the original
     // can't empty the sky. { path: copy } for the copies made so far.
@@ -281,6 +285,23 @@ Singleton {
         }
     }
 
+    // Pulling the moon at the top down by hand looks at it, the camera following 1:1
+    function pullStart() {
+        if (!Planet.inSkies || landing || leaving || !items[zenith] || items[zenith].special === "elsewhere")
+            return false;
+        holdTurn();
+        chosen = zenith;
+        chosenAt = 0;
+        wantCopy(items[zenith]);
+        looking = true;
+        return true;
+    }
+
+    function pullTo(amount) {
+        if (looking)
+            Planet.holdAt(Planet.ceiling * (1 - 0.75 * Math.max(0, Math.min(1, amount))));
+    }
+
     // Choosing: down commits, as everywhere in ETEA. The chosen sky's colours sweep out of its
     // moon, it grows back into your sky as you land, and is worn behind the stage on the way.
     function choose(index, at) {
@@ -299,14 +320,20 @@ Singleton {
             return;
         }
         if (role !== "sky") {
-            // Asked for a path: it goes back to whoever asked. A world's own painted sky,
-            // asked for that world, takes its picture away.
-            const answer = request?.answer, id = planet.id;
-            leave();
-            if (item.special === "world")
+            // A world's own painted sky, asked for that world, takes its picture away
+            if (item.special === "world") {
+                const id = planet.id;
+                leave();
                 Forge.dropSky(id);
-            else if (answer && item.path)
-                answer(item.path, request?.from);
+                return;
+            }
+            // Asked for a path: the moon flies home as a star to whoever asked
+            holdTurn();
+            chosen = index;
+            chosenAt = at ?? 0;
+            homing = true;
+            answered = false;
+            leave(Theme.skyLand);
             return;
         }
         holdTurn();
@@ -315,6 +342,7 @@ Singleton {
         chosenAt = at ?? 0;
         landing = true;
         committed = false;
+
         sweepOut(paletteOf(item), chosenAt, Theme.skyLand * 0.4);
         wantCopy(item);
         if (!item.path || copyOf(item) && preload.status === Image.Ready)
@@ -325,6 +353,12 @@ Singleton {
 
     function land() {
         copyWait.stop();
+        // A side moon turns to the top on the same clock as it lands
+        if (chosenAt !== 0) {
+            toTop.duration = Theme.skyLand;
+            toTopScroll.to = scroll + chosenAt;
+            toTop.start();
+        }
         Planet.leaveSkies(Theme.skyLand);
     }
 
@@ -418,9 +452,25 @@ Singleton {
             flyTo(found);
     }
 
+    // Where on the screen an item sits, through its window: a floating one is found among
+    // Hyprland's windows by its title, a layer is taken to cover its screen
+    function screenPointOf(item) {
+        const window = item?.Window?.window;
+        if (!item || !window)
+            return null;
+        const local = item.mapToItem(null, item.width / 2, item.height / 2);
+        const toplevel = window.title ? Hyprland.toplevels.values.find(t => t.title === window.title && t.lastIpcObject?.at) : null;
+        if (!toplevel)
+            return local;
+        const monitor = Hyprland.focusedMonitor;
+        return Qt.point(toplevel.lastIpcObject.at[0] - (monitor?.x ?? 0) + local.x, toplevel.lastIpcObject.at[1] - (monitor?.y ?? 0) + local.y);
+    }
+
     function ask(request) {
         if (open || Planet.phase !== Planet.Phase.Idle)
             return;
+        if (request.item && !request.from)
+            request.from = screenPointOf(request.item);
         root.request = request;
         items = build();
         holdTurn();
@@ -439,14 +489,14 @@ Singleton {
         Planet.enterSkies();
     }
 
-    function leave() {
+    function leave(duration) {
         if (!Planet.inSkies)
             return;
         leaving = true;
         resting.stop();
         // Your own colours sweep back from your sky's moon, or from the zenith
         sweepOut(planet, Math.abs(yours) < 5 ? yours : 0, 320);
-        Planet.leaveSkies();
+        Planet.leaveSkies(duration);
     }
 
     // The folder listed again while open: same place on the belt, whatever came in
@@ -477,6 +527,13 @@ Singleton {
         function onAltitudeChanged() {
             if (root.landing && !root.committed && Planet.altitude <= Planet.ceiling * 0.25)
                 root.commit();
+            // The answer goes just before the star touches, behind the stage
+            if (root.homing && !root.answered && Planet.altitude <= Planet.ceiling * 0.15) {
+                root.answered = true;
+                const item = root.items[root.chosen];
+                if (root.request?.answer && item?.path)
+                    root.request.answer(item.path, root.request.from);
+            }
             if (root.looking && !Planet.inSkies)
                 root.looking = false;
             if (root.looking && Planet.altitude >= Planet.ceiling)
@@ -498,6 +555,8 @@ Singleton {
                 root.looking = false;
                 root.landing = false;
                 root.rehearsal = false;
+                root.homing = false;
+                toTop.stop();
                 root.chosen = -1;
                 root.tidy();
                 sweeping.stop();
@@ -516,6 +575,28 @@ Singleton {
         duration: 360
         easing.type: Easing.OutBack
         easing.overshoot: 0.3
+    }
+
+    ParallelAnimation {
+        id: toTop
+
+        property int duration: 720
+
+        NumberAnimation {
+            id: toTopScroll
+
+            target: root
+            property: "scroll"
+            duration: toTop.duration
+            easing.type: Easing.InOutCubic
+        }
+        NumberAnimation {
+            target: root
+            property: "chosenAt"
+            to: 0
+            duration: toTop.duration
+            easing.type: Easing.InOutCubic
+        }
     }
 
     NumberAnimation {

@@ -443,6 +443,7 @@ Singleton {
     // Stops the climb somewhere along the way, to look at it there
     function holdAt(height) {
         rise.stop();
+        look.stop();
         altitude = Math.max(0, Math.min(ceiling, height));
     }
 

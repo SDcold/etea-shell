@@ -36,6 +36,8 @@ ColumnLayout {
     }
 
     SettingChoice {
+        id: firstScreen
+
         visible: Config.lockWith === "etea"
         label: Lang.t("Premier écran")
         hint: Lang.t("Ce que tu vois avant de taper. Le ciel étoilé vient ensuite.")
@@ -45,7 +47,7 @@ ColumnLayout {
             if (id === "world")
                 Config.lockImage = "";
             else if (!Config.lockImage)
-                Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path, { role: "lock" });
+                Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path, { role: "lock", item: firstScreen });
         }
     }
 
@@ -96,8 +98,10 @@ ColumnLayout {
             spacing: 10
 
             SettingButton {
+                id: changeImage
+
                 label: Lang.t("Changer d'image")
-                onPicked: Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path, { role: "lock" })
+                onPicked: Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path, { role: "lock", item: changeImage })
             }
 
             Text {

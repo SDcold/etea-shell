@@ -1,5 +1,6 @@
 import QtQuick
 import qs.config
+import qs.modules.bar
 import qs.services
 
 // One moon of the belt: its picture, cropped as the screen would crop it, a ring inked in
@@ -14,6 +15,7 @@ Item {
     property point center // the planet's centre, and the belt's radius round it, in pixels
     property real radius: 0
     property real grow: 1 // moons grow and shrink with the planet
+    property real folded: 0 // 1 folds it back into its star, as it was while loading
     property bool hovered: false
     property real unit: 1
     property real screenAspect: 16 / 9
@@ -57,13 +59,13 @@ Item {
     onEntryChanged: stage = picked ? Pictures.firstStage(picked) : 0
     onLoadedChanged: {
         if (loaded) {
-            ready.restart();
+            arriving.restart();
         } else {
-            ready.stop();
-            shape.ready = 0;
+            arriving.stop();
+            shape.loaded = 0;
         }
     }
-    Component.onCompleted: shape.ready = loaded ? 1 : 0
+    Component.onCompleted: shape.loaded = loaded ? 1 : 0
 
     Image {
         id: thumbnail
@@ -82,7 +84,8 @@ Item {
     ShaderEffect {
         id: shape
 
-        property real ready: 1
+        property real loaded: 1
+        property real ready: loaded * (1 - root.folded)
 
         anchors.fill: parent
 
@@ -114,12 +117,22 @@ Item {
 
         fragmentShader: Qt.resolvedUrl("../../shaders/moon.frag.qsb")
 
-        NumberAnimation on ready {
-            id: ready
+        NumberAnimation on loaded {
+            id: arriving
 
             running: false
             to: 1
             duration: 240
         }
+    }
+
+    // The way out to another folder: the unexplored world, as in Landfall
+    Icon {
+        anchors.centerIn: parent
+        visible: root.entry?.special === "elsewhere"
+        name: "travel_explore"
+        size: Math.round(root.halfHeight * 0.75)
+        tint: Qt.alpha(root.palette?.light ?? Theme.windowLit, 0.85)
+        opacity: shape.ready
     }
 }

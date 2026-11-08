@@ -23,6 +23,13 @@ MouseArea {
     property real speed: 0 // moons a second
     property bool turning: false
     property bool scrubbing: false // along the vernier, from one end of the folder to the other
+    // Pulling the moon at the top down: past halfway, or flicked, it lands; otherwise it
+    // climbs back up
+    property bool pullable: false
+    property bool pulling: false
+    property real pulled: 0
+    property real pullSpeed: 0
+    readonly property real pullRange: Math.max(120, height / 2 - (center.y - beltRadius))
     readonly property real spread: 52 * Math.PI / 180
 
     // The vernier's tick under the pointer, along the limb, or -1
@@ -71,6 +78,9 @@ MouseArea {
         speed = 0;
         turning = false;
         scrubbing = tickAt(mouse.x, mouse.y) >= 0;
+        pullable = moonAt(mouse.x, mouse.y) === 0;
+        pulling = false;
+        pulled = 0;
     }
 
     onPositionChanged: mouse => {
@@ -85,6 +95,19 @@ MouseArea {
             if (r > planetRadius * 0.8 && tick !== Skies.zenith)
                 Skies.flyTo(tick);
             return;
+        }
+        if (pulling) {
+            const now = Date.now(), amount = (mouse.y - pressedAt.y) / pullRange;
+            pullSpeed = (amount - pulled) / Math.max(1, now - lastTime) * 1000;
+            pulled = amount;
+            lastTime = now;
+            Skies.pullTo(amount);
+            return;
+        }
+        if (pullable && !turning && mouse.y - pressedAt.y > 8 && mouse.y - pressedAt.y > Math.abs(mouse.x - pressedAt.x) * 1.5) {
+            pulling = Skies.pullStart();
+            if (pulling)
+                return;
         }
         if (!turning && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) > 8) {
             turning = true;
@@ -104,6 +127,14 @@ MouseArea {
     onReleased: mouse => {
         if (Skies.landing)
             return;
+        if (pulling) {
+            pulling = false;
+            if (pulled > 0.5 || pullSpeed > 2.5)
+                Skies.choose();
+            else
+                Skies.look(false);
+            return;
+        }
         if (scrubbing) {
             const tick = tickAt(mouse.x, mouse.y);
             if (tick >= 0 && tick !== Skies.zenith)

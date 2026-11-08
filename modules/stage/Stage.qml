@@ -4,6 +4,7 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.config
 import qs.modules.background
+import qs.modules.bar
 import qs.services
 
 // The stage sits above the windows and below the bar. It stays empty until a
@@ -315,9 +316,76 @@ Variants {
             anchors.fill: parent
         }
 
+        // A picture asked for somewhere: its moon folds into a star and flies home to the
+        // control that asked, tracked on your page as it comes back down, so the star
+        // touches the button just as the page is full size again
+        Item {
+            id: homing
+
+            readonly property real u: Skies.homing ? 1 - Math.max(0, Math.min(1, Planet.altitude / Planet.ceiling)) : 0
+            // Where the moon was when it was chosen: the flight starts there, not on the belt
+            // as it rises off with the camera
+            property var moon: null
+            property real grown: 1 // how big the moons were drawn then
+
+            Connections {
+                target: Skies
+
+                function onHomingChanged() {
+                    homing.grown = stage.moonScale;
+                    homing.moon = Skies.homing ? Skies.placeOf(Skies.chosenAt, stage.planetCenter, Theme.skyBelt * stage.planetRadius * stage.unit, stage.unit, stage.moonScale, stage.width / stage.height) : null;
+                }
+            }
+            // Where the control is on your page, as the page stands now
+            readonly property point home: {
+                const from = Skies.request?.from ?? Qt.point(stage.width / 2, stage.height / 2);
+                const zoom = Math.exp(Math.log(Theme.orbitCard) * Planet.altitude);
+                const lift = (stage.planetTop * stage.unit - stage.height) * stage.climbed;
+                return Qt.point(stage.width / 2 + (from.x - stage.width / 2) * zoom, stage.height + (from.y - stage.height) * zoom + lift);
+            }
+
+            function span(from, to) {
+                return Math.max(0, Math.min(1, (u - from) / (to - from)));
+            }
+
+            anchors.fill: parent
+            visible: Skies.homing && moon !== null && u < 1
+
+            // The moon itself folds back into its star, in its own colour, and flies
+            SkyMoon {
+                readonly property real fold: homing.span(0, 0.3)
+                readonly property real fly: homing.span(0.2, 0.9)
+                // Its size at the edge, so it can shrink to a 16 px star
+                readonly property real base: homing.moon ? homing.moon.halfHeight / homing.grown : 1
+
+                entry: Skies.items[Skies.chosen] ?? null
+                offset: Skies.chosenAt
+                center: homing.moon ? Qt.point(homing.moon.x + (homing.home.x - homing.moon.x) * (1 - Math.cos(Math.PI * fly)) / 2, homing.moon.y + (homing.home.y - homing.moon.y) * fly * fly * fly) : Qt.point(0, 0)
+                radius: 0
+                unit: stage.unit
+                screenAspect: stage.width / stage.height
+                grow: homing.grown + (16 / base - homing.grown) * fold * fold * fold // folded, a star is half its moon
+                folded: fold
+            }
+        }
+
+        // And it touches down
+        StarRipple {
+            id: touch
+        }
+
+        Connections {
+            target: Planet
+
+            function onAltitudeChanged() {
+                if (Skies.homing && Planet.altitude === 0 && stage.focused)
+                    touch.burst(homing.home.x, homing.home.y);
+            }
+        }
+
         SkyHands {
             anchors.fill: parent
-            enabled: stage.lensHanded
+            enabled: stage.lensHanded || Skies.looking // a moon being pulled down keeps its hand
             center: stage.planetCenter
             planetRadius: stage.planetRadius * stage.unit
             unit: stage.unit
@@ -384,6 +452,9 @@ Variants {
             function onGrabWanted(path) {
                 if (stage.focused)
                     scene.grabToImage(result => console.info(`ETEA grab: ${result.saveToFile(path) ? path : "failed"}`));
+                // What flies over the scene, kept apart
+                if (stage.focused && homing.visible)
+                    homing.grabToImage(result => result.saveToFile(path.replace(/\.png$/, "-over.png")));
             }
         }
 

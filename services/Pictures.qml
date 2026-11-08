@@ -24,9 +24,10 @@ Singleton {
     readonly property string thumbs: `${Quickshell.env("XDG_CACHE_HOME") || home + "/.cache"}/etea/thumbs`
 
     // A picture for something: answer(path) gets it. role says what for: "photo", "lock",
-    // "newWorld", or "world" with planetId for another world's sky.
+    // "newWorld", or "world" with planetId for another world's sky; item is the control that
+    // asked, where the chosen picture flies home to.
     function pick(title, answer, options) {
-        Skies.ask({ role: options?.role ?? "photo", title: title, answer: answer, from: null, planetId: options?.planetId ?? Theme.planet.id });
+        Skies.ask({ role: options?.role ?? "photo", title: title, answer: answer, item: options?.item ?? null, from: null, planetId: options?.planetId ?? Theme.planet.id });
     }
 
     function refresh() {

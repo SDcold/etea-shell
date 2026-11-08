@@ -167,12 +167,14 @@ Scope {
                     }
 
                     MenuRow {
+                        id: photoChoice
+
                         visible: panel.shown === "photo"
                         Layout.fillWidth: true
                         label: panel.widget?.image ? Lang.t("Changer d'image") : Lang.t("Choisir une image")
                         onPicked: {
                             Desk.menuFor = "";
-                            Pictures.pick(Lang.t("Une image pour le ciel"), path => Desk.update("photo", { image: path }), { role: "photo" });
+                            Pictures.pick(Lang.t("Une image pour le ciel"), path => Desk.update("photo", { image: path }), { role: "photo", item: photoChoice });
                         }
                     }
 
