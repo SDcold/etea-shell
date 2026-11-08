@@ -57,6 +57,7 @@ Singleton {
     property alias customPlanets: saved.customPlanets
     property alias planetTweaks: saved.planetTweaks // { id: what you changed on that world }
     property alias wallpaper: saved.wallpaper // a picture over the sky of whatever world you're on; empty shows its own
+    property alias ownStyles: saved.ownStyles // the last style you picked yourself for each setting, worn where a world brings none
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
     property alias livePages: saved.livePages // windows keep playing while the page turns
     property alias pageTransition: saved.pageTransition // "planet", or "slide" for Hyprland's own
@@ -107,6 +108,18 @@ Singleton {
     property alias focusMinutes: saved.focusMinutes // the focus timer's work time
     property alias restMinutes: saved.restMinutes // and its break
 
+    // A style you pick yourself is remembered, so following the planet later doesn't lose it
+    function remember(setting) {
+        const value = root[setting];
+        if (value !== "planet" && ownStyles[setting] !== value)
+            ownStyles = Object.assign({}, ownStyles, { [setting]: value });
+    }
+
+    onBarStyleChanged: remember("barStyle")
+    onPageStyleChanged: remember("pageStyle")
+    onWidgetStyleChanged: remember("widgetStyle")
+    onLockSceneChanged: remember("lockScene")
+
     // Times written the way the clock setting asks, 12 or 24 hours. The big clocks leave out
     // AM/PM: their numerals are the drawing, the time of day reads from the sky anyway.
     function time(date, options) {
@@ -149,6 +162,7 @@ Singleton {
             property var customPlanets: []
             property var planetTweaks: ({})
             property string wallpaper: ""
+            property var ownStyles: ({})
             property string pace: "daily"
             property bool livePages: true
             property string pageTransition: "planet"

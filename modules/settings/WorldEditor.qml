@@ -42,8 +42,11 @@ ColumnLayout {
         }
     }
 
+    // Picking a world's style makes that setting follow the planet, or it would show nowhere
     function setStyle(setting, value) {
         Planets.tweak(planetId, { style: Object.assign({}, planet.style ?? {}, { [setting]: value }) });
+        if (Config[setting] !== "planet")
+            Config[setting] = "planet";
     }
 
     spacing: 14
@@ -248,7 +251,7 @@ ColumnLayout {
     Text {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        text: Lang.t("Porté partout où un réglage suit la planète.")
+        text: Lang.t("Choisir l'un d'eux fait suivre la planète à ce réglage : chaque monde porte alors le sien.")
         color: Qt.alpha(Theme.text, 0.6)
         font.family: Theme.font
         font.pixelSize: 12

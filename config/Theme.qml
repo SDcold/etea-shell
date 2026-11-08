@@ -8,11 +8,11 @@ Singleton {
     readonly property var planet: Planets.find(Config.preview || Config.theme)
     readonly property real pace: Config.pace === "ceremony" ? 1.7 : 1 // stretches the big movements
 
-    // A setting left on "planet" wears what the planet brings, or what it was before if
-    // the planet brings nothing. Whatever you pick yourself stays yours.
+    // A setting left on "planet" wears what the planet brings, or what you last picked
+    // yourself if the planet brings nothing. Whatever you pick yourself stays yours.
     function worn(setting, fallback) {
         const own = Config[setting];
-        return own === "planet" ? planet.style?.[setting] ?? fallback : own;
+        return own === "planet" ? planet.style?.[setting] ?? Config.ownStyles[setting] ?? fallback : own;
     }
 
     readonly property string barStyle: worn("barStyle", "sky")
