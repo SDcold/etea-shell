@@ -28,6 +28,8 @@ ColumnLayout {
     ]
     readonly property color current: colorOf(colors[picked].key)
 
+    readonly property var forms: [{ id: "ridges", label: Lang.t("Crêtes") }, { id: "tables", label: Lang.t("Tables") }, { id: "dunes", label: Lang.t("Dunes") }]
+
     function colorOf(key) {
         return /^t[0-3]$/.test(key) ? planet.terrain[Number(key[1])] : planet[key];
     }
@@ -199,6 +201,31 @@ ColumnLayout {
         onMoved: value => Planets.tweak(root.planetId, { relief: value })
     }
 
+    // The far ground and the near one each take a form; a new one runs in as a front
+    SettingChoice {
+        label: Lang.t("Au loin")
+        options: root.forms
+        current: root.planet.form?.far ?? "ridges"
+        onPicked: id => Morph.apply(root.planetId, { form: Object.assign({ far: "ridges", near: "ridges" }, root.planet.form ?? {}, { far: id }) })
+    }
+
+    SettingChoice {
+        label: Lang.t("Au premier plan")
+        options: root.forms
+        current: root.planet.form?.near ?? "ridges"
+        onPicked: id => Morph.apply(root.planetId, { form: Object.assign({ far: "ridges", near: "ridges" }, root.planet.form ?? {}, { near: id }) })
+    }
+
+    SettingSlider {
+        label: Lang.t("Graine")
+        hint: Lang.t("Déplace les crêtes et les continents.")
+        value: root.planet.seed ?? 1.2
+        minimum: 0
+        maximum: 12
+        shownAs: 10
+        onMoved: value => Planets.tweak(root.planetId, { seed: value })
+    }
+
     SettingSlider {
         label: Lang.t("Crêtes")
         hint: Lang.t("Des houles douces, ou de la roche brisée.")
@@ -243,7 +270,7 @@ ColumnLayout {
         label: Lang.t("Collines")
         hint: Lang.t("Sans elles, le ciel est seul à l'écran.")
         on: root.planet.ground ?? true
-        onToggled: Planets.tweak(root.planetId, { ground: !on })
+        onToggled: Morph.apply(root.planetId, { ground: !on })
     }
 
     SettingSection {

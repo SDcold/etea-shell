@@ -41,6 +41,11 @@ Item {
     readonly property var tintA: morphing ? (Morph.dusk ? Morph.to : Morph.from) : dress
     readonly property var tintB: morphing ? (Morph.dusk ? Morph.from : Morph.to) : dress
     readonly property point dawnFrom: Qt.point(width * (planet.sun ?? 0.25), height * horizon + height * 0.12)
+    // A new form for the ground, running in from where it was touched, and the land sinking
+    readonly property bool reshaping: morphing && Morph.reshaped
+    readonly property bool sinking: morphing && Morph.sinking
+    readonly property var formA: reshaping ? Morph.from : planet
+    readonly property var formB: reshaping ? Morph.to : planet
     readonly property real dawnEdge: {
         if (!morphing)
             return 0;
@@ -306,7 +311,7 @@ Item {
         anchors.fill: parent
 
         // Without hills the ground only shows once it has become a planet, up in orbit
-        opacity: root.groundOpacity * (root.ground ? 1 : Math.min(1, root.space * 3))
+        opacity: root.groundOpacity * (root.ground || root.sinking ? 1 : Math.min(1, root.space * 3))
         visible: opacity > 0
 
         // planetAngle is what will spin the planet between pages
@@ -344,6 +349,16 @@ Item {
         property color arrivalLight: root.planet.light
         property real rough: root.planet.rough ?? 1
         property real flatRim: root.edge ? 1 : 0
+        property real seed: root.formA.seed ?? 1.2
+        property real farA: Morph.formOf(root.formA, "far")
+        property real nearA: Morph.formOf(root.formA, "near")
+        property real farB: Morph.formOf(root.formB, "far")
+        property real nearB: Morph.formOf(root.formB, "near")
+        property real seedB: root.formB.seed ?? 1.2
+        property real reformAt: Morph.reformAt
+        // The front runs out over the whole screen and a little more, slowing as it goes
+        property real reformFront: root.reshaping ? (1 - (1 - Morph.front) * (1 - Morph.front)) * 2140 : -1
+        property real sink: root.sinking ? Morph.sink : 0
         property color next0: root.sweeping?.terrain[0] ?? layer0
         property color next1: root.sweeping?.terrain[1] ?? layer1
         property color next2: root.sweeping?.terrain[2] ?? layer2

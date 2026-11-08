@@ -91,6 +91,11 @@ Scope {
             Skies.backgroundWanted(path);
         }
 
+        // Plays the ground taking other forms, there and back, keeping nothing
+        function reshape(far: string, near: string): void {
+            Morph.rehearse(Theme.planet.id, { form: { far: far, near: near }, ground: true });
+        }
+
         function state(): string {
             return `busy ${Morph.busy}, ${Morph.dusk ? "dusk" : "dawn"} ${Morph.tint.toFixed(2)}, crossed ${Morph.crossed}, light ${Theme.link}`;
         }

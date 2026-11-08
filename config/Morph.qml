@@ -11,10 +11,21 @@ import Quickshell
 // horizon at the sun's place, the new colours inside, its edge a line of the new light.
 // A darker set comes as a dusk: the old light shrinks back into the sun. The rest of the
 // shell switches its light once, when the edge reaches the bar.
+//
+// Relief, a new form for the ground, runs in as a front from where it was touched, both
+// ways along the ridges; the land sinks past the screen's edge when the hills go, and
+// rises again when they come back.
 Singleton {
     id: root
 
     readonly property var tints: ["skyTop", "skyMid", "skyLow", "terrain", "light"]
+    readonly property var forms: ["ridges", "tables", "dunes"]
+    property bool tinted: false // this change brings new colours
+    property bool reshaped: false // and a new form for the ground
+    property real front: 0 // how far a re-form has run, 0 to 1
+    property real reformAt: 0 // the angle on screen it starts from
+    property real sink: 0 // how far the land has sunk, while the hills go or come back
+    property bool sinking: false
 
     property string planetId: ""
     property var from: null // the world as it was on screen
@@ -23,7 +34,7 @@ Singleton {
     property real tint: 0 // how far the edge has gone, 0 to 1
     property bool rehearsal: false // plays the change there and back without keeping it
     property bool rehearsalBack: false
-    readonly property bool busy: tinting.running || pause.running || back.running
+    readonly property bool busy: tinting.running || pause.running || reforming.running || sinkingAway.running
     // The edge reaches the bar about here: the dome's top passes the screen's top at
     // 0.84 of the way, and a dusk's leaves it at 0.16
     readonly property bool crossed: dusk ? tint >= 0.16 : tint >= 0.84
@@ -31,7 +42,7 @@ Singleton {
     // The world as the rest of the shell should show it right now: as it was until the
     // edge reaches the bar
     function shown(planet) {
-        if (!busy || !planet || planet.id !== planetId)
+        if (!busy || !tinted || !planet || planet.id !== planetId)
             return planet;
         if (rehearsal && !rehearsalBack)
             return crossed ? to : planet;
@@ -48,10 +59,20 @@ Singleton {
         return tints.some(key => JSON.stringify(a[key]) !== JSON.stringify(b[key]));
     }
 
+    // A ground form by number, for the shader: 0 ridges, 1 tables, 2 dunes
+    function formOf(planet, depth) {
+        return Math.max(0, forms.indexOf(planet?.form?.[depth] ?? "ridges"));
+    }
+
+    function changesForm(a, b) {
+        return formOf(a, "far") !== formOf(b, "far") || formOf(a, "near") !== formOf(b, "near");
+    }
+
     // Changes a world: `changes` are its new keys; `reset` puts back a list of keys, or
-    // everything when it's true
-    function apply(id, changes, reset) {
+    // everything when it's true. `at` is the angle on screen a re-form starts from.
+    function apply(id, changes, reset, at) {
         hurry();
+        reformAt = at ?? 0;
         const before = Object.assign({}, Planets.find(id));
         if (reset)
             Planets.untweak(id, reset === true ? undefined : reset);
@@ -70,23 +91,49 @@ Singleton {
     }
 
     function start(id, before, after) {
-        if (!changesTint(before, after))
+        tinted = changesTint(before, after);
+        reshaped = changesForm(before, after);
+        sinking = (before.ground ?? true) !== (after.ground ?? true);
+        if (!tinted && !reshaped && !sinking)
             return;
         planetId = id;
         from = before;
         to = after;
-        // Below a small difference it's always a dawn: two sets about as bright
-        dusk = brightness(after) < brightness(before) - 0.04;
-        tinting.duration = 1200 * Theme.pace;
-        tinting.restart();
+        if (tinted) {
+            // Below a small difference it's always a dawn: two sets about as bright
+            dusk = brightness(after) < brightness(before) - 0.04;
+            tinting.duration = 1200 * Theme.pace;
+            tinting.restart();
+        }
+        if (reshaped) {
+            reforming.duration = 900 * Theme.pace;
+            reforming.restart();
+        }
+        if (sinking) {
+            sinkingAway.from = (before.ground ?? true) ? 0 : 1;
+            sinkingAway.to = (after.ground ?? true) ? 0 : 1;
+            sinkingAway.duration = 600 * Theme.pace;
+            sinkingAway.restart();
+        }
+    }
+
+    // The front and the sinking finish together with the colours, if any
+    function settleWhenDone() {
+        if (tinting.running || pause.running || reforming.running || sinkingAway.running)
+            return;
+        if (rehearsal && !rehearsalBack)
+            pause.restart();
+        else
+            settle();
     }
 
     // A new pick never waits: whatever runs finishes now
     function hurry() {
-        if (tinting.running)
-            tinting.complete();
-        if (back.running)
-            back.complete();
+        pause.stop();
+        for (const animation of [tinting, reforming, sinkingAway]) {
+            if (animation.running)
+                animation.complete();
+        }
     }
 
     NumberAnimation {
@@ -97,12 +144,26 @@ Singleton {
         from: 0
         to: 1
         easing.type: Easing.InOutSine
-        onFinished: {
-            if (root.rehearsal && !root.rehearsalBack)
-                pause.restart();
-            else
-                root.settle();
-        }
+        onFinished: root.settleWhenDone()
+    }
+
+    NumberAnimation {
+        id: reforming
+
+        target: root
+        property: "front"
+        from: 0
+        to: 1
+        onFinished: root.settleWhenDone()
+    }
+
+    NumberAnimation {
+        id: sinkingAway
+
+        target: root
+        property: "sink"
+        easing.type: Easing.InOutCubic
+        onFinished: root.settleWhenDone()
     }
 
     // A rehearsal goes back the other way after a moment
@@ -111,29 +172,18 @@ Singleton {
 
         interval: 700
         onTriggered: {
-            const there = root.to;
             root.rehearsalBack = true;
-            root.to = root.from;
-            root.from = there;
-            root.dusk = root.brightness(root.to) < root.brightness(root.from) - 0.04;
-            back.restart();
+            root.start(root.planetId, root.to, root.from);
         }
-    }
-
-    NumberAnimation {
-        id: back
-
-        target: root
-        property: "tint"
-        from: 0
-        to: 1
-        duration: 1200 * Theme.pace
-        easing.type: Easing.InOutSine
-        onFinished: root.settle()
     }
 
     function settle() {
         tint = 0;
+        front = 0;
+        sink = 0;
+        tinted = false;
+        reshaped = false;
+        sinking = false;
         from = null;
         to = null;
         rehearsal = false;

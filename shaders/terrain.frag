@@ -53,7 +53,36 @@ layout(std140, binding = 0) uniform buf {
     float dawnEdge;
     float bandInside;
     vec4 dawnLight;
+    // Relief: the far ground (the two back layers) and the near one (the two front) each
+    // take a form: 0 ridges, 1 tables, 2 dunes. A re-form runs B in from reformAt, along the
+    // ground both ways, the far range first: the old silhouette dips and the new one rises
+    // through it. seed moves the ridges and the continents.
+    float seed;
+    float farA;
+    float nearA;
+    float farB;
+    float nearB;
+    float seedB;
+    float reformAt; // the angle it starts from, as seen on screen
+    float reformFront; // how far the front has run, in units; below 0 nothing re-forms
+    float sink; // 0 standing, 1 sunk past the bottom of the screen
 };
+
+// Tables: the swell cut into flat tops and short steep cliffs, a little grit on the tops
+float tables(float s, float a) {
+    float swell = 0.45 * sin(13.0 * a + 0.3 + s) + 0.35 * sin(31.0 * a + 1.1 + s) + 0.2 * sin(67.0 * a + 2.2 + s);
+    float x = swell * 2.2 + 2.2;
+    float h = (floor(x) + smoothstep(0.84, 0.97, fract(x))) / 2.2 - 1.0;
+    return h + 0.035 * rough * sin(431.0 * a + 3.1 + s);
+}
+
+// Dunes: long slopes up the wind and short slip faces down it, on a gentle swell
+float dunes(float s, float a) {
+    float x = a * 17.0 + 0.6 * sin(9.0 * a + s) + s;
+    float f = fract(x);
+    float face = f < 0.8 ? f / 0.8 : (1.0 - f) / 0.2;
+    return 0.35 * sin(4.0 * a + 0.7 + s) + (face - 0.5) * 1.1;
+}
 
 // A bit of per-pixel randomness to make the grain from
 float hash(vec2 p) {
@@ -78,6 +107,17 @@ float ridge(float seed, float a) {
         + 0.11 * fine * sin(211.0 * a + 1.9 + seed)
         + 0.07 * fine * sin(431.0 * a + 3.1 + seed)
         + 0.05 * fine * sin(863.0 * a + 0.4 + seed);
+}
+
+float form(float kind, float s, float a) {
+    return kind < 0.5 ? ridge(s, a) : kind < 1.5 ? tables(s, a) : dunes(s, a);
+}
+
+// A layer's height at an angle: read in short straight segments, which is what gives the
+// ground its jagged edge
+float heightOf(float kind, float s, float a, float sampleStep) {
+    float cell = a / sampleStep;
+    return mix(form(kind, s, floor(cell) * sampleStep), form(kind, s, ceil(cell) * sampleStep), fract(cell));
 }
 
 float band(int i) {
@@ -164,8 +204,7 @@ void main() {
         float rise = clamp((r - curve) / (lift * 1.5), 0.0, 1.0);
         color = vec4(mix(rimColor.rgb, vec3(1.0, 0.97, 0.92), rise * 0.75), shape * (0.55 + 0.4 * rise) * dance);
     } else if (dance > 0.001) {
-        float ridgeCell = (angle + planetAngle) / sampleStep;
-        float ridgeShape = mix(ridge(1.2, floor(ridgeCell) * sampleStep), ridge(1.2, ceil(ridgeCell) * sampleStep), fract(ridgeCell));
+        float ridgeShape = heightOf(farA, seed, angle + planetAngle, sampleStep);
         float glow = 0.0;
         for (int i = 0; i < 6; i++) {
             float step = float(i);
@@ -190,14 +229,28 @@ void main() {
         shine = ceil(lit * 3.0) / 3.0 * (1.0 - smoothstep(0.42, 0.7, arrival)) * (1.0 - orbit);
     }
 
+    // Sinking, the land drops past the bottom of the screen
+    float push = sink * (resolution.y / k * (1.0 - horizon) + maxAmp * 1.6 + 8.0);
+
     // Paint the hills from the farthest to the closest
     for (int l = 0; l < 4; l++) {
         float a = angle + planetAngle * (1.0 - float(l) * 0.012);
-        // Reading the ridge in short segments is what gives it that jagged edge
-        float cell = a / sampleStep;
-        float seed = 1.2 + float(l) * 3.3;
-        float shape = mix(ridge(seed, floor(cell) * sampleStep), ridge(seed, ceil(cell) * sampleStep), fract(cell));
-        float edge = curve * (1.0 - depth[l]) + maxAmp * amp[l] * shape;
+        bool far_ = l < 2;
+        float shape = heightOf(far_ ? farA : nearA, seed + float(l) * 3.3, a, sampleStep);
+        if (reformFront >= 0.0) {
+            // The front runs both ways from where it started, each nearer layer a little behind
+            float t = clamp((reformFront - float(l) * 80.0 - abs(angle - reformAt) * curve) / 300.0, 0.0, 1.0);
+            if (t > 0.0) {
+                float next = heightOf(far_ ? farB : nearB, seedB + float(l) * 3.3, a, sampleStep);
+                float dip = sin(3.14159 * t);
+                shape = mix(shape, next, t) * (1.0 - 0.35 * dip * dip);
+            }
+            // Its crests catch the touchdown's light just behind it, in three flat steps
+            float behind = reformFront - float(l) * 80.0 - abs(angle - reformAt) * curve;
+            float lit = behind < 0.0 ? 0.0 : clamp(1.0 - behind / 300.0, 0.0, 1.0);
+            shine = max(shine, ceil(lit * 3.0) / 3.0 * (1.0 - orbit));
+        }
+        float edge = curve * (1.0 - depth[l]) + maxAmp * amp[l] * shape - push;
 
         float inside = smoothstep(edge + 0.6, edge - 0.6, r);
         // The crest catches the light, the slope below barely any
@@ -221,7 +274,7 @@ void main() {
         float facing = dot(normal, sun);
         float aa = max(fwidth(facing), 1e-4);
         vec2 surface = vec2(atan(q.x, depthZ) + planetAngle, asin(clamp(q.y, -1.0, 1.0))) * 2.6;
-        float ground = land(surface + 1.7);
+        float ground = land(surface + 1.7 + seed - 1.2);
         float groundAa = max(fwidth(ground), 1e-4);
         if (edgeDistance < 1.0 + 2.0 / curve) {
             vec3 tone = mix(tone3.rgb, tone2.rgb, smoothstep(0.34, 0.42, ground));
