@@ -22,7 +22,10 @@ Item {
     property real arrival: Planet.arrival
     // The world drawn: the one you live on, or any other to look at it
     property var planet: Theme.planet
-    property string skyImage: planet.sky ?? ""
+    // A wallpaper from the bar covers the sky of the world you live on, never the world itself
+    property bool takesWallpaper: true
+    readonly property bool wallpapered: takesWallpaper && Config.wallpaper !== "" && planet.id === Theme.planet.id
+    property string skyImage: wallpapered ? Config.wallpaper : planet.sky ?? ""
     property bool ground: planet.ground ?? true
 
     // Four sound levels at a time, the way the shader wants them
@@ -56,7 +59,7 @@ Item {
         asynchronous: true
         fillMode: Image.PreserveAspectCrop
         sourceSize: Qt.size(root.width, root.height)
-        source: root.skyImage ? "file://" + root.skyImage : ""
+        source: root.skyImage ? Pictures.url(root.skyImage) : ""
     }
 
     ShaderEffect {
@@ -80,7 +83,8 @@ Item {
         planet: root.planet
         angle: root.angle
         horizon: root.horizon
-        visible: root.space < 0.33
+        // Drawn for the world's own sky, so a wallpaper sends it away
+        visible: root.space < 0.33 && !root.wallpapered
         opacity: 1 - root.space * 3
     }
 
@@ -202,7 +206,7 @@ Item {
         front: true
         angle: root.angle
         horizon: root.horizon
-        visible: root.space < 0.33 && root.groundOpacity > 0
+        visible: root.space < 0.33 && root.groundOpacity > 0 && !root.wallpapered
         opacity: (1 - root.space * 3) * root.groundOpacity
     }
 }

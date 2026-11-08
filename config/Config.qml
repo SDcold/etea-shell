@@ -32,7 +32,8 @@ Singleton {
         { id: "picker", label: Lang.t("Pipette"), icon: "picker" },
         { id: "nightlight", label: Lang.t("Veilleuse"), icon: "nightlight" },
         { id: "awake", label: Lang.t("Éveillé"), icon: "coffee" },
-        { id: "microphone", label: Lang.t("Micro"), icon: "microphone" }
+        { id: "microphone", label: Lang.t("Micro"), icon: "microphone" },
+        { id: "wallpaper", label: Lang.t("Fond d'écran"), icon: "image" }
     ]
     readonly property var resourceChoices: [
         { id: "cpu", label: Lang.t("Processeur"), icon: "cpu" },
@@ -55,6 +56,7 @@ Singleton {
     property alias theme: saved.theme
     property alias customPlanets: saved.customPlanets
     property alias planetTweaks: saved.planetTweaks // { id: what you changed on that world }
+    property alias wallpaper: saved.wallpaper // a picture over the sky of whatever world you're on; empty shows its own
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
     property alias livePages: saved.livePages // windows keep playing while the page turns
     property alias pageTransition: saved.pageTransition // "planet", or "slide" for Hyprland's own
@@ -146,6 +148,7 @@ Singleton {
             property string theme: "aster"
             property var customPlanets: []
             property var planetTweaks: ({})
+            property string wallpaper: ""
             property string pace: "daily"
             property bool livePages: true
             property string pageTransition: "planet"

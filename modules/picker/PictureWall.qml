@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell.Widgets
 import qs.config
 import qs.modules.bar
@@ -52,13 +53,24 @@ Item {
         }
     }
 
-    SettingButton {
+    Row {
         anchors.right: parent.right
         anchors.rightMargin: 32
         anchors.verticalCenter: heading.verticalCenter
-        label: Lang.t("Autre dossier…")
-        quiet: true
-        onPicked: Pictures.browse()
+        spacing: 10
+
+        SettingButton {
+            visible: Pictures.extra !== null
+            label: Pictures.extra?.label ?? ""
+            quiet: true
+            onPicked: Pictures.takeExtra()
+        }
+
+        SettingButton {
+            label: Lang.t("Autre dossier…")
+            quiet: true
+            onPicked: Pictures.browse()
+        }
     }
 
     Text {
@@ -80,7 +92,7 @@ Item {
 
         x: 24
         y: heading.y + heading.height + 18
-        width: parent.width - 48
+        width: parent.width - 48 - 18
         height: parent.height - y - 24
         clip: true
         model: Pictures.pictures
@@ -91,6 +103,14 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         keyNavigationEnabled: true
         focus: Pictures.open
+
+        // Beside the pictures, not over them
+        ScrollBar.vertical: SkyScrollBar {
+            parent: wall.parent
+            anchors.top: wall.top
+            anchors.left: wall.right
+            anchors.bottom: wall.bottom
+        }
 
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Escape)

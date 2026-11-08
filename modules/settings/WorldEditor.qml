@@ -58,6 +58,7 @@ ColumnLayout {
             planet: root.planet
             arrival: 0
             listening: false
+            takesWallpaper: false
             showWidgets: false
             cached: false
             layer.enabled: true

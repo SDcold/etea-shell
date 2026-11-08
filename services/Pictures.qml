@@ -14,6 +14,7 @@ Singleton {
     property bool open: false
     property string title: ""
     property var answer: null // what to do with the picture once picked
+    property var extra: null // { label, act }: one more way out, beside the pictures
     property string folder: ""
     property var pictures: [] // { path, mtime }, newest first
     property bool listing: false
@@ -24,9 +25,10 @@ Singleton {
     readonly property string home: Quickshell.env("HOME")
     readonly property string thumbs: `${Quickshell.env("XDG_CACHE_HOME") || home + "/.cache"}/etea/thumbs`
 
-    function pick(title, answer) {
+    function pick(title, answer, extra) {
         root.title = title;
         root.answer = answer;
+        root.extra = extra ?? null;
         open = true;
         refresh();
     }
@@ -46,6 +48,14 @@ Singleton {
     function close() {
         open = false;
         answer = null;
+        extra = null;
+    }
+
+    function takeExtra() {
+        const act = extra?.act;
+        close();
+        if (act)
+            act();
     }
 
     // Somewhere else: the system's own picker, once ours is out of its way

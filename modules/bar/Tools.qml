@@ -5,7 +5,7 @@ import qs.config
 import qs.services
 
 // Little tools within reach: capture, clipboard, colour picker, night light, staying awake,
-// microphone.
+// microphone, wallpaper.
 Row {
     id: root
 
@@ -25,7 +25,7 @@ Row {
             id: tool
 
             required property string modelData
-            readonly property bool on: modelData === "nightlight" ? NightLight.on : modelData === "awake" ? Wake.on : modelData === "microphone" ? !(root.source?.audio?.muted ?? true) : false
+            readonly property bool on: modelData === "nightlight" ? NightLight.on : modelData === "awake" ? Wake.on : modelData === "microphone" ? !(root.source?.audio?.muted ?? true) : modelData === "wallpaper" ? Config.wallpaper !== "" : false
 
             implicitWidth: Theme.iconSize
             implicitHeight: Theme.iconSize
@@ -58,6 +58,10 @@ Row {
                     case "microphone":
                         if (root.source?.audio)
                             root.source.audio.muted = !root.source.audio.muted;
+                        break;
+                    // Only the picture behind changes: worlds are made in Settings and picked in orbit
+                    case "wallpaper":
+                        Pictures.pick(Lang.t("Un fond d'écran"), path => Config.wallpaper = path, Config.wallpaper ? { label: Lang.t("Ciel du monde"), act: () => Config.wallpaper = "" } : null);
                         break;
                     }
                 }
