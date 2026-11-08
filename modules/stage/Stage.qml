@@ -210,19 +210,15 @@ Variants {
             }
         }
 
-        // Counts the frames of each spin, so we know if it's really smooth
-        FrameAnimation {
-            id: meter
-
-            property real startedAt: 0
-
+        // Every move is measured, so we know if it's really smooth
+        FrameMeter {
+            name: "spin"
             running: stage.focused && Planet.phase === Planet.Phase.Spinning
-            onRunningChanged: {
-                if (running)
-                    startedAt = Date.now();
-                else if (currentFrame > 1)
-                    console.info(`ETEA spin: ${currentFrame} frames in ${Date.now() - startedAt} ms, ${Math.round(currentFrame * 1000 / (Date.now() - startedAt))} fps`);
-            }
+        }
+
+        FrameMeter {
+            name: "climb"
+            running: stage.focused && ((Planet.altitude > 0 && Planet.altitude < 1) || (Planet.systemLevel > 0 && Planet.systemLevel < 1))
         }
 
         Connections {
