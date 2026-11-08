@@ -13,6 +13,9 @@ Item {
     // Arriving, the camera is still rising: the worlds start out close and spread apart,
     // the neighbours come in from beyond the edges and everything settles to its size
     readonly property real spacing: width * 0.3 * (1 + 1.4 * (1 - level))
+    // The planet in front takes over from the stage's own, so it has to be exactly as big:
+    // the stage camera's radius at this level, over a PlanetView's (620 of its 1600 units)
+    readonly property real frontScale: 190 * (1 - 0.22 * level) * (width / 1600) / (620 * 440 / 1600)
 
     // How far a planet is from the front, going the short way round
     function place(index) {
@@ -41,13 +44,15 @@ Item {
             x: root.width / 2 - width / 2 + position * root.spacing
             y: root.height * 0.44 - height / 2
             z: 1 + closeness
-            scale: (0.42 + 0.58 * closeness) * (1 + 0.25 * (1 - root.level))
+            scale: (0.42 + 0.58 * closeness) * root.frontScale
             opacity: 1 - Math.max(0, Math.abs(position) - 1) * 0.65
 
             PlanetView {
                 anchors.fill: parent
                 planet: world.modelData
                 spinning: root.visible
+                // Your own world carries on turning from where the stage left it
+                startAngle: world.modelData.id === Theme.planet.id ? Planet.resting + Planet.travel - Planet.handTurn : 0
             }
         }
     }

@@ -7,6 +7,7 @@ ShaderEffect {
 
     required property var planet
     property bool spinning: true
+    property real startAngle: 0 // where its turn starts, to pick up from another view of it
 
     property color layer0: planet.terrain[0]
     property color layer1: planet.terrain[1]
@@ -39,8 +40,8 @@ ShaderEffect {
     fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
 
     NumberAnimation on planetAngle {
-        from: 0
-        to: Math.PI * 2
+        from: root.startAngle
+        to: root.startAngle + Math.PI * 2
         duration: 90000
         loops: Animation.Infinite
         running: root.spinning && root.visible && (root.Window.window?.visible ?? false) // not in a closed window
