@@ -47,14 +47,29 @@ Singleton {
         const dark = byLight[Math.floor(byLight.length * 0.12)];
         const bright = byLight[Math.floor(byLight.length * 0.88)];
         const vivid = colors.reduce((best, color) => color.vivid > best.vivid ? color : best);
-        const body = clamp(vivid.saturation, 0.35, 0.7);
+
+        // The picture's own hue comes from its colourful parts only, each counting as much as
+        // it is colourful: the hue of a grey is noise. Each colour stands for about as many
+        // pixels, so their mean saturation is how colourful the picture is as a whole, and
+        // nothing is made more colourful than it is.
+        let x = 0, y = 0, weight = 0;
+        for (const color of colors) {
+            if (color.hue < 0 || color.vivid < 0.04)
+                continue;
+            x += Math.cos(color.hue * 2 * Math.PI) * color.vivid;
+            y += Math.sin(color.hue * 2 * Math.PI) * color.vivid;
+            weight += color.vivid;
+        }
+        const hue = weight > 0 ? (Math.atan2(y, x) / (2 * Math.PI) + 1) % 1 : 0;
+        const seen = colors.filter(color => color.value > 0.12); // near black, saturation means nothing
+        const tint = seen.length ? seen.reduce((sum, color) => sum + color.saturation, 0) / seen.length : 0;
 
         return {
-            skyTop: hex(dark.hue, clamp(dark.saturation, 0.3, 0.75), clamp(dark.value, 0.14, 0.34)),
-            skyMid: hex(vivid.hue, clamp(vivid.saturation, 0.45, 0.8), clamp(vivid.value, 0.55, 0.85)),
-            skyLow: hex(bright.hue, clamp(bright.saturation, 0.2, 0.55), clamp(bright.value, 0.85, 0.97)),
-            terrain: [0.58, 0.42, 0.28, 0.15].map(value => hex(vivid.hue, body, value)),
-            light: hex(bright.hue, 0.22, 1)
+            skyTop: hex(dark.hue, clamp(dark.saturation, 0, 0.75), clamp(dark.value, 0.14, 0.34)),
+            skyMid: hex(vivid.hue, clamp(vivid.saturation, 0, 0.8), clamp(vivid.value, 0.55, 0.85)),
+            skyLow: hex(bright.hue, clamp(bright.saturation, 0, 0.55), clamp(bright.value, 0.85, 0.97)),
+            terrain: [0.58, 0.42, 0.28, 0.15].map(value => hex(hue, clamp(tint * 1.15, 0, 0.6), value)),
+            light: hex(hue, clamp(tint * 2, 0.04, 0.22), 1)
         };
     }
 
