@@ -256,7 +256,7 @@ ColumnLayout {
         hint: Lang.t("Ce qui se tient dans son ciel et sur son sol.")
         options: [{ id: "none", label: Lang.t("Aucun") }, { id: "Aster", label: Lang.t("Anneaux") }]
         current: Planets.sceneOf(root.planet) || "none"
-        onPicked: id => Planets.tweak(root.planetId, { scenery: id === "none" ? "" : id })
+        onPicked: id => Morph.apply(root.planetId, { scenery: id === "none" ? "" : id })
     }
 
     SettingRow {

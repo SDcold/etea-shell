@@ -91,6 +91,11 @@ Scope {
             Skies.backgroundWanted(path);
         }
 
+        // Plays what hangs in the sky changing, there and back, keeping nothing
+        function restage(scene: string): void {
+            Morph.rehearse(Theme.planet.id, { scenery: scene });
+        }
+
         // Plays the ground taking other forms, there and back, keeping nothing
         function reshape(far: string, near: string): void {
             Morph.rehearse(Theme.planet.id, { form: { far: far, near: near }, ground: true });

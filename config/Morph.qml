@@ -15,6 +15,9 @@ import Quickshell
 // Relief, a new form for the ground, runs in as a front from where it was touched, both
 // ways along the ridges; the land sinks past the screen's edge when the hills go, and
 // rises again when they come back.
+//
+// Astres, what hangs in a world's sky, never fade: the old ones set behind the far ridge
+// as the new ones rise from it.
 Singleton {
     id: root
 
@@ -26,6 +29,9 @@ Singleton {
     property real reformAt: 0 // the angle on screen it starts from
     property real sink: 0 // how far the land has sunk, while the hills go or come back
     property bool sinking: false
+    property bool restaged: false // and what hangs in its sky changes
+    property real setting: 0 // how far the old bodies have set, 0 to 1
+    property real rising: 1 // how far the new ones have risen
 
     property string planetId: ""
     property var from: null // the world as it was on screen
@@ -34,7 +40,7 @@ Singleton {
     property real tint: 0 // how far the edge has gone, 0 to 1
     property bool rehearsal: false // plays the change there and back without keeping it
     property bool rehearsalBack: false
-    readonly property bool busy: tinting.running || pause.running || reforming.running || sinkingAway.running
+    readonly property bool busy: tinting.running || pause.running || reforming.running || sinkingAway.running || bodies.running
     // The edge reaches the bar about here: the dome's top passes the screen's top at
     // 0.84 of the way, and a dusk's leaves it at 0.16
     readonly property bool crossed: dusk ? tint >= 0.16 : tint >= 0.84
@@ -94,7 +100,8 @@ Singleton {
         tinted = changesTint(before, after);
         reshaped = changesForm(before, after);
         sinking = (before.ground ?? true) !== (after.ground ?? true);
-        if (!tinted && !reshaped && !sinking)
+        restaged = Planets.sceneOf(before) !== Planets.sceneOf(after);
+        if (!tinted && !reshaped && !sinking && !restaged)
             return;
         planetId = id;
         from = before;
@@ -109,6 +116,16 @@ Singleton {
             reforming.duration = 900 * Theme.pace;
             reforming.restart();
         }
+        if (restaged) {
+            // A swap overlaps the two: the new one starts as the old one is on its way down
+            const both = Planets.sceneOf(before) !== "" && Planets.sceneOf(after) !== "";
+            setting = 0;
+            rising = 0;
+            settingAway.duration = Planets.sceneOf(before) !== "" ? 480 * Theme.pace : 0;
+            risingUp.duration = Planets.sceneOf(after) !== "" ? 720 * Theme.pace : 0;
+            gap.duration = both ? 240 * Theme.pace : 0;
+            bodies.restart();
+        }
         if (sinking) {
             sinkingAway.from = (before.ground ?? true) ? 0 : 1;
             sinkingAway.to = (after.ground ?? true) ? 0 : 1;
@@ -119,7 +136,7 @@ Singleton {
 
     // The front and the sinking finish together with the colours, if any
     function settleWhenDone() {
-        if (tinting.running || pause.running || reforming.running || sinkingAway.running)
+        if (tinting.running || pause.running || reforming.running || sinkingAway.running || bodies.running)
             return;
         if (rehearsal && !rehearsalBack)
             pause.restart();
@@ -130,7 +147,7 @@ Singleton {
     // A new pick never waits: whatever runs finishes now
     function hurry() {
         pause.stop();
-        for (const animation of [tinting, reforming, sinkingAway]) {
+        for (const animation of [tinting, reforming, sinkingAway, bodies]) {
             if (animation.running)
                 animation.complete();
         }
@@ -154,6 +171,35 @@ Singleton {
         property: "front"
         from: 0
         to: 1
+        onFinished: root.settleWhenDone()
+    }
+
+    ParallelAnimation {
+        id: bodies
+
+        NumberAnimation {
+            id: settingAway
+
+            target: root
+            property: "setting"
+            from: 0
+            to: 1
+            easing.type: Easing.InCubic
+        }
+        SequentialAnimation {
+            PauseAnimation {
+                id: gap
+            }
+            NumberAnimation {
+                id: risingUp
+
+                target: root
+                property: "rising"
+                from: 0
+                to: 1
+                easing.type: Easing.OutCubic
+            }
+        }
         onFinished: root.settleWhenDone()
     }
 
@@ -184,6 +230,9 @@ Singleton {
         tinted = false;
         reshaped = false;
         sinking = false;
+        restaged = false;
+        setting = 0;
+        rising = 1;
         from = null;
         to = null;
         rehearsal = false;

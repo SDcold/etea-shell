@@ -44,6 +44,7 @@ Item {
     // A new form for the ground, running in from where it was touched, and the land sinking
     readonly property bool reshaping: morphing && Morph.reshaped
     readonly property bool sinking: morphing && Morph.sinking
+    readonly property bool restaging: morphing && Morph.restaged
     readonly property var formA: reshaping ? Morph.from : planet
     readonly property var formB: reshaping ? Morph.to : planet
     readonly property real dawnEdge: {
@@ -229,11 +230,28 @@ Item {
     // The world's own sky: its moons, its rings, its clouds. Gone once we've left the air.
     Scenery {
         anchors.fill: parent
-        planet: root.planet
+        planet: root.restaging ? Morph.to : root.planet
         angle: root.angle
         horizon: root.horizon
         visible: root.space < 0.33
         opacity: 1 - root.space * 3
+        // Coming into a world's sky, it rises from behind the far ridge
+        transform: Translate {
+            y: root.restaging ? (1 - Morph.rising) * root.height * 0.5 : 0
+        }
+    }
+
+    // And what was there sets behind it, the way down a little faster
+    Scenery {
+        anchors.fill: parent
+        planet: root.restaging ? Morph.from : root.planet
+        angle: root.angle
+        horizon: root.horizon
+        visible: root.restaging && Morph.setting < 1 && root.space < 0.33
+        opacity: 1 - root.space * 3
+        transform: Translate {
+            y: Morph.setting * root.height * 0.5
+        }
     }
 
     // Everyone's own images, placed by proportion so they fit on any screen
