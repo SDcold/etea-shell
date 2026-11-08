@@ -102,6 +102,8 @@ Scope {
 
         -- Always opaque, even unfocused: the text behind would bleed through the labels
         hl.window_rule({ match = { title = "Réglages ETEA" }, float = true, center = true, size = { 1040, 700 }, opacity = "1.0 override 1.0 override" })
+        -- The pickers Settings opens float too, or they'd open tiled underneath it
+        hl.window_rule({ match = { class = "^(org[.]kde[.]kdialog|kdialog|zenity|org[.]gnome[.]Zenity)$" }, float = true, center = true })
         -- The side panels unfold through their own star, a layer fade on top would make them see-through
         hl.layer_rule({ match = { namespace = "^etea:panel-.*" }, no_anim = true })
         -- The capture overlay has to be gone at once, or it ends up in the picture

@@ -3,9 +3,8 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// One clock for every card's living sky. Their nebulae drift about two pixels a second,
-// so fifteen steps a second is already smooth, and ticking together means one redraw
-// for all the cards on screen instead of one each.
+// One clock for every card's living sky. It runs at the screen's own rate, never in steps,
+// and ticking together means one redraw for all the cards on screen instead of one each.
 Singleton {
     id: root
 
@@ -14,16 +13,30 @@ Singleton {
 
     function join() {
         listeners += 1;
+        run();
     }
 
     function leave() {
         listeners = Math.max(0, listeners - 1);
+        run();
     }
 
-    Timer {
-        running: root.listeners > 0
-        repeat: true
-        interval: 66
-        onTriggered: root.time += 0.066
+    // An hour at a time, picked up from wherever the clock stopped
+    function run() {
+        if (listeners > 0 && !clock.running) {
+            clock.to = time + 3600;
+            clock.start();
+        } else if (listeners === 0) {
+            clock.stop();
+        }
+    }
+
+    NumberAnimation {
+        id: clock
+
+        target: root
+        property: "time"
+        duration: 3600000
+        onFinished: root.run()
     }
 }

@@ -190,6 +190,7 @@ Singleton {
 
     signal photoNeeded(int page, int slot)
     signal worldWanted(string id) // a new world picked outside orbit, the stage wipes it in
+    signal lookWanted(point from) // the world you're on changes its look, the stage wipes it in from there
     signal finished(real prepareMs)
 
     // Everything that wants to change page comes through here
@@ -334,6 +335,40 @@ Singleton {
         }
         worldWanted(id);
         arrive();
+    }
+
+    // A new look for the world you're on, like a wallpaper: the focused stage freezes the
+    // screen, calls applyLook behind it and opens a star from where it was asked. If no stage
+    // takes it, the change still happens.
+    property var pendingLook: null
+
+    function changeLook(change, from) {
+        if (phase !== Planet.Phase.Idle) {
+            change();
+            return;
+        }
+        pendingLook = change;
+        lookWanted(from ?? Qt.point(-1, -1));
+        lookFallback.restart();
+    }
+
+    function holdLook() {
+        lookFallback.stop();
+    }
+
+    function applyLook() {
+        const change = pendingLook;
+        pendingLook = null;
+        lookFallback.stop();
+        if (change)
+            change();
+    }
+
+    Timer {
+        id: lookFallback
+
+        interval: 400
+        onTriggered: root.applyLook()
     }
 
     // Moving to a new planet: the theme changes and we come down onto it

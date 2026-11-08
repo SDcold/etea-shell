@@ -140,6 +140,8 @@ Variants {
                     starSpacing: 0
                     starScale: 0.62
                     seed: `bar-${modelData.x}`
+                    // Its sky only drifts while the page is empty, not all day behind windows
+                    alive: visible && Planet.pageEmpty
                 }
             }
 
@@ -156,6 +158,7 @@ Variants {
                 starSpacing: 420
                 starScale: 0.62
                 seed: "bar"
+                alive: visible && Planet.pageEmpty
             }
 
             BarRegion {

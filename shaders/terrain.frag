@@ -30,6 +30,7 @@ layout(std140, binding = 0) uniform buf {
     float bars; // 1 draws bars behind the ground, 0 draws contour lines
     float arrival; // 0 at rest, then from touching down on a new world to the end of it
     vec4 arrivalLight;
+    float rough; // how jagged the crests are: long swells at 0, broken rock at 1
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -44,15 +45,17 @@ vec3 overlay(vec3 base, float n) {
     return mix(2.0 * base * n, 1.0 - 2.0 * (1.0 - base) * (1.0 - n), step(0.5, base));
 }
 
-// The ridgeline: finer and finer waves piled on top of each other
+// The ridgeline: finer and finer waves piled on top of each other. A smooth world keeps
+// the broad ones and lets the fine ones go.
 float ridge(float seed, float a) {
+    float fine = rough, middle = mix(0.45, 1.0, rough);
     return 0.5 * sin(7.0 * a + 0.3 + seed)
         + 0.3 * sin(17.0 * a + 1.1 + seed)
-        + 0.22 * sin(41.0 * a + 2.2 + seed)
-        + 0.16 * sin(97.0 * a + 0.7 + seed)
-        + 0.11 * sin(211.0 * a + 1.9 + seed)
-        + 0.07 * sin(431.0 * a + 3.1 + seed)
-        + 0.05 * sin(863.0 * a + 0.4 + seed);
+        + 0.22 * middle * sin(41.0 * a + 2.2 + seed)
+        + 0.16 * middle * sin(97.0 * a + 0.7 + seed)
+        + 0.11 * fine * sin(211.0 * a + 1.9 + seed)
+        + 0.07 * fine * sin(431.0 * a + 3.1 + seed)
+        + 0.05 * fine * sin(863.0 * a + 0.4 + seed);
 }
 
 float band(int i) {

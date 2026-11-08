@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
-import Quickshell.Io
 import qs.config
 import qs.modules.bar
 import qs.services
@@ -46,7 +45,7 @@ ColumnLayout {
             if (id === "world")
                 Config.lockImage = "";
             else if (!Config.lockImage)
-                picker.running = true;
+                Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path);
         }
     }
 
@@ -98,7 +97,7 @@ ColumnLayout {
 
             SettingButton {
                 label: Lang.t("Changer d'image")
-                onPicked: picker.running = true
+                onPicked: Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path)
             }
 
             Text {
@@ -129,18 +128,6 @@ ColumnLayout {
         SettingButton {
             label: Lang.t("Aperçu")
             onPicked: Menus.lockPreview = true
-        }
-    }
-
-    Process {
-        id: picker
-
-        command: ["sh", "-c", 'if command -v kdialog >/dev/null; then kdialog --title "$1" --getopenfilename "$HOME" "*.png *.jpg *.jpeg *.webp"; else zenity --file-selection --title "$1"; fi', "sh", Lang.t("Une image pour l'écran de verrouillage")]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.trim())
-                    Config.lockImage = text.trim();
-            }
         }
     }
 }

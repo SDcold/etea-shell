@@ -15,6 +15,15 @@ ColumnLayout {
         ];
     }
 
+    // Picking what a module shows while the module is put away would change nothing you
+    // can see, so the module comes back to the bar, at the start of the right end
+    function bringBack(module, items) {
+        const layout = Config.barLayout;
+        const used = [].concat(layout.left ?? [], layout.center ?? [], layout.right ?? []);
+        if (items.length > 0 && !used.includes(module))
+            Config.barLayout = { left: layout.left ?? [], center: layout.center ?? [], right: [module].concat(layout.right ?? []) };
+    }
+
     spacing: 18
 
     Text {
@@ -164,7 +173,10 @@ ColumnLayout {
         clickMoves: true
         choices: Config.statusChoices
         zones: root.shownAndHidden(Config.status, Config.statusChoices)
-        onChanged: zones => Config.status = zones[0].items
+        onChanged: zones => {
+            Config.status = zones[0].items;
+            root.bringBack("status", zones[0].items);
+        }
     }
 
     SettingSwitch {
@@ -189,7 +201,10 @@ ColumnLayout {
         clickMoves: true
         choices: Config.toolChoices
         zones: root.shownAndHidden(Config.barTools, Config.toolChoices)
-        onChanged: zones => Config.barTools = zones[0].items
+        onChanged: zones => {
+            Config.barTools = zones[0].items;
+            root.bringBack("tools", zones[0].items);
+        }
     }
 
     SettingSection {
@@ -200,6 +215,9 @@ ColumnLayout {
         clickMoves: true
         choices: Config.resourceChoices
         zones: root.shownAndHidden(Config.barResources, Config.resourceChoices)
-        onChanged: zones => Config.barResources = zones[0].items
+        onChanged: zones => {
+            Config.barResources = zones[0].items;
+            root.bringBack("resources", zones[0].items);
+        }
     }
 }

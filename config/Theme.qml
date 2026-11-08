@@ -8,11 +8,11 @@ Singleton {
     readonly property var planet: Planets.find(Config.preview || Config.theme)
     readonly property real pace: Config.pace === "ceremony" ? 1.7 : 1 // stretches the big movements
 
-    // A setting left on "planet" wears what the planet brings, or what it was before if
-    // the planet brings nothing. Whatever you pick yourself stays yours.
+    // A setting left on "planet" wears what the planet brings, or what you last picked
+    // yourself if the planet brings nothing. Whatever you pick yourself stays yours.
     function worn(setting, fallback) {
         const own = Config[setting];
-        return own === "planet" ? planet.style?.[setting] ?? fallback : own;
+        return own === "planet" ? planet.style?.[setting] ?? Config.ownStyles[setting] ?? fallback : own;
     }
 
     readonly property string barStyle: worn("barStyle", "sky")
@@ -32,7 +32,8 @@ Singleton {
     // The hills, from the farthest to the closest
     readonly property var terrainLayers: planet.terrain
     readonly property real terrainHeight: Config.terrainHeight // share of the screen height
-    readonly property real terrainRelief: Config.terrainRelief // 0 is smooth, 1 is normal, 2 gets pretty wild
+    readonly property real terrainRelief: Config.terrainRelief * (planet.relief ?? 1) // 0 is smooth, 1 is normal, 2 gets pretty wild
+    readonly property real terrainRough: planet.rough ?? 1 // how jagged the crests are: swells at 0, rocks at 1
     readonly property real terrainCurve: 3600 // planet radius, on a 1600 wide screen
 
     // Our stars: white when they shine, grey while they sleep
