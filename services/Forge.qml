@@ -108,7 +108,7 @@ Singleton {
     }
 
     function chooseImage() {
-        picker.running = true;
+        Pictures.pick(Lang.t("Une image pour ta planète"), path => root.read(path));
     }
 
     ColorQuantizer {
@@ -118,18 +118,6 @@ Singleton {
         depth: 4
         rescaleSize: 96
         onColorsChanged: root.build()
-    }
-
-    Process {
-        id: picker
-
-        command: ["sh", "-c", 'if command -v kdialog >/dev/null; then kdialog --title "$1" --getopenfilename "$HOME" "*.png *.jpg *.jpeg *.webp"; else zenity --file-selection --title "$1"; fi', "sh", Lang.t("Une image pour ta planète")]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.trim())
-                    root.read(text.trim());
-            }
-        }
     }
 
     IpcHandler {

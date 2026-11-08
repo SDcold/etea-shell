@@ -11,6 +11,7 @@ import qs.modules.notifications
 import qs.modules.lock
 import qs.modules.osd
 import qs.modules.panels
+import qs.modules.picker
 import qs.modules.polkit
 import qs.modules.session
 import qs.modules.settings
@@ -39,5 +40,6 @@ ShellRoot {
     Osd {}
     Clipboard {}
     Capture {}
+    PicturePicker {}
     Welcome {}
 }

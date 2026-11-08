@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
 import Quickshell.Wayland
 import qs.config
 import qs.modules.bar
@@ -12,19 +11,6 @@ import qs.services
 // A right click on the desktop. On a widget: its size, its options, and a way to put it
 // away. On the empty sky: the widgets that aren't out yet.
 Scope {
-    // The picture for the photo frame
-    Process {
-        id: picker
-
-        command: ["sh", "-c", 'if command -v kdialog >/dev/null; then kdialog --title "$1" --getopenfilename "$HOME" "*.png *.jpg *.jpeg *.webp"; else zenity --file-selection --title "$1"; fi', "sh", Lang.t("Une image pour le ciel")]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.trim())
-                    Desk.update("photo", { image: text.trim() });
-            }
-        }
-    }
-
     PanelWindow {
         id: panel
 
@@ -186,7 +172,7 @@ Scope {
                         label: panel.widget?.image ? Lang.t("Changer d'image") : Lang.t("Choisir une image")
                         onPicked: {
                             Desk.menuFor = "";
-                            picker.running = true;
+                            Pictures.pick(Lang.t("Une image pour le ciel"), path => Desk.update("photo", { image: path }));
                         }
                     }
 
