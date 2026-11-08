@@ -183,12 +183,19 @@ void main() {
         vec3 normal = vec3(q, depthZ);
         float facing = dot(normal, sun);
         float aa = max(fwidth(facing), 1e-4);
+        vec2 surface = vec2(atan(q.x, depthZ) + planetAngle, asin(clamp(q.y, -1.0, 1.0))) * 2.6;
+        float ground = land(surface + 1.7);
+        float groundAa = max(fwidth(ground), 1e-4);
         if (edgeDistance < 1.0 + 2.0 / curve) {
-            vec2 surface = vec2(atan(q.x, depthZ) + planetAngle, asin(clamp(q.y, -1.0, 1.0))) * 2.6;
-            float ground = land(surface + 1.7);
             vec3 tone = mix(layer3.rgb, layer2.rgb, smoothstep(0.34, 0.42, ground));
             tone = mix(tone, layer1.rgb, smoothstep(0.44, 0.52, ground));
             tone = mix(tone, layer0.rgb, smoothstep(0.54, 0.62, ground));
+            if (flatRim > 0.5) {
+                // Continents cut out flat, each tone a clean shape, antialiased over a pixel
+                tone = mix(layer3.rgb, layer2.rgb, clamp((ground - 0.38) / groundAa + 0.5, 0.0, 1.0));
+                tone = mix(tone, layer1.rgb, clamp((ground - 0.48) / groundAa + 0.5, 0.0, 1.0));
+                tone = mix(tone, layer0.rgb, clamp((ground - 0.58) / groundAa + 0.5, 0.0, 1.0));
+            }
             vec3 lit = tone * mix(0.1, 1.0, smoothstep(-0.12, 0.65, facing));
             if (flatRim > 0.5) {
                 // Night comes in two hard steps, like a paper cut-out

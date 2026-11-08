@@ -41,6 +41,16 @@ Variants {
         // Choosing a sky, your own sky folds from the whole screen into ETEA's star, then
         // rounds into a porthole at the zenith, where the belt holds it. All of it hangs off
         // the altitude, so leaving plays it backwards from wherever it is.
+        // The planet's centre on screen, and how big the moons of the belt are drawn: they
+        // grow and shrink with the planet, and are their true size at the edge
+        readonly property point planetCenter: Qt.point(width / 2, (planetTop + planetRadius) * unit)
+        readonly property real moonScale: planetRadius / Math.exp(Math.log(Theme.terrainCurve) + (Math.log(Theme.orbitRadius) - Math.log(Theme.terrainCurve)) * Theme.skyEdge)
+        // At rest up there, your sky is its moon; on the way up or down, it's this lens
+        readonly property bool lensHanded: Planet.inSkies && !Skies.leaving && Planet.altitude >= Planet.ceiling
+
+        // Choosing a sky, your own sky folds from the whole screen into ETEA's star, then
+        // rounds into its moon on the belt, at the zenith. All of it hangs off the altitude,
+        // so leaving plays it backwards, from wherever that moon has turned to.
         readonly property var lens: {
             if (Planet.ceiling === 1)
                 return null;
@@ -48,20 +58,29 @@ Variants {
             const span = (from, to) => Math.max(0, Math.min(1, (v - from) / (to - from)));
             const inOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(2 - 2 * t, 3) / 2;
             const inOutSine = t => (1 - Math.cos(Math.PI * t)) / 2;
-            // The zenith slot of the belt, which grows and shrinks with the planet
-            const atEdge = Math.exp(Math.log(Theme.terrainCurve) + (Math.log(Theme.orbitRadius) - Math.log(Theme.terrainCurve)) * Theme.skyEdge);
-            const radius = planetRadius * unit;
-            const slotY = (planetTop + planetRadius) * unit - Theme.skyBelt * radius;
-            const half = Theme.portholeWidth / 2 * (planetRadius / atEdge) * unit;
+            // Your sky's moon, or the zenith if it has turned out of sight
+            const d = Skies.along(Skies.wearing, Skies.scroll);
+            const near = Math.abs(d) < 5;
+            const moon = Skies.placeOf(near ? d : 0, planetCenter, Theme.skyBelt * planetRadius * unit, unit, moonScale, width / height);
+            const half = near ? moon.halfHeight * moon.aspect : 1;
             // Far enough for the star to cover every corner, as StarMask reaches
             const full = Math.pow(Math.pow(width / 2, 0.62) + Math.pow(height / 2, 0.62), 1 / 0.62) + 6;
-            const toSlot = inOutSine(span(0.3, 1)), round = inOutCubic(span(0.55, 0.95));
+            const toMoon = inOutSine(span(0.3, 1)), round = inOutCubic(span(0.55, 0.95));
             return {
-                x: width / 2,
-                y: height / 2 + (slotY - height / 2) * toSlot,
+                x: width / 2 + (moon.x - width / 2) * toMoon,
+                y: height / 2 + (moon.y - height / 2) * toMoon,
                 reach: full * Math.pow(half / full, inOutCubic(span(0.05, 0.85))),
-                exponent: 0.62 + (4.6 - 0.62) * round,
-                aspect: 1 + (width / height - 1) * round
+                exponent: 0.62 + (moon.exponent - 0.62) * round,
+                aspect: 1 + ((near ? moon.aspect : 1) - 1) * round,
+                hills: Skies.leaving && near ? Skies.formed * span(0.75, 1) : 0,
+                // Its ring and star go with it as it leaves, and come with the moon as it lands
+                ring: Skies.leaving && near ? Skies.formed * span(0.85, 1) : 0,
+                light: Skies.planet.light,
+                starSize: (4.5 + 3 * moon.z) * unit,
+                gap: (4.5 + 3 * moon.z) * unit + 4 * unit,
+                seed: Skies.seedOf(Skies.items[Skies.wearing]),
+                wobbly: 1 - moon.z,
+                hidden: lensHanded
             };
         }
 
@@ -126,13 +145,24 @@ Variants {
                 active: stage.focused && Planet.phase !== Planet.Phase.Idle
 
                 sourceComponent: World {
-                    cached: false
                     angle: Planet.resting + Planet.travel - Planet.handTurn
                     radius: stage.planetRadius
                     horizon: stage.planetTop / stage.screenHeight
                     space: Math.min(1, Planet.altitude * 1.6)
                     groundOpacity: 1 - Planet.systemLevel
                     lens: stage.lens
+                    // Still at the edge, the world holds still while the belt turns
+                    cached: stage.lensHanded
+
+                    belt: Component {
+                        SkyBelt {
+                            center: stage.planetCenter
+                            planetRadius: stage.planetRadius * stage.unit
+                            unit: stage.unit
+                            scale: stage.moonScale
+                            showYours: stage.lensHanded
+                        }
+                    }
                 }
             }
 

@@ -29,6 +29,8 @@ Item {
     // in pixels, or nothing to draw the sky as usual.
     property var lens: null
     readonly property bool edge: lens !== null
+    // What hangs at the edge of the air, between the night and your sky: the belt of skies
+    property Component belt: null
     readonly property real unit: width / 1600
     readonly property point center: Qt.point(width / 2, height * horizon + radius * unit)
 
@@ -105,6 +107,11 @@ Item {
                 fragmentShader: Qt.resolvedUrl("../../shaders/atmosphere.frag.qsb")
             }
 
+            Loader {
+                anchors.fill: parent
+                sourceComponent: root.belt
+            }
+
             // The picture small, for when the lens is: the full one would shimmer down there
             Image {
                 id: smallPicture
@@ -125,11 +132,14 @@ Item {
                 readonly property real shrink: Math.min(1, across / (root.width / 2))
                 readonly property real toMiddle: Math.max(0, Math.min(1, (1 - shrink) / (1 - Theme.portholeWidth / 1600)))
 
-                x: Math.max(0, Math.floor((root.edge ? root.lens.x : 0) - across - 2))
-                y: Math.max(0, Math.floor((root.edge ? root.lens.y : 0) - down - 2))
-                width: Math.min(root.width, Math.ceil((root.edge ? root.lens.x : 0) + across + 2)) - x
-                height: Math.min(root.height, Math.ceil((root.edge ? root.lens.y : 0) + down + 2)) - y
-                visible: root.edge && width > 0 && height > 0 && (root.skyImage === "" || pictureSource.status === Image.Ready)
+                // with room around it for the ring and the star on top
+                readonly property real room: 6 + (root.edge ? root.lens.starSize * 2 : 0)
+
+                x: Math.max(0, Math.floor((root.edge ? root.lens.x : 0) - across - room))
+                y: Math.max(0, Math.floor((root.edge ? root.lens.y : 0) - down - room))
+                width: Math.min(root.width, Math.ceil((root.edge ? root.lens.x : 0) + across + room)) - x
+                height: Math.min(root.height, Math.ceil((root.edge ? root.lens.y : 0) + down + room)) - y
+                visible: root.edge && !root.lens.hidden && width > 0 && height > 0 && (root.skyImage === "" || pictureSource.status === Image.Ready)
 
                 property color colorTop: root.planet.skyTop
                 property color colorMid: root.planet.skyMid
@@ -150,6 +160,19 @@ Item {
                 property var picture: pictureSource
                 property var small: smallPicture
                 property real smallReady: smallPicture.status === Image.Ready ? 1 : 0
+                property color terrain0: root.planet.terrain[0]
+                property color terrain1: root.planet.terrain[1]
+                property color terrain2: root.planet.terrain[2]
+                property color terrain3: root.planet.terrain[3]
+                property real hills: root.edge ? root.lens.hills : 0
+                property real unit: root.unit
+                property real rough: root.planet.rough ?? 1
+                property color light: root.edge ? root.lens.light : "white"
+                property real ring: root.edge ? root.lens.ring : 0
+                property real starSize: root.edge ? root.lens.starSize : 0
+                property real gap: root.edge ? root.lens.gap : 0
+                property real seed: root.edge ? root.lens.seed : 0
+                property real wobbly: root.edge ? root.lens.wobbly : 0
 
                 fragmentShader: Qt.resolvedUrl("../../shaders/skylens.frag.qsb")
             }
