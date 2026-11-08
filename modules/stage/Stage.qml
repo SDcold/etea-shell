@@ -70,7 +70,7 @@ Variants {
             const belt = Theme.skyBelt * planetRadius * unit;
 
             // Looking or landing: the chosen moon grows back into a whole sky, on the way
-            // down. Its hills sink, it drifts to the middle and rounds into the star, which
+            // down. It drifts to the middle and rounds into the star, which
             // opens to the corners.
             if (Skies.looking || Skies.landing) {
                 const u = 1 - v;
@@ -84,7 +84,6 @@ Variants {
                     reach: half * Math.pow(full / half, inOutCubic(along(0.1, 0.7))),
                     exponent: m.exponent + (0.62 - m.exponent) * shape,
                     aspect: m.aspect + (1 - m.aspect) * shape,
-                    hills: 1 - along(0, 0.15),
                     ring: 1 - along(0, 0.15),
                     light: sky.palette?.light ?? Skies.planet.light,
                     starSize: (4.5 + 3 * m.z) * unit,
@@ -112,7 +111,6 @@ Variants {
                 reach: full * Math.pow(half / full, inOutCubic(span(0.05, 0.85))),
                 exponent: 0.62 + (moon.exponent - 0.62) * round,
                 aspect: 1 + ((near ? moon.aspect : 1) - 1) * round,
-                hills: Skies.leaving && near ? Skies.formed * span(0.75, 1) : 0,
                 // Its ring and star go with it as it leaves, and come with the moon as it lands
                 ring: Skies.leaving && near ? Skies.formed * span(0.85, 1) : 0,
                 light: Skies.planet.light,

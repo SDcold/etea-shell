@@ -9,10 +9,6 @@ layout(std140, binding = 0) uniform buf {
     vec4 skyTop; // a painted sky's colours, for the world's own sky
     vec4 skyMid;
     vec4 skyLow;
-    vec4 terrain0; // the hills its picture would give, back to front
-    vec4 terrain1;
-    vec4 terrain2;
-    vec4 terrain3;
     vec4 light; // the ink of its ring, in that picture's own light
     vec4 dominant; // its colour while it is still a star, loading
     vec4 night;
@@ -22,12 +18,9 @@ layout(std140, binding = 0) uniform buf {
     float aspect; // 1 for a disc, the screen's for a porthole
     float exponent; // 2 for a disc, 4.6 for a porthole
     float ready; // 0 while its picture is on its way: a flat star, rounding into its moon
-    float rise; // how far its hills have risen
     float kind; // 0 a picture, 1 a painted sky, 2 the way out to another folder
     float porthole; // 0 on the belt, 1 at the zenith: the ink loses its wobble
     float screenAspect; // the screen's width over its height, for the crop
-    float unit; // pixels per unit of a 1600 wide screen
-    float rough; // how jagged your world's ridge is
     float gap; // half the width of the break in the ring, under the star
     float seed;
     float grain;
@@ -46,18 +39,6 @@ float hash(vec2 p) {
 
 vec3 overlay(vec3 base, float n) {
     return mix(2.0 * base * n, 1.0 - 2.0 * (1.0 - base) * (1.0 - n), step(0.5, base));
-}
-
-// terrain.frag's ridge, so a moon's hills are cut like your world's
-float ridge(float s, float a) {
-    float fine = rough, middle = mix(0.45, 1.0, rough);
-    return 0.5 * sin(7.0 * a + 0.3 + s)
-        + 0.3 * sin(17.0 * a + 1.1 + s)
-        + 0.22 * middle * sin(41.0 * a + 2.2 + s)
-        + 0.16 * middle * sin(97.0 * a + 0.7 + s)
-        + 0.11 * fine * sin(211.0 * a + 1.9 + s)
-        + 0.07 * fine * sin(431.0 * a + 3.1 + s)
-        + 0.05 * fine * sin(863.0 * a + 0.4 + s);
 }
 
 // The superellipse |x/aspect|^e + |y|^e = r^e, as a distance in pixels to the level r
@@ -100,27 +81,6 @@ void main() {
         color = night.rgb;
     }
 
-    // The hills it would give: four flat bands on your world's ridge, from a great circle
-    // below, back to front. Read in short straight segments, like the ground itself.
-    if (kind < 1.5 && rise > 0.0) {
-        float radius = contentH * 9.0;
-        vec2 center = vec2(0.0, -h + contentH * 0.74 + radius + (1.0 - rise) * contentH * 0.4);
-        float r = distance(p, center);
-        float angle = atan(p.x, center.y - p.y);
-        float units = radius / unit;
-        float amp = min(units * 0.024, 34.0) * 0.9 * unit;
-        float sampleStep = 2.0 * min(3.14159, asin(min(1.0, 1152.0 / units)) * 1.15) / 340.0;
-        vec4 tones[4] = vec4[](terrain0, terrain1, terrain2, terrain3);
-        const float depth[4] = float[](0.0, 0.0065, 0.014, 0.023);
-        const float lift[4] = float[](1.0, 0.8, 0.7, 0.55);
-        for (int l = 0; l < 4; l++) {
-            float cell = angle / sampleStep;
-            float seedL = 1.2 + float(l) * 3.3;
-            float shape = mix(ridge(seedL, floor(cell) * sampleStep), ridge(seedL, ceil(cell) * sampleStep), fract(cell));
-            float edge = radius * (1.0 - depth[l]) + amp * lift[l] * shape;
-            color = mix(color, tones[l].rgb, clamp(edge - r + 0.5, 0.0, 1.0));
-        }
-    }
     color = mix(dominant.rgb, color, ready);
 
     float n = mix(0.376, 0.627, hash(floor(gl_FragCoord.xy)));

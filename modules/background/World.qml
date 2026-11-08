@@ -184,13 +184,6 @@ Item {
                 property var picture: lensPicture
                 property var small: smallPicture
                 property real smallReady: smallPicture.status === Image.Ready ? 1 : 0
-                property color terrain0: colours.terrain[0]
-                property color terrain1: colours.terrain[1]
-                property color terrain2: colours.terrain[2]
-                property color terrain3: colours.terrain[3]
-                property real hills: root.edge ? root.lens.hills : 0
-                property real unit: root.unit
-                property real rough: root.planet.rough ?? 1
                 property color light: root.edge ? root.lens.light : "white"
                 property real ring: root.edge ? root.lens.ring : 0
                 property real starSize: root.edge ? root.lens.starSize : 0

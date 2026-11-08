@@ -2,9 +2,9 @@ import QtQuick
 import qs.config
 import qs.services
 
-// One moon of the belt: the world its picture would make. The picture cropped as the
-// screen would crop it, four flat hills in the colours it would give, a ring inked in its
-// own light, and one flat star asleep on top. Until its thumbnail is in, it's a star in its
+// One moon of the belt: its picture, cropped as the screen would crop it, a ring inked in
+// its own light, and one flat star asleep on top. The colours the picture would give are
+// only shown once it's at the top, over the whole planet. Until its thumbnail is in, it's a star in its
 // cached colour, which rounds into the moon as the picture lands.
 Item {
     id: root
@@ -35,7 +35,6 @@ Item {
         NumberAnimation { duration: 160; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
     }
     readonly property real exponent: 2 + 2.6 * opening
-    property real rise: 1 // how far its hills have risen
     property real inked: 1 // how much of its ring and star are drawn
     property bool lit: hovered || opening > 0.5 // the zenith's star is lit, the others sleep
     readonly property var palette: (Palettes.version, Skies.paletteOf(entry))
@@ -90,10 +89,6 @@ Item {
         property color skyTop: root.palette?.skyTop ?? Theme.skyTop
         property color skyMid: root.palette?.skyMid ?? Theme.skyMid
         property color skyLow: root.palette?.skyLow ?? Theme.skyLow
-        property color terrain0: root.palette?.terrain[0] ?? dominant
-        property color terrain1: root.palette?.terrain[1] ?? dominant
-        property color terrain2: root.palette?.terrain[2] ?? dominant
-        property color terrain3: root.palette?.terrain[3] ?? dominant
         property color light: root.palette?.light ?? Theme.windowLit
         property color dominant: (Palettes.version, Skies.dominantOf(root.entry))
         property color night: Theme.launcherShade
@@ -102,12 +97,9 @@ Item {
         property real halfHeight: root.halfHeight
         property real aspect: root.aspect
         property real exponent: root.exponent
-        property real rise: root.rise
         property real kind: root.picture ? 0 : root.entry?.special === "world" ? 1 : 2
         property real porthole: root.opening
         property real screenAspect: root.screenAspect
-        property real unit: root.unit
-        property real rough: Skies.planet.rough ?? 1
         property real gap: root.starSize + 4 * root.unit
         property real seed: Skies.seedOf(root.entry)
         property real grain: Theme.grain
