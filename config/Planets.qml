@@ -4,7 +4,8 @@ import QtQuick
 import Quickshell
 
 // The worlds you can live on. A theme is a planet, and a planet is just these few values,
-// so adding one means adding one entry here.
+// so adding one means adding one entry here. Each one takes after a planet of our own
+// system, and its style follows from it.
 Singleton {
     readonly property var all: builtIn.concat(Config.customPlanets)
 
@@ -17,7 +18,9 @@ Singleton {
             skyMid: "#c9744b",
             skyLow: "#f2b872",
             terrain: ["#a8553c", "#7a3a33", "#4f2630", "#2c1622"],
-            light: "#ffe2a8"
+            light: "#ffe2a8",
+            // Saturn: its ring is the bar, its moons turn in the dials
+            style: { barStyle: "band", pageStyle: "constellation", widgetStyle: "celestial", lockScene: "hand" }
         },
         {
             id: "nere",
@@ -27,7 +30,9 @@ Singleton {
             skyMid: "#2a7f86",
             skyLow: "#b9e5d3",
             terrain: ["#3f9089", "#2a6a70", "#1a4a55", "#0e2c3a"],
-            light: "#c8fff0"
+            light: "#c8fff0",
+            // Neptune, the sea god: open water, and the stars to steer by
+            style: { barStyle: "sky", pageStyle: "constellation", widgetStyle: "sky", lockScene: "skyward" }
         },
         {
             id: "ocre",
@@ -37,7 +42,9 @@ Singleton {
             skyMid: "#b59a3c",
             skyLow: "#ecdca0",
             terrain: ["#8a7a35", "#5f5a2e", "#3f4227", "#22281b"],
-            light: "#fff0b0"
+            light: "#fff0b0",
+            // Mars: scattered outposts, mission numbers, habitat portholes
+            style: { barStyle: "islands", pageStyle: "numbers", widgetStyle: "celestial", lockScene: "hand" }
         },
         {
             id: "vesper",
@@ -47,7 +54,9 @@ Singleton {
             skyMid: "#6b3f9e",
             skyLow: "#e59ac0",
             terrain: ["#7a3f8a", "#54306e", "#382352", "#1c1430"],
-            light: "#ffc8e6"
+            light: "#ffc8e6",
+            // Venus, the evening star: the first light once night has come
+            style: { barStyle: "sky", pageStyle: "constellation", widgetStyle: "sky", lockScene: "skyward" }
         }
     ]
 
