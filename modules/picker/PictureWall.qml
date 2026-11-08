@@ -116,7 +116,7 @@ Item {
             if (event.key === Qt.Key_Escape)
                 Pictures.close();
             else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && currentIndex >= 0)
-                Pictures.choose(Pictures.pictures[currentIndex].path);
+                Pictures.choose(Pictures.pictures[currentIndex].path, currentItem ? currentItem.mapToItem(null, currentItem.width / 2, currentItem.height / 2) : undefined);
         }
 
         delegate: Item {
@@ -171,7 +171,11 @@ Item {
                         if (opacity === 1 && stage === 2 && !kept) {
                             kept = true;
                             const file = Pictures.ownThumb(tile.modelData);
-                            grabToImage(result => result.saveToFile(file), sourceSize);
+                            const picture = tile.modelData;
+                            grabToImage(result => {
+                                if (result.saveToFile(file))
+                                    Pictures.kept(picture);
+                            }, sourceSize);
                         }
                     }
                 }
@@ -210,7 +214,7 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onPressed: Pictures.choose(tile.modelData.path)
+                onPressed: Pictures.choose(tile.modelData.path, tile.mapToItem(null, tile.width / 2, tile.height / 2))
             }
         }
     }

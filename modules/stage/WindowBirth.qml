@@ -96,6 +96,38 @@ Item {
         worldSettle.restart();
     }
 
+    // A new look for the world you're on: a fresh photo first, so nothing that was closing
+    // over the screen stays in it, then the same star, from where the change was asked
+    function changeLook(from) {
+        if (!active)
+            return;
+        if (playing || !recent.hasContent) {
+            Planet.applyLook();
+            return;
+        }
+        Planet.holdLook();
+        recent.captureFrame();
+        freshen.from = from.x < 0 ? Qt.point(width / 2, height / 2) : from;
+        freshen.restart();
+    }
+
+    Timer {
+        id: freshen
+
+        property point from
+
+        interval: 60
+        onTriggered: {
+            root.frozen = true;
+            root.playing = true;
+            mask.center = from;
+            mask.reach = 0;
+            mask.shine = 0.9;
+            Planet.applyLook();
+            worldSettle.restart();
+        }
+    }
+
     // Give the new colours a moment to reach every window before the star opens
     Timer {
         id: worldSettle
@@ -109,6 +141,10 @@ Item {
 
         function onWorldWanted(id) {
             root.changeWorld(id);
+        }
+
+        function onLookWanted(from) {
+            root.changeLook(from);
         }
     }
 

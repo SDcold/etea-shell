@@ -82,9 +82,16 @@ Singleton {
         Config.planetTweaks = tweaks;
     }
 
-    function untweak(id) {
+    // Back to how it came, all of it or only some of what you changed
+    function untweak(id, keys) {
         const tweaks = Object.assign({}, Config.planetTweaks);
-        delete tweaks[id];
+        if (keys && tweaks[id]) {
+            tweaks[id] = Object.assign({}, tweaks[id]);
+            for (const key of keys)
+                delete tweaks[id][key];
+        }
+        if (!keys || Object.keys(tweaks[id] ?? {}).length === 0)
+            delete tweaks[id];
         Config.planetTweaks = tweaks;
     }
 }

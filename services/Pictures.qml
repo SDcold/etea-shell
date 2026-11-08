@@ -38,11 +38,12 @@ Singleton {
         lister.running = true;
     }
 
-    function choose(path) {
+    // from: where on screen it was picked, so what follows can start from there
+    function choose(path, from) {
         const answer = root.answer;
         close();
         if (answer && path)
-            answer(path);
+            answer(path, from);
     }
 
     function close() {
@@ -76,6 +77,17 @@ Singleton {
 
     function ownThumb(picture) {
         return `${thumbs}/${Qt.md5(picture.path + picture.mtime)}.jpg`;
+    }
+
+    // The smallest copy of a picture there is, for reading its colours quickly
+    function quickest(path) {
+        const picture = pictures.find(picture => picture.path === path);
+        const stage = picture ? firstStage(picture) : 2;
+        return url(stage === 0 ? systemThumb(path) : stage === 1 ? ownThumb(picture) : path);
+    }
+
+    function kept(picture) {
+        ownThumbs[Qt.md5(picture.path + picture.mtime)] = true;
     }
 
     // The quickest source there is: 0 the system's thumbnail, 1 ours, 2 the picture itself

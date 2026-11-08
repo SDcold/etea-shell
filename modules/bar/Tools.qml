@@ -25,7 +25,7 @@ Row {
             id: tool
 
             required property string modelData
-            readonly property bool on: modelData === "nightlight" ? NightLight.on : modelData === "awake" ? Wake.on : modelData === "microphone" ? !(root.source?.audio?.muted ?? true) : modelData === "wallpaper" ? Config.wallpaper !== "" : false
+            readonly property bool on: modelData === "nightlight" ? NightLight.on : modelData === "awake" ? Wake.on : modelData === "microphone" ? !(root.source?.audio?.muted ?? true) : modelData === "wallpaper" ? (Config.planetTweaks[Config.theme]?.sky ?? "") !== "" : false
 
             implicitWidth: Theme.iconSize
             implicitHeight: Theme.iconSize
@@ -59,9 +59,10 @@ Row {
                         if (root.source?.audio)
                             root.source.audio.muted = !root.source.audio.muted;
                         break;
-                    // Only the picture behind changes: worlds are made in Settings and picked in orbit
+                    // The world you're on takes the picture and its colours: no new planet,
+                    // worlds are made in Settings and picked in orbit
                     case "wallpaper":
-                        Pictures.pick(Lang.t("Un fond d'écran"), path => Config.wallpaper = path, Config.wallpaper ? { label: Lang.t("Ciel du monde"), act: () => Config.wallpaper = "" } : null);
+                        Pictures.pick(Lang.t("Un fond d'écran"), (path, from) => Forge.wear(path, from), tool.on ? { label: Lang.t("Ciel du monde"), act: () => Forge.unwear() } : null);
                         break;
                     }
                 }

@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
 
@@ -30,8 +31,9 @@ Singleton {
         image = path;
     }
 
-    function build() {
-        const colors = quantizer.colors.map(color => ({
+    // A sky, a terrain and a light from a picture's colours, or nothing if it has too few
+    function paletteOf(found) {
+        const colors = found.map(color => ({
             hue: color.hsvHue,
             saturation: color.hsvSaturation,
             value: color.hsvValue,
@@ -39,25 +41,93 @@ Singleton {
             vivid: color.hsvSaturation * color.hsvValue
         }));
         if (colors.length < 2)
-            return;
+            return null;
 
         const byLight = colors.slice().sort((a, b) => a.light - b.light);
         const dark = byLight[Math.floor(byLight.length * 0.12)];
         const bright = byLight[Math.floor(byLight.length * 0.88)];
         const vivid = colors.reduce((best, color) => color.vivid > best.vivid ? color : best);
         const body = clamp(vivid.saturation, 0.35, 0.7);
-        const name = image.split("/").pop().replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 24);
 
-        draft = {
-            id: `forge-${Date.now()}`,
-            name: name.charAt(0).toUpperCase() + name.slice(1),
-            line: Lang.t("Née d'une image."),
+        return {
             skyTop: hex(dark.hue, clamp(dark.saturation, 0.3, 0.75), clamp(dark.value, 0.14, 0.34)),
             skyMid: hex(vivid.hue, clamp(vivid.saturation, 0.45, 0.8), clamp(vivid.value, 0.55, 0.85)),
             skyLow: hex(bright.hue, clamp(bright.saturation, 0.2, 0.55), clamp(bright.value, 0.85, 0.97)),
             terrain: [0.58, 0.42, 0.28, 0.15].map(value => hex(vivid.hue, body, value)),
             light: hex(bright.hue, 0.22, 1)
         };
+    }
+
+    function build() {
+        const palette = paletteOf(quantizer.colors);
+        if (!palette)
+            return;
+        const name = image.split("/").pop().replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 24);
+        draft = Object.assign({
+            id: `forge-${Date.now()}`,
+            name: name.charAt(0).toUpperCase() + name.slice(1),
+            line: Lang.t("Née d'une image.")
+        }, palette);
+    }
+
+    // A wallpaper picked from the bar becomes the sky of the world you're on, and that world's
+    // colours are drawn from it again: no new planet. The colours are read from the picture's
+    // thumbnail, already small, and the picture is loaded at screen size before anything
+    // changes, so the star opens onto it whole.
+    property var wearing: null // { path, from, palette, loaded }
+
+    function wear(path, from) {
+        wearing = { path: path, from: from, palette: null, loaded: false };
+        wallColors.source = "";
+        wallColors.source = Pictures.quickest(path);
+        preload.source = "";
+        preload.source = Pictures.url(path);
+    }
+
+    function wearWhenReady() {
+        const next = wearing;
+        if (!next || !next.palette || !next.loaded)
+            return;
+        wearing = null;
+        const id = Config.theme;
+        Planet.changeLook(() => Planets.tweak(id, Object.assign({}, next.palette, { sky: next.path, scenery: "" })), next.from);
+    }
+
+    // The world's own sky and colours again
+    function unwear(from) {
+        const id = Config.theme;
+        Planet.changeLook(() => Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery"]), from);
+    }
+
+    ColorQuantizer {
+        id: wallColors
+
+        depth: 4
+        rescaleSize: 64
+        onColorsChanged: {
+            if (!root.wearing || colors.length < 2)
+                return;
+            root.wearing.palette = root.paletteOf(colors);
+            root.wearWhenReady();
+        }
+    }
+
+    // Decoded once here at the size the sky asks for, the sky then finds it ready
+    Image {
+        id: preload
+
+        readonly property var screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+
+        visible: false
+        asynchronous: true
+        fillMode: Image.PreserveAspectCrop
+        sourceSize: Qt.size(screen?.width ?? 0, screen?.height ?? 0)
+        onStatusChanged: {
+            if (root.wearing && (status === Image.Ready || status === Image.Error)) {
+                root.wearing.loaded = true;
+                root.wearWhenReady();
+            }
+        }
     }
 
     // Keeping it makes it your home straight away

@@ -22,10 +22,7 @@ Item {
     property real arrival: Planet.arrival
     // The world drawn: the one you live on, or any other to look at it
     property var planet: Theme.planet
-    // A wallpaper from the bar covers the sky of the world you live on, never the world itself
-    property bool takesWallpaper: true
-    readonly property bool wallpapered: takesWallpaper && Config.wallpaper !== "" && planet.id === Theme.planet.id
-    property string skyImage: wallpapered ? Config.wallpaper : planet.sky ?? ""
+    property string skyImage: planet.sky ?? ""
     property bool ground: planet.ground ?? true
 
     // Four sound levels at a time, the way the shader wants them
@@ -83,8 +80,7 @@ Item {
         planet: root.planet
         angle: root.angle
         horizon: root.horizon
-        // Drawn for the world's own sky, so a wallpaper sends it away
-        visible: root.space < 0.33 && !root.wallpapered
+        visible: root.space < 0.33
         opacity: 1 - root.space * 3
     }
 
@@ -206,7 +202,7 @@ Item {
         front: true
         angle: root.angle
         horizon: root.horizon
-        visible: root.space < 0.33 && root.groundOpacity > 0 && !root.wallpapered
+        visible: root.space < 0.33 && root.groundOpacity > 0
         opacity: (1 - root.space * 3) * root.groundOpacity
     }
 }
