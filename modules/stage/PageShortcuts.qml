@@ -88,6 +88,16 @@ Scope {
             Skies.leave();
         }
 
+        // A number of moons along, as the arrow keys do
+        function turn(moons: int): void {
+            Skies.step(moons);
+        }
+
+        // To an item of the folder by its place, 1 being the first, as a flight does
+        function jump(place: int): void {
+            Skies.flyTo(place - 1);
+        }
+
         function grab(path: string): void {
             Skies.grabWanted(path);
         }
@@ -99,7 +109,7 @@ Scope {
         }
 
         function state(): string {
-            return `open ${Skies.open}, role ${Skies.role || "none"}, items ${Skies.items.length}, palettes ${Object.keys(Palettes.known).length}, phase ${Planet.phase}, altitude ${Planet.altitude.toFixed(3)}, ceiling ${Planet.ceiling}`;
+            return `open ${Skies.open}, role ${Skies.role || "none"}, items ${Skies.items.length}, zenith ${Skies.zenith + 1} ${Skies.nameOf(Skies.items[Skies.zenith])}, scroll ${Skies.scroll.toFixed(3)}, shift ${Skies.shift}, palettes ${Object.keys(Palettes.known).length}, phase ${Planet.phase}, altitude ${Planet.altitude.toFixed(3)}, ceiling ${Planet.ceiling}`;
         }
     }
 

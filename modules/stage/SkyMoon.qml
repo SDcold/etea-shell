@@ -13,7 +13,8 @@ Item {
     property real offset: 0 // how far from the zenith it hangs, in moons
     property point center // the planet's centre, and the belt's radius round it, in pixels
     property real radius: 0
-    property real scale: 1 // moons grow and shrink with the planet
+    property real grow: 1 // moons grow and shrink with the planet
+    property bool hovered: false
     property real unit: 1
     property real screenAspect: 16 / 9
 
@@ -25,12 +26,18 @@ Item {
         const t = Math.min(1, Math.abs(offset));
         return 1 - t * t * (3 - 2 * t);
     }
-    readonly property real halfHeight: (Theme.moonSize / 2 + (Theme.portholeWidth / 2 / screenAspect - Theme.moonSize / 2) * opening) * scale * unit
+    readonly property real halfHeight: (Theme.moonSize / 2 + (Theme.portholeWidth / 2 / screenAspect - Theme.moonSize / 2) * opening) * grow * unit * lift
     readonly property real aspect: 1 + (screenAspect - 1) * opening
+    // Under the pointer it lifts a little, and its star lights
+    property real lift: hovered ? 1.06 : 1
+
+    Behavior on lift {
+        NumberAnimation { duration: 160; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
+    }
     readonly property real exponent: 2 + 2.6 * opening
     property real rise: 1 // how far its hills have risen
     property real inked: 1 // how much of its ring and star are drawn
-    property bool lit: false
+    property bool lit: hovered || opening > 0.5 // the zenith's star is lit, the others sleep
     readonly property var palette: (Palettes.version, Skies.paletteOf(entry))
     readonly property bool picture: !!entry?.path
     readonly property real starSize: (4.5 + 3 * opening) * unit

@@ -102,7 +102,7 @@ Item {
                 property real radius: root.radius * root.unit
                 property real edge: Theme.skyBelt * radius
                 property real grain: Theme.grain
-                property real drift: 0
+                property real drift: Skies.scroll * 14 * root.unit // the stars slide a little as the belt turns
 
                 fragmentShader: Qt.resolvedUrl("../../shaders/atmosphere.frag.qsb")
             }
@@ -173,6 +173,7 @@ Item {
                 property real gap: root.edge ? root.lens.gap : 0
                 property real seed: root.edge ? root.lens.seed : 0
                 property real wobbly: root.edge ? root.lens.wobbly : 0
+                property real starLit: root.edge ? root.lens.starLit : 0
 
                 fragmentShader: Qt.resolvedUrl("../../shaders/skylens.frag.qsb")
             }

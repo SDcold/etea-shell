@@ -59,7 +59,7 @@ Variants {
             const inOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(2 - 2 * t, 3) / 2;
             const inOutSine = t => (1 - Math.cos(Math.PI * t)) / 2;
             // Your sky's moon, or the zenith if it has turned out of sight
-            const d = Skies.along(Skies.wearing, Skies.scroll);
+            const d = Skies.yours;
             const near = Math.abs(d) < 5;
             const moon = Skies.placeOf(near ? d : 0, planetCenter, Theme.skyBelt * planetRadius * unit, unit, moonScale, width / height);
             const half = near ? moon.halfHeight * moon.aspect : 1;
@@ -80,8 +80,28 @@ Variants {
                 gap: (4.5 + 3 * moon.z) * unit + 4 * unit,
                 seed: Skies.seedOf(Skies.items[Skies.wearing]),
                 wobbly: 1 - moon.z,
+                starLit: moon.z > 0.5 ? 1 : 0,
                 hidden: lensHanded
             };
+        }
+
+        // At the edge: arrows a moon at a time, Page Up and Down a screenful, Home back to
+        // your own sky, and typing goes to the picture whose name starts that way
+        function skyKey(event) {
+            if (!lensHanded)
+                return;
+            if (event.key === Qt.Key_Left)
+                Skies.step(-1);
+            else if (event.key === Qt.Key_Right)
+                Skies.step(1);
+            else if (event.key === Qt.Key_PageUp)
+                Skies.flyTo(Skies.zenith - 9);
+            else if (event.key === Qt.Key_PageDown)
+                Skies.flyTo(Skies.zenith + 9);
+            else if (event.key === Qt.Key_Home)
+                Skies.flyTo(Skies.wearing);
+            else if (event.text.length === 1 && event.text.trim() !== "" && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)))
+                Skies.type(event.text);
         }
 
         screen: modelData
@@ -159,7 +179,7 @@ Variants {
                             center: stage.planetCenter
                             planetRadius: stage.planetRadius * stage.unit
                             unit: stage.unit
-                            scale: stage.moonScale
+                            grow: stage.moonScale
                             showYours: stage.lensHanded
                         }
                     }
@@ -249,15 +269,29 @@ Variants {
             anchors.fill: parent
         }
 
+        SkyHands {
+            anchors.fill: parent
+            enabled: stage.lensHanded
+            center: stage.planetCenter
+            planetRadius: stage.planetRadius * stage.unit
+            unit: stage.unit
+            grow: stage.moonScale
+            card: {
+                const zoom = Math.exp(Math.log(Theme.orbitCard) * Planet.altitude);
+                const bottom = stage.planetTop * stage.unit;
+                return Qt.rect(stage.width * (1 - zoom) / 2, bottom - stage.height * zoom, stage.width * zoom, stage.height * zoom);
+            }
+        }
+
         // In orbit: Escape goes down a level, 1 to 6 land on a page.
         // Up in the system: left and right pick a planet, Enter lands on it.
         Item {
             focus: Planet.aloft
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape)
-                    Planet.goDown();
+                    Planet.inSkies ? Skies.leave() : Planet.goDown();
                 else if (Planet.inSkies)
-                    return;
+                    stage.skyKey(event);
                 else if (Planet.inSystem && event.key === Qt.Key_Left)
                     Planet.chooseStep(-1);
                 else if (Planet.inSystem && event.key === Qt.Key_Right)
@@ -281,6 +315,11 @@ Variants {
         FrameMeter {
             name: "spin"
             running: stage.focused && Planet.phase === Planet.Phase.Spinning
+        }
+
+        FrameMeter {
+            name: "turn"
+            running: stage.focused && Skies.turning
         }
 
         FrameMeter {

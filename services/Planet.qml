@@ -820,6 +820,11 @@ Singleton {
             if (event.name !== "custom" || !event.data.startsWith("etea:swipe,"))
                 return;
             const [, step, value] = event.data.split(",");
+            // At the edge of the air, the fingers turn the belt of skies instead
+            if (root.inSkies) {
+                Skies.swipe(step, value);
+                return;
+            }
             if (step === "start")
                 root.swipeStart();
             else if (step === "move")

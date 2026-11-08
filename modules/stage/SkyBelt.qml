@@ -13,21 +13,49 @@ Item {
     property point center // the planet's centre, in pixels
     property real planetRadius // in pixels
     property real unit: width / 1600
-    property real scale: 1 // the moons grow and shrink with the planet, 1 at the edge
+    property real grow: 1 // the moons grow and shrink with the planet, 1 at the edge
     property bool showYours: true // false while your own sky is still folding into its moon
 
     readonly property real radius: Theme.skyBelt * planetRadius
     readonly property real screenAspect: width / Math.max(1, height)
     readonly property int pool: 13
 
-    // Slot j shows the item j + 13·round((scroll − j)/13): always the thirteen nearest
-    function itemFor(slot) {
-        const index = slot + root.pool * Math.round((Skies.scroll - slot) / root.pool);
-        // A short folder must not show an item twice
-        const offset = index - Math.round(Skies.scroll);
-        if (offset < -Math.floor((Skies.count - 1) / 2) || offset > Math.ceil((Skies.count - 1) / 2))
-            return -1;
-        return index;
+    // Slot j hangs at j + 13·round((scroll − j)/13): always the thirteen nearest places.
+    // It's labelled as it moves to a new place, which only happens off the screen.
+    function placeFor(slot) {
+        return slot + pool * Math.round((Skies.scroll - slot) / pool);
+    }
+
+    // The belt says which item is at the top, and where your own sky's moon hangs
+    function report() {
+        const top = Math.round(Skies.scroll);
+        let yours = 99;
+        for (let slot = 0; slot < moons.count; slot++) {
+            const moon = moons.itemAt(slot);
+            if (!moon)
+                continue;
+            if (moon.place === top)
+                Skies.zenith = moon.item;
+            if (moon.item === Skies.wearing && Math.abs(moon.offset) < Math.abs(yours))
+                yours = moon.offset;
+        }
+        Skies.yours = yours;
+    }
+
+    Connections {
+        target: Skies
+
+        function onScrollChanged() {
+            for (let slot = 0; slot < moons.count; slot++)
+                moons.itemAt(slot)?.relabel(false);
+            root.report();
+        }
+
+        function onItemsChanged() {
+            for (let slot = 0; slot < moons.count; slot++)
+                moons.itemAt(slot)?.relabel(true);
+            root.report();
+        }
     }
 
     // The caption over the zenith, rewritten only once the belt is still: the name opens
@@ -38,7 +66,7 @@ Item {
         return t * t * (3 - 2 * t);
     }
     property int captioned: -1
-    readonly property real captionTop: center.y - radius - Theme.portholeWidth / 2 / screenAspect * scale * unit
+    readonly property real captionTop: center.y - radius - Theme.portholeWidth / 2 / screenAspect * grow * unit
 
     function caption() {
         if (!still || captioned === Skies.zenith)
@@ -73,8 +101,8 @@ Item {
         property real turned: Skies.scroll - Math.round(Skies.scroll)
         property real before: Math.floor((Skies.count - 1) / 2)
         property real after: Math.ceil((Skies.count - 1) / 2)
-        property real moonHalf: Theme.moonSize / 2 * root.scale * root.unit
-        property real portholeHalf: Theme.portholeWidth / 2 / root.screenAspect * root.scale * root.unit
+        property real moonHalf: Theme.moonSize / 2 * root.grow * root.unit
+        property real portholeHalf: Theme.portholeWidth / 2 / root.screenAspect * root.grow * root.unit
         property real screenAspect: root.screenAspect
         property real room: 10 * root.unit
 
@@ -165,18 +193,37 @@ Item {
         model: root.pool
 
         SkyMoon {
+            id: moon
+
             required property int index
-            readonly property int at: (Skies.count, root.itemFor(index))
+            property int place: index // where on the belt it hangs, in moons, unwrapped
+            property int labelled: 0 // the shift it was labelled with
+            readonly property int item: Skies.wrap(place + labelled)
+            // A short folder must not show an item twice
+            readonly property bool counted: place - Math.round(Skies.scroll) >= -Math.floor((Skies.count - 1) / 2) && place - Math.round(Skies.scroll) <= Math.ceil((Skies.count - 1) / 2)
+            readonly property bool yours: item === Skies.wearing
 
-            readonly property bool yours: Skies.wrap(at) === Skies.wearing
+            function relabel(always) {
+                const want = root.placeFor(index);
+                if (want === place && !always)
+                    return;
+                place = want;
+                labelled = Skies.shift;
+            }
 
-            entry: at < 0 ? null : Skies.items[Skies.wrap(at)] ?? null
+            Component.onCompleted: {
+                relabel(true);
+                root.report();
+            }
+
+            entry: counted ? Skies.items[item] ?? null : null
             center: root.center
             radius: root.radius
-            scale: root.scale
+            grow: root.grow
             unit: root.unit
             screenAspect: root.screenAspect
-            offset: at - Skies.scroll
+            offset: place - Skies.scroll
+            hovered: Skies.hovered === item && Math.abs(offset) < 6
             rise: yours ? Skies.formed : 1
             inked: yours ? Skies.formed : 1
             // Off the screen, or still behind the folding sky

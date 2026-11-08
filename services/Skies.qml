@@ -23,8 +23,15 @@ Singleton {
     // was when the belt opened, and only rebuilt around where you are.
     property var items: []
     readonly property int count: items.length
-    property real scroll: 0 // where the belt has turned to, in moons; the zenith's is round(scroll)
-    readonly property int zenith: wrap(Math.round(scroll))
+    property real scroll: 0 // where the belt has turned to, in moons
+    // A long flight only ever shows a screenful of moons going by: the ones that come on
+    // during it are already the destination's neighbours. A moon is labelled as it comes
+    // round onto the screen, with the item shift places past where it hangs.
+    property int shift: 0
+    property int zenith: wrap(Math.round(scroll) + shift) // the item at the top, as the belt shows it
+    property real yours: 0 // how far your sky's moon hangs from the zenith, or 99 off the screen
+    property int hovered: -1 // the item under the pointer
+    readonly property bool turning: stepper.running || glide.running
     // The sky the world is wearing, which your own sky's moon stands for
     readonly property int wearing: {
         const sky = planet.sky ?? "";
@@ -137,12 +144,96 @@ Singleton {
     // A picture of the focused stage, saved to a file, to check a step without looking
     signal grabWanted(string path)
 
+    // Turning the belt. Everything comes to rest on a moon.
+    function holdTurn() {
+        stepper.stop();
+        glide.stop();
+    }
+
+    // By hand: the fingers or the pointer move it 1:1
+    function turnBy(moons) {
+        holdTurn();
+        scroll += moons;
+    }
+
+    // Let go: it carries on a little, at most 30 moons a second, and settles on a moon
+    function fling(speed) {
+        speed = Math.max(-30, Math.min(30, speed));
+        glideTo(Math.round(scroll + speed * 0.28), 520, Easing.OutCubic);
+    }
+
+    // One moon per notch or key press, chained on a spring that overshoots a hair
+    function step(moons) {
+        const from = stepper.running ? stepper.to : Math.round(scroll);
+        glide.stop();
+        stepper.from = scroll;
+        stepper.to = from + moons;
+        stepper.restart();
+    }
+
+    // To an item anywhere in the folder, the short way round. Past a screenful, the belt
+    // only visibly turns one screenful and the moons coming on are the destination's.
+    function flyTo(index) {
+        const moons = along(index, zenith);
+        if (moons === 0) {
+            glideTo(Math.round(scroll), 240, Easing.OutCubic);
+            return;
+        }
+        const shown = Math.sign(moons) * Math.min(Math.abs(moons), 9);
+        shift += moons - shown;
+        glideTo(Math.round(scroll) + shown, 520 * (0.75 + 0.25 * Math.min(Math.abs(shown), 5)), Easing.InOutSine);
+    }
+
+    function glideTo(to, duration, easing) {
+        stepper.stop();
+        glide.stop();
+        glide.to = to;
+        glide.duration = duration;
+        glide.easing.type = easing;
+        glide.start();
+    }
+
+    // Four fingers sideways turn the belt as they turn pages: fingers to the left bring on
+    // the next moons, a page's worth of swipe is three moons, and it settles when they lift
+    property real swipeSpeed: 0
+    property real swipeTime: 0
+
+    function swipe(step, value) {
+        if (step === "start") {
+            holdTurn();
+            swipeSpeed = 0;
+            swipeTime = Date.now();
+        } else if (step === "move") {
+            const moons = -Number(value) / Planet.swipeDistance * 3, now = Date.now();
+            scroll += moons;
+            swipeSpeed = swipeSpeed * 0.7 + moons / Math.max(8, now - swipeTime) * 1000 * 0.3;
+            swipeTime = now;
+        } else if (step === "end") {
+            fling(value === "true" ? 0 : swipeSpeed); // cancelled, it just settles
+        }
+    }
+
+    // Type the start of a name to go to it
+    property string typed: ""
+
+    function type(text) {
+        typed = (typing.running ? typed : "") + text.toLowerCase();
+        typing.restart();
+        const found = items.findIndex(item => nameOf(item).toLowerCase().startsWith(typed));
+        if (found >= 0)
+            flyTo(found);
+    }
+
     function ask(request) {
         if (open || Planet.phase !== Planet.Phase.Idle)
             return;
         root.request = request;
         items = build();
+        holdTurn();
+        shift = 0;
         scroll = wearing;
+        zenith = wearing;
+        yours = 0;
         formed = 0;
         leaving = false;
         Pictures.refresh();
@@ -163,10 +254,16 @@ Singleton {
         function onPicturesChanged() {
             if (!root.open)
                 return;
+            // Most of the time nothing came in or went: leave the belt as it is, turning or not
+            const fresh = root.build();
+            if (fresh.length === root.items.length && fresh.every((item, i) => root.keyOf(item) === root.keyOf(root.items[i])))
+                return;
             const here = root.keyOf(root.items[root.zenith]);
             const offset = root.scroll - Math.round(root.scroll);
-            root.items = root.build();
+            root.holdTurn();
+            root.items = fresh;
             const found = root.items.findIndex(item => root.keyOf(item) === here);
+            root.shift = 0;
             root.scroll = (found < 0 ? root.wearing : found) + offset;
         }
     }
@@ -189,6 +286,29 @@ Singleton {
                 root.formed = 0;
             }
         }
+    }
+
+    NumberAnimation {
+        id: stepper
+
+        target: root
+        property: "scroll"
+        duration: 360
+        easing.type: Easing.OutBack
+        easing.overshoot: 0.3
+    }
+
+    NumberAnimation {
+        id: glide
+
+        target: root
+        property: "scroll"
+    }
+
+    Timer {
+        id: typing
+
+        interval: 900
     }
 
     NumberAnimation {

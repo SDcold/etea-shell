@@ -35,6 +35,7 @@ layout(std140, binding = 0) uniform buf {
     float gap;
     float seed;
     float wobbly; // 0 for a porthole's steady line, 1 for a moon's
+    float starLit;
     float grain;
 };
 
@@ -87,8 +88,9 @@ void main() {
         float open = clamp(abs(local.x) - gap + 0.5, 0.0, 1.0);
         float a = max(line, echo) * mix(1.0, open, step(local.y, 0.0)) * ring;
         ink = vec4(light.rgb, 1.0) * a;
-        float star = clamp((starSize - starShape) / starSlope + 0.5, 0.0, 1.0) * 0.55 * ring;
-        ink = vec4(0.847, 0.824, 0.831, 1.0) * star + ink * (1.0 - star);
+        float star = clamp((starSize - starShape) / starSlope + 0.5, 0.0, 1.0) * mix(0.55, 1.0, starLit) * ring;
+        vec3 starColor = mix(vec3(0.847, 0.824, 0.831), vec3(1.0), starLit);
+        ink = vec4(starColor, 1.0) * star + ink * (1.0 - star);
     }
     if (inside <= 0.0) {
         fragColor = ink * qt_Opacity;
