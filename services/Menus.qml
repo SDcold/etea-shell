@@ -12,6 +12,8 @@ Singleton {
     property var trayItem: null // the background app whose menu is open
 
     property bool settingsOpen: false
+    // A settings page drawn offscreen and saved to a file, to check it without opening it
+    signal pageWanted(string page, string path)
     property bool sessionOpen: false
     property bool welcomeOpen: false
     property string lastClosed: ""

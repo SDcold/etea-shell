@@ -15,6 +15,18 @@ Singleton {
     readonly property string locale: Lang.locale
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
     property bool ready: false // the file has been read, so the values below are really yours
+    // Every saved value as it comes, before your file is read: what a setting goes back to,
+    // and what tells a setting you've changed from one you haven't
+    property var defaults: ({})
+
+    function changed(key) {
+        return key in defaults && JSON.stringify(root[key]) !== JSON.stringify(defaults[key]);
+    }
+
+    function reset(key) {
+        if (key in defaults)
+            root[key] = JSON.parse(JSON.stringify(defaults[key]));
+    }
 
     // What the bar can hold, and where each piece can go
     readonly property var barModuleChoices: [
@@ -156,6 +168,16 @@ Singleton {
 
         JsonAdapter {
             id: saved
+
+            Component.onCompleted: {
+                const values = {};
+                for (const key of Object.keys(saved)) {
+                    const value = saved[key];
+                    if (key !== "objectName" && !key.endsWith("Changed") && typeof value !== "function" && (value === null || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype))
+                        values[key] = JSON.parse(JSON.stringify(value));
+                }
+                root.defaults = values;
+            }
 
             property string theme: "aster"
             property var customPlanets: []

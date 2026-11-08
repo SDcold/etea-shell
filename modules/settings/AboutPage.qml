@@ -148,6 +148,7 @@ ColumnLayout {
     }
 
     SettingSwitch {
+        key: "welcome"
         label: Lang.t("Au démarrage")
         hint: Lang.t("Les six étoiles pour tout régler, à chaque fois que le shell démarre.")
         on: Config.welcome

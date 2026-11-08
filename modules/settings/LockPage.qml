@@ -20,6 +20,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "lockWith"
         label: Lang.t("Verrouiller avec")
         hint: Lang.t("Super + L, le menu de session, la mise en veille et la fermeture du capot.")
         options: [{ id: "etea", label: "ETEA" }, { id: "hyprlock", label: "hyprlock" }]
@@ -28,6 +29,7 @@ ColumnLayout {
     }
 
     SettingSwitch {
+        key: "lockFingerprint"
         visible: Config.lockWith === "etea"
         label: Lang.t("Empreinte digitale")
         hint: Lang.t("Pose ton doigt sur le lecteur à tout moment, le mot de passe marche toujours.")
@@ -38,6 +40,7 @@ ColumnLayout {
     SettingChoice {
         id: firstScreen
 
+        key: "lockImage"
         visible: Config.lockWith === "etea"
         label: Lang.t("Premier écran")
         hint: Lang.t("Ce que tu vois avant de taper. Le ciel étoilé vient ensuite.")
@@ -116,6 +119,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "lockScene"
         visible: Config.lockWith === "etea"
         label: Lang.t("Scène")
         hint: Lang.t("Ce qui se dessine pendant que tu tapes ton mot de passe.")

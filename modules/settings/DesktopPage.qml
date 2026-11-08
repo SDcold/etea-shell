@@ -17,6 +17,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "groundMusic"
         label: Lang.t("Musique sur le terrain")
         hint: Lang.t("Visible sur les pages vides.")
         options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "off", label: Lang.t("Rien") }]
@@ -25,6 +26,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "groundLift"
         label: Lang.t("Hauteur de la musique")
         value: Config.groundLift
         minimum: 40
@@ -33,6 +35,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "terrainHeight"
         label: Lang.t("Hauteur du terrain")
         value: Config.terrainHeight
         minimum: 0.04
@@ -43,6 +46,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "terrainRelief"
         label: Lang.t("Relief")
         hint: Lang.t("De doux à très accidenté.")
         value: Config.terrainRelief
@@ -52,6 +56,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "grain"
         label: Lang.t("Grain")
         hint: Lang.t("La texture du ciel, du terrain et de la barre. À 0 %, tout devient lisse.")
         value: Config.grain
@@ -62,6 +67,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "widgetStyle"
         label: Lang.t("Style des widgets")
         hint: Lang.t("Ciel écrit à même le ciel. Cadran céleste range tout dans des hublots.")
         options: [{ id: "sky", label: Lang.t("Ciel") }, { id: "celestial", label: Lang.t("Cadran céleste") }]

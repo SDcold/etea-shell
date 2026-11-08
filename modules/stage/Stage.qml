@@ -446,6 +446,54 @@ Variants {
             running: stage.focused && ((Planet.altitude > 0 && Planet.altitude < Planet.ceiling) || (Planet.systemLevel > 0 && Planet.systemLevel < 1))
         }
 
+        // A settings page drawn offscreen, to check it without opening the window
+        Item {
+            opacity: 0
+
+            // On the window's own background, with its left margin
+            Rectangle {
+                id: pageFrame
+
+                width: 800
+                height: (pageCheck.item?.height ?? 0) + 20
+                color: Theme.cardDeep
+
+                Loader {
+                    id: pageCheck
+
+                    property string path: ""
+
+                    x: 20
+                    y: 10
+                    width: 760
+                    active: false
+                    onLoaded: grabLater.restart()
+
+                    Timer {
+                        id: grabLater
+
+                        interval: 400
+                        onTriggered: pageFrame.grabToImage(result => {
+                            console.info(`ETEA settings grab: ${result.saveToFile(pageCheck.path) ? pageCheck.path : "failed"}`);
+                            pageCheck.active = false;
+                        })
+                    }
+                }
+            }
+        }
+
+        Connections {
+            target: Menus
+
+            function onPageWanted(page, path) {
+                if (!stage.focused)
+                    return;
+                pageCheck.path = path;
+                pageCheck.source = Qt.resolvedUrl(`../settings/${page}`);
+                pageCheck.active = true;
+            }
+        }
+
         Connections {
             target: Skies
 

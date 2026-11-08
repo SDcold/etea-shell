@@ -48,6 +48,15 @@ Scope {
         function toggle(): void {
             Menus.settingsOpen = !Menus.settingsOpen;
         }
+
+        function grab(page: string, path: string): void {
+            Menus.pageWanted(page, path);
+        }
+
+        // Which settings are yours, set away from how they come
+        function changed(): string {
+            return Object.keys(Config.defaults).filter(key => Config.changed(key)).join(", ") + ` (${Object.keys(Config.defaults).length} known)`;
+        }
     }
 
     IpcHandler {
