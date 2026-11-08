@@ -34,6 +34,9 @@ Singleton {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     }
 
+    // A picture of the focused stage, saved to a file, to check a step without looking
+    signal grabWanted(string path)
+
     function ask(request) {
         if (open || Planet.phase !== Planet.Phase.Idle)
             return;

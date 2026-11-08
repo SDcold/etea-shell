@@ -88,6 +88,10 @@ Scope {
             Skies.leave();
         }
 
+        function grab(path: string): void {
+            Skies.grabWanted(path);
+        }
+
         function state(): string {
             return `open ${Skies.open}, role ${Skies.role || "none"}, items ${Skies.items.length}, palettes ${Object.keys(Palettes.known).length}, phase ${Planet.phase}, altitude ${Planet.altitude.toFixed(3)}, ceiling ${Planet.ceiling}`;
         }

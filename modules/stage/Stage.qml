@@ -82,6 +82,8 @@ Variants {
         }
 
         Item {
+            id: scene
+
             anchors.fill: parent
             opacity: stage.showing ? Planet.sceneOpacity : 0
             // Fade as one flat picture, or the sky would shine through the windows
@@ -226,6 +228,15 @@ Variants {
         FrameMeter {
             name: "climb"
             running: stage.focused && ((Planet.altitude > 0 && Planet.altitude < Planet.ceiling) || (Planet.systemLevel > 0 && Planet.systemLevel < 1))
+        }
+
+        Connections {
+            target: Skies
+
+            function onGrabWanted(path) {
+                if (stage.focused)
+                    scene.grabToImage(result => console.info(`ETEA grab: ${result.saveToFile(path) ? path : "failed"}`));
+            }
         }
 
         Connections {
