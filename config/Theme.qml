@@ -113,6 +113,10 @@ Singleton {
     readonly property real orbitRadius: 190 // size of the planet, on a 1600 wide screen
     readonly property real orbitCard: 0.145 // how small a page gets up there
 
+    // Choosing a sky: a shorter climb, to « la lisière », where your air ends
+    readonly property real skyEdge: 0.6 // its altitude, orbit being 1
+    readonly property int skyRise: 640 * pace
+
     // The launcher: a dimmed sky, a question and a constellation of apps
     readonly property color launcherShade: "#05060e"
     readonly property real launcherDim: 0.72

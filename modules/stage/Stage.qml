@@ -24,6 +24,9 @@ Variants {
         // The camera. All of this hangs off Planet.altitude, 0 on the ground and 1 in orbit.
         readonly property real unit: width / 1600
         readonly property real screenHeight: height / unit
+        // How far the pages have climbed onto the planet: all the way once the camera is as
+        // high as this trip goes, so a page sits on the dome in the skies as it does in orbit
+        readonly property real climbed: Math.min(1, Planet.altitude / Planet.ceiling)
         // Going on up to the planets, the camera keeps rising: the planet shrinks a little
         // and drifts to where the row of worlds will hold it, its pages fall in towards it
         readonly property real beyond: Planet.systemLevel
@@ -40,7 +43,7 @@ Variants {
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "etea:stage"
-        WlrLayershell.keyboardFocus: Planet.orbiting ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: Planet.aloft ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
         anchors {
             top: true
@@ -50,14 +53,14 @@ Variants {
         }
 
         // Empty region: clicks and keys go straight through, even mid-spin.
-        // Up in orbit it's the other way round, the whole screen listens.
+        // Up in orbit or in the skies it's the other way round, the whole screen listens.
         property Region passThrough: Region {}
         property Region everything: Region {
             width: stage.width
             height: stage.height
         }
 
-        mask: Planet.orbiting ? everything : passThrough
+        mask: Planet.aloft ? everything : passThrough
 
         // One photo per page, kept around for when we come back
         Item {
@@ -109,6 +112,8 @@ Variants {
 
                 StagePage {
                     opacity: 1 - Planet.systemLevel
+                    // Choosing a sky, only the page you're on comes along
+                    visible: Planet.ceiling === 1 || page === Planet.origin
                     required property var modelData
                     required property int index
 
@@ -122,7 +127,7 @@ Variants {
                     screenY: stage.modelData.y
                     angle: Planet.shortestSteps(Planet.origin, page) * Planet.step - Planet.travel + Planet.handTurn
                     zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude) * (1 - 0.55 * stage.beyond)
-                    lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
+                    lift: (stage.planetTop * stage.unit - stage.height) * stage.climbed
                     orbitCard: true
                     pointedAt: Planet.hoveredPage === index
                 }
@@ -175,7 +180,7 @@ Variants {
             anchors.fill: parent
             pivotY: (stage.planetTop + stage.planetRadius) * stage.unit
             zoom: Math.exp(Math.log(Theme.orbitCard) * Planet.altitude)
-            lift: (stage.planetTop * stage.unit - stage.height) * Planet.altitude
+            lift: (stage.planetTop * stage.unit - stage.height) * stage.climbed
             screenX: stage.modelData.x
             screenY: stage.modelData.y
         }
@@ -187,10 +192,12 @@ Variants {
         // In orbit: Escape goes down a level, 1 to 6 land on a page.
         // Up in the system: left and right pick a planet, Enter lands on it.
         Item {
-            focus: Planet.orbiting
+            focus: Planet.aloft
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape)
                     Planet.goDown();
+                else if (Planet.inSkies)
+                    return;
                 else if (Planet.inSystem && event.key === Qt.Key_Left)
                     Planet.chooseStep(-1);
                 else if (Planet.inSystem && event.key === Qt.Key_Right)
@@ -218,7 +225,7 @@ Variants {
 
         FrameMeter {
             name: "climb"
-            running: stage.focused && ((Planet.altitude > 0 && Planet.altitude < 1) || (Planet.systemLevel > 0 && Planet.systemLevel < 1))
+            running: stage.focused && ((Planet.altitude > 0 && Planet.altitude < Planet.ceiling) || (Planet.systemLevel > 0 && Planet.systemLevel < 1))
         }
 
         Connections {

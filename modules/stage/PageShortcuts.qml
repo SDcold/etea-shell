@@ -76,6 +76,23 @@ Scope {
         }
     }
 
+    IpcHandler {
+        target: "skies"
+
+        // Climbs to the belt for your own sky, without changing anything yet
+        function open(): void {
+            Skies.ask({ role: "sky", title: Lang.t("Un fond d'écran"), answer: null, from: null, planetId: Theme.planet.id });
+        }
+
+        function leave(): void {
+            Skies.leave();
+        }
+
+        function state(): string {
+            return `open ${Skies.open}, role ${Skies.role || "none"}, items ${Skies.items.length}, palettes ${Object.keys(Palettes.known).length}, phase ${Planet.phase}, altitude ${Planet.altitude.toFixed(3)}, ceiling ${Planet.ceiling}`;
+        }
+    }
+
     GlobalShortcut {
         appid: "etea"
         name: "pageNext"
