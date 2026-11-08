@@ -17,59 +17,120 @@ OUT = os.path.join(os.path.dirname(__file__), "..", "modules", "background", "sc
 
 
 def f(v):
-    return f"{v:.1f}".rstrip("0").rstrip(".")
+    return f"{v:.2f}".rstrip("0").rstrip(".")
+
+
+def P(x, y):
+    return f"{f(x)} {f(y)}"
 
 
 def poly(pts):
-    return "M" + " L".join(f"{f(x)} {f(y)}" for x, y in pts) + " Z"
+    return "M" + " L".join(P(x, y) for x, y in pts) + " Z"
 
 
 def circle(cx, cy, r):
     return f"M{f(cx - r)} {f(cy)}a{f(r)} {f(r)} 0 1 0 {f(2 * r)} 0a{f(r)} {f(r)} 0 1 0 {f(-2 * r)} 0Z"
 
 
-def ellipse_pts(cx, cy, a, b, t0, t1, n, tilt=0.0):
-    pts = []
-    for i in range(n + 1):
-        t = t0 + (t1 - t0) * i / n
-        x, y = a * math.cos(t), b * math.sin(t)
-        pts.append((cx + x * math.cos(tilt) - y * math.sin(tilt), cy + x * math.sin(tilt) + y * math.cos(tilt)))
-    return pts
+# Every shape here that follows a circle or an ellipse is drawn with true arcs, and where
+# two edges meet the meeting point is solved for, so nothing steps, pokes out or leaves
+# a seam however far you zoom in.
+
+def ellipse_at(ex, ey, a, b, tilt, t):
+    x, y = a * math.cos(t), b * math.sin(t)
+    return (ex + x * math.cos(tilt) - y * math.sin(tilt), ey + x * math.sin(tilt) + y * math.cos(tilt))
 
 
-# A band between two ellipses sharing a centre, from t0 to t1 along them
-def ellipse_band(cx, cy, a0, b0, a1, b1, t0, t1, tilt=0.0, n=64):
-    outer = ellipse_pts(cx, cy, a1, b1, t0, t1, n, tilt)
-    inner = ellipse_pts(cx, cy, a0, b0, t0, t1, n, tilt)
-    return poly(outer + inner[::-1])
+# An arc of ellipse from t0 to t1 (t growing turns clockwise on screen)
+def ellipse_arc(a, b, tilt, t0, t1, end):
+    large = 1 if abs(t1 - t0) > math.pi else 0
+    sweep = 1 if t1 > t0 else 0
+    return f" A{f(a)} {f(b)} {f(math.degrees(tilt))} {large} {sweep} {P(*end)}"
 
 
-# The lit side's edge on a ball, as a crescent of shade on the far side. Wider crescents
-# stack into stepped shading.
-def crescent(cx, cy, r, depth, side=-1, n=40):
-    arc = [(cx + side * r * math.sin(t), cy - r * math.cos(t)) for t in [math.pi * i / n for i in range(n + 1)]]
-    term = [(cx + side * r * depth * math.sin(t), cy - r * math.cos(t)) for t in [math.pi * i / n for i in range(n + 1)]]
-    return poly(arc + term[::-1])
+# The short way round the limb between two points on it, clockwise or not
+def limb_arc(cx, cy, r, start, end):
+    a0, a1 = math.atan2(start[1] - cy, start[0] - cx), math.atan2(end[1] - cy, end[0] - cx)
+    d = (a1 - a0 + math.pi) % (2 * math.pi) - math.pi
+    return f" A{f(r)} {f(r)} 0 0 {1 if d > 0 else 0} {P(*end)}"
 
 
-# A horizontal strip of a disc, its edges waving a little like a gas giant's bands
-def disc_band(cx, cy, r, y0, y1, wave, phase, n=28):
-    def edge(y, k):
-        return y + wave * math.sin(k * 0.035 + phase)
-    left, right = [], []
-    top, bottom = [], []
-    for i in range(n + 1):
-        x = cx - r + 2 * r * i / n
-        top.append((x, edge(y0, x)))
-        bottom.append((x, edge(y1, x)))
-    pts = []
-    for x, y in top:
-        lim = math.sqrt(max(0.0, r * r - (x - cx) ** 2))
-        pts.append((x, min(max(y, cy - lim), cy + lim)))
-    for x, y in bottom[::-1]:
-        lim = math.sqrt(max(0.0, r * r - (x - cx) ** 2))
-        pts.append((x, min(max(y, cy - lim), cy + lim)))
-    return poly(pts)
+# Where a curve, given by its parameter, crosses a circle: scanned finely, then halved down
+def crossings(curve, cx, cy, r, t0, t1, steps=4000):
+    inside = lambda t: (curve(t)[0] - cx) ** 2 + (curve(t)[1] - cy) ** 2 - r * r
+    found, prev = [], inside(t0)
+    for i in range(1, steps + 1):
+        t = t0 + (t1 - t0) * i / steps
+        now = inside(t)
+        if (prev < 0) != (now < 0):
+            lo, hi = t - (t1 - t0) / steps, t
+            for _ in range(60):
+                mid = (lo + hi) / 2
+                if (inside(mid) < 0) == (inside(lo) < 0):
+                    lo = mid
+                else:
+                    hi = mid
+            found.append((lo + hi) / 2)
+        prev = now
+    return found
+
+
+def sample(curve, t0, t1, step):
+    n = max(2, int(abs(t1 - t0) / step))
+    return [curve(t0 + (t1 - t0) * i / n) for i in range(n + 1)]
+
+
+# A crescent of shade on the far side of a ball: half the disc, less half an ellipse
+def crescent(cx, cy, r, depth, side=-1):
+    top, bottom = P(cx, cy - r), P(cx, cy + r)
+    outer = 0 if side < 0 else 1
+    return f"M{top} A{f(r)} {f(r)} 0 0 {outer} {bottom} A{f(r * depth)} {f(r)} 0 0 {1 - outer} {top} Z"
+
+
+# A strip of the disc between two wavy edges, cut exactly at the limb
+def disc_band(cx, cy, r, y0, y1, wave, phase):
+    def edge(y):
+        return lambda x: (x, y + wave * math.sin(x * 0.035 + phase))
+    top, bottom = edge(y0), edge(y1)
+    a = crossings(top, cx, cy, r, cx - r - 2, cx + r + 2)
+    b = crossings(bottom, cx, cy, r, cx - r - 2, cx + r + 2)
+    path = ""
+    if len(a) == 2:
+        pts = sample(top, a[0], a[1], 3)
+        path = "M" + P(*pts[0]) + "".join(" L" + P(*q) for q in pts[1:])
+        last = pts[-1]
+    if len(b) == 2:
+        pts = sample(bottom, b[1], b[0], 3)
+        if path:
+            path += limb_arc(cx, cy, r, last, pts[0])
+        else:
+            # Nothing above the strip but the limb: go over the top
+            path = "M" + P(*pts[-1]) + f" A{f(r)} {f(r)} 0 {1 if y1 > cy else 0} 1 {P(*pts[0])}"
+        path += "".join(" L" + P(*q) for q in pts[1:])
+        path += limb_arc(cx, cy, r, pts[-1], top(a[0]) if len(a) == 2 else pts[-1]) if len(a) == 2 else ""
+    else:
+        # Nothing below but the limb: go round under the bottom
+        path += f" A{f(r)} {f(r)} 0 {1 if y0 < cy else 0} 1 {P(*top(a[0]))}"
+    return path + " Z"
+
+
+# The part of an elliptic band (between two ellipses sharing a centre) that lies on a ball,
+# along t from t0 to t1, cut exactly at the ball's limb
+def band_on_ball(ex, ey, a0, b0, a1, b1, tilt, t0, t1, cx, cy, r):
+    inner = lambda t: ellipse_at(ex, ey, a0, b0, tilt, t)
+    outer = lambda t: ellipse_at(ex, ey, a1, b1, tilt, t)
+    i0, i1 = crossings(inner, cx, cy, r, t0, t1)
+    o0, o1 = crossings(outer, cx, cy, r, t0, t1)
+    return ("M" + P(*outer(o0)) + ellipse_arc(a1, b1, tilt, o0, o1, outer(o1)) + limb_arc(cx, cy, r, outer(o1), inner(i1))
+            + ellipse_arc(a0, b0, tilt, i1, i0, inner(i0)) + limb_arc(cx, cy, r, inner(i0), outer(o0)) + " Z")
+
+
+# A whole elliptic band, two closed ellipses filled even-odd
+def ring_band(ex, ey, a0, b0, a1, b1, tilt):
+    def loop(a, b):
+        s, m = ellipse_at(ex, ey, a, b, tilt, 0), ellipse_at(ex, ey, a, b, tilt, math.pi)
+        return "M" + P(*s) + ellipse_arc(a, b, tilt, 0, math.pi, m) + ellipse_arc(a, b, tilt, math.pi, 2 * math.pi, s) + " Z"
+    return loop(a1, b1) + " " + loop(a0, b0)
 
 
 def part(w, h, *layers):
@@ -93,7 +154,9 @@ def moon(r, body, shade, rnd, craters=0, crater_tone=None):
 
 worlds = {}
 
-# Aster takes after Saturn: from one of its moons, the ringed giant never quite sets
+# Aster takes after Saturn: from one of its moons, the ringed giant never quite sets.
+# The whole ring sits behind the globe; only the stretch of it that crosses the globe's
+# face is drawn again in front, cut at the limb, so the two never meet in a seam.
 rnd = random.Random(3)
 R = 230
 W2, H2 = 2 * 470, 2 * 240
@@ -102,15 +165,15 @@ tilt = -0.2
 ring = [(1.42, 1.62, ["light", "skyLow", 0.35, 0.8]), (1.68, 2.0, ["light", "skyMid", 0.25, 0.7])]
 back, front = [], []
 for a0, a1, tone in ring:
-    back.append(L(tone, ellipse_band(cx, cy, R * a0, R * a0 * 0.2, R * a1, R * a1 * 0.2, math.pi, 2 * math.pi, tilt)))
-    front.append(L(tone, ellipse_band(cx, cy, R * a0, R * a0 * 0.2, R * a1, R * a1 * 0.2, 0, math.pi, tilt)))
+    back.append(L(tone, ring_band(cx, cy, R * a0, R * a0 * 0.2, R * a1, R * a1 * 0.2, tilt), True))
+    front.append(L(tone, band_on_ball(cx, cy, R * a0, R * a0 * 0.2, R * a1, R * a1 * 0.2, tilt, 0, math.pi, cx, cy, R)))
 globe = [L(["skyLow", "light", 0.25], circle(cx, cy, R))]
 tones = [["skyMid", "light", 0.35], ["skyLow", "light", 0.55], ["skyMid", "skyLow", 0.5], ["skyMid", "t0", 0.3], ["skyLow", "skyMid", 0.3]]
-y = cy - R
+y = cy - R + 10
 k = 0
-while y < cy + R:
+while y < cy + R - 14:
     step = rnd.uniform(26, 58)
-    globe.append(L(tones[k % len(tones)], disc_band(cx, cy, R, y, y + step * 0.6, rnd.uniform(2, 6), rnd.uniform(0, 6))))
+    globe.append(L(tones[k % len(tones)], disc_band(cx, cy, R, y, min(y + step * 0.6, cy + R - 10), rnd.uniform(2, 6), rnd.uniform(0, 6))))
     y += step
     k += 1
 # The hexagon around its pole, seen almost edge-on
@@ -119,8 +182,10 @@ inner = [(cx + (x - cx) * 0.82, cy - R * 0.87 + (y - (cy - R * 0.87)) * 0.82) fo
 globe.append(L(["light", "white", 0.4, 0.55], poly(hexa) + " " + poly(inner[::-1]), True))
 globe.append(L(["skyTop", "night", 0.2, 0.38], crescent(cx, cy, R, 0.5)))
 globe.append(L(["skyTop", "night", 0.35, 0.45], crescent(cx, cy, R, 0.86)))
-# The ring's shadow, a dark ribbon across the globe just above where the ring passes
-globe.append(L(["skyTop", "night", 0.1, 0.3], ellipse_band(cx, cy + 10, R * 0.98, R * 0.98 * 0.2, R * 1.0, R * 0.26, math.pi * 1.04, math.pi * 1.96, tilt)))
+# The ring's shadow on the globe: the inner ring's band, lifted a little, cut at the limb
+lift = 12
+sx, sy = cx + lift * math.sin(tilt), cy - lift * math.cos(tilt)
+globe.append(L(["skyTop", "night", 0.1, 0.3], band_on_ball(sx, sy, R * 1.42, R * 1.42 * 0.2, R * 1.62, R * 1.62 * 0.2, tilt, 0, math.pi, cx, cy, R)))
 worlds["Aster"] = {
     "ringBack": part(W2, H2, *back),
     "giant": part(W2, H2, *globe),
