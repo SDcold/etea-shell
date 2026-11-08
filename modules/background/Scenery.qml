@@ -14,7 +14,7 @@ Loader {
     property real angle: 0 // the planet's turn, which carries what stands on its ground
     property real horizon: 0.9
 
-    readonly property string scene: planet.scenery ?? ({ aster: "Aster" })[planet.id] ?? ""
+    readonly property string scene: Planets.sceneOf(planet)
     readonly property real unit: width / 1600 // the hills' own unit
     readonly property real skyUnit: Math.min(width / 1600, height / 900) // so a wide screen doesn't blow the sky up
     readonly property real horizonY: height * horizon

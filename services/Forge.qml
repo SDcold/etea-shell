@@ -89,6 +89,7 @@ Singleton {
         if (planet?.sky?.startsWith(skies + "/"))
             Quickshell.execDetached(["rm", "-f", planet.sky]);
         Config.customPlanets = Config.customPlanets.filter(planet => planet.id !== id);
+        Planets.untweak(id);
         if (Config.theme === id)
             Config.theme = "aster";
     }
@@ -109,6 +110,39 @@ Singleton {
 
     function chooseImage() {
         Pictures.pick(Lang.t("Une image pour ta planète"), path => root.read(path));
+    }
+
+    // A new sky for a world that already exists: copied like the others, then worn
+    function chooseSky(id) {
+        Pictures.pick(Lang.t("Un ciel pour {0}", Planets.find(id).name), path => root.adoptSky(id, path));
+    }
+
+    function adoptSky(id, path) {
+        const sky = `${skies}/${id}-${Date.now()}.${path.split(".").pop().toLowerCase()}`;
+        skyCopier.planetId = id;
+        skyCopier.sky = sky;
+        skyCopier.command = ["sh", "-c", 'mkdir -p "$(dirname "$2")" && cp -f "$1" "$2"', "sh", path, sky];
+        skyCopier.running = true;
+    }
+
+    // Back to the painted sky. A copy only this world was using goes with it.
+    function dropSky(id) {
+        const sky = Planets.find(id).sky ?? "";
+        if (sky.startsWith(skies + "/") && sky !== Planets.original(id)?.sky)
+            Quickshell.execDetached(["rm", "-f", sky]);
+        Planets.tweak(id, { sky: "" });
+    }
+
+    Process {
+        id: skyCopier
+
+        property string planetId: ""
+        property string sky: ""
+
+        onExited: code => {
+            if (code === 0)
+                Planets.tweak(planetId, { sky: sky });
+        }
     }
 
     ColorQuantizer {

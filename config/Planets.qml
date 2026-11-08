@@ -65,6 +65,12 @@ Singleton {
         return all.find(planet => planet.id === id) ?? all[0];
     }
 
+    // Which scenery stands in a world: its own for the built-in ones, none for the others
+    // unless picked. An empty name means none.
+    function sceneOf(planet) {
+        return planet.scenery ?? ({ aster: "Aster" })[planet.id] ?? "";
+    }
+
     // How the world was before you touched it
     function original(id) {
         return builtIn.concat(Config.customPlanets).find(planet => planet.id === id) ?? null;

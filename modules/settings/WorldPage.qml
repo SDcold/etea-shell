@@ -7,6 +7,10 @@ import qs.services
 
 // Which planet you live on. Each one is alive, and picking it changes everything at once.
 ColumnLayout {
+    id: page
+
+    property string editing: "" // the world open below the others, to change it
+
     spacing: 18
 
     Text {
@@ -108,6 +112,24 @@ ColumnLayout {
                     }
                 }
 
+                // Every world can be changed afterwards
+                Icon {
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.rightMargin: choice.modelData.id.startsWith("forge-") ? 44 : 14
+                    anchors.topMargin: 14
+                    name: "gear-six"
+                    size: 18
+                    opacity: page.editing === choice.modelData.id ? 1 : 0.6
+
+                    MouseArea {
+                        anchors.fill: parent
+                        anchors.margins: -6
+                        cursorShape: Qt.PointingHandCursor
+                        onPressed: page.editing = page.editing === choice.modelData.id ? "" : choice.modelData.id
+                    }
+                }
+
                 // Planets you made yourself can be let go
                 Icon {
                     visible: choice.modelData.id.startsWith("forge-")
@@ -121,7 +143,11 @@ ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: -6
                         cursorShape: Qt.PointingHandCursor
-                        onPressed: Forge.forget(choice.modelData.id)
+                        onPressed: {
+                            if (page.editing === choice.modelData.id)
+                                page.editing = "";
+                            Forge.forget(choice.modelData.id);
+                        }
                     }
                 }
             }
@@ -140,6 +166,16 @@ ColumnLayout {
             const follow = !on;
             for (const setting of styles)
                 Config[setting] = follow ? "planet" : Theme[setting];
+        }
+    }
+
+    Loader {
+        Layout.fillWidth: true
+        active: page.editing !== ""
+        visible: active
+
+        sourceComponent: WorldEditor {
+            planetId: page.editing
         }
     }
 

@@ -18,6 +18,7 @@ Item {
     // Keep the sky and the ground as pictures while they hold still, so a widget moving in
     // front doesn't make the GPU paint them again pixel by pixel. Off where they move every frame.
     property bool cached: true
+    property bool listening: true // the ground dances to the music; a small preview stays still
     property real arrival: Planet.arrival
     // The world drawn: the one you live on, or any other to look at it
     property var planet: Theme.planet
@@ -178,7 +179,7 @@ Item {
         property vector4d l4: root.bands(16)
         property vector4d l5: root.bands(20)
         property vector4d l6: root.bands(24)
-        property real music: Beat.dancing && Beat.shown.length ? 1 : 0
+        property real music: root.listening && Beat.dancing && Beat.shown.length ? 1 : 0
         property real lift: Theme.groundLift
         property real bars: Config.groundMusic === "bars" ? 1 : 0
         property real arrival: root.arrival
