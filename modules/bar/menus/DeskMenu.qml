@@ -172,7 +172,7 @@ Scope {
                         label: panel.widget?.image ? Lang.t("Changer d'image") : Lang.t("Choisir une image")
                         onPicked: {
                             Desk.menuFor = "";
-                            Pictures.pick(Lang.t("Une image pour le ciel"), path => Desk.update("photo", { image: path }));
+                            Pictures.pick(Lang.t("Une image pour le ciel"), path => Desk.update("photo", { image: path }), { role: "photo" });
                         }
                     }
 

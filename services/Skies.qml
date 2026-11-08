@@ -299,10 +299,13 @@ Singleton {
             return;
         }
         if (role !== "sky") {
-            // Asked for a path: it goes back to whoever asked
-            const answer = request?.answer;
+            // Asked for a path: it goes back to whoever asked. A world's own painted sky,
+            // asked for that world, takes its picture away.
+            const answer = request?.answer, id = planet.id;
             leave();
-            if (answer && item.path)
+            if (item.special === "world")
+                Forge.dropSky(id);
+            else if (answer && item.path)
                 answer(item.path, request?.from);
             return;
         }
@@ -354,6 +357,7 @@ Singleton {
     // Somewhere else: the system's own picker, once the stage is out of its way
     function browse() {
         const answer = role === "sky" ? (path => Forge.wear(path)) : request?.answer;
+        browsing.title = request?.title ?? "";
         leave();
         browsing.answer = answer;
         browsing.restart();
@@ -638,9 +642,10 @@ Singleton {
         id: browsing
 
         property var answer: null
+        property string title: ""
 
         interval: Theme.skyRise + 200
-        onTriggered: Pictures.browseThen(answer)
+        onTriggered: Pictures.browseThen(answer, title)
     }
 
     // Copies no world is wearing any more are deleted once the belt has closed

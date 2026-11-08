@@ -5,17 +5,13 @@ import Quickshell
 import Quickshell.Io
 import qs.config
 
-// Picking a picture: the wallpapers in your Pictures folder, as a wall of thumbnails.
-// Thumbnails come from the system's cache when another app already made them, x-large
+// The wallpapers in your Pictures folder, and their thumbnails. Picking one climbs to the
+// belt of skies. Thumbnails come from the system's cache when another app already made them, x-large
 // first, then from ours. Missing ones are made in the background by vips, one at a time,
 // so the picture itself is only ever decoded while that job hasn't reached it yet.
 Singleton {
     id: root
 
-    property bool open: false
-    property string title: ""
-    property var answer: null // what to do with the picture once picked
-    property var extra: null // { label, act }: one more way out, beside the pictures
     property string folder: ""
     property var pictures: [] // { path, mtime }, newest first
     property bool listing: false
@@ -27,12 +23,10 @@ Singleton {
     readonly property string home: Quickshell.env("HOME")
     readonly property string thumbs: `${Quickshell.env("XDG_CACHE_HOME") || home + "/.cache"}/etea/thumbs`
 
-    function pick(title, answer, extra) {
-        root.title = title;
-        root.answer = answer;
-        root.extra = extra ?? null;
-        open = true;
-        refresh();
+    // A picture for something: answer(path) gets it. role says what for: "photo", "lock",
+    // "newWorld", or "world" with planetId for another world's sky.
+    function pick(title, answer, options) {
+        Skies.ask({ role: options?.role ?? "photo", title: title, answer: answer, from: null, planetId: options?.planetId ?? Theme.planet.id });
     }
 
     function refresh() {
@@ -40,37 +34,10 @@ Singleton {
         lister.running = true;
     }
 
-    // from: where on screen it was picked, so what follows can start from there
-    function choose(path, from) {
-        const answer = root.answer;
-        close();
-        if (answer && path)
-            answer(path, from);
-    }
-
-    function close() {
-        open = false;
-        answer = null;
-        extra = null;
-    }
-
-    function takeExtra() {
-        const act = extra?.act;
-        close();
-        if (act)
-            act();
-    }
-
-    // Somewhere else: the system's own picker, once ours is out of its way
-    function browse() {
+    // Somewhere else: the system's own picker
+    function browseThen(answer, title) {
         browser.answer = answer;
-        open = false;
-        browser.running = true;
-    }
-
-    // The same, for an answer kept elsewhere
-    function browseThen(answer) {
-        browser.answer = answer;
+        browser.title = title ?? "";
         browser.running = true;
     }
 
@@ -190,8 +157,9 @@ Singleton {
         id: browser
 
         property var answer: null
+        property string title: ""
 
-        command: ["sh", "-c", 'if command -v kdialog >/dev/null; then kdialog --title "$1" --getopenfilename "$2" "*.png *.jpg *.jpeg *.webp"; else zenity --file-selection --title "$1" --filename "$2/"; fi', "sh", root.title, root.folder || root.home]
+        command: ["sh", "-c", 'if command -v kdialog >/dev/null; then kdialog --title "$1" --getopenfilename "$2" "*.png *.jpg *.jpeg *.webp"; else zenity --file-selection --title "$1" --filename "$2/"; fi', "sh", title, root.folder || root.home]
         stdout: StdioCollector {
             onStreamFinished: {
                 const answer = browser.answer;

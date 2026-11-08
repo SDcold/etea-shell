@@ -177,12 +177,12 @@ Singleton {
     }
 
     function chooseImage() {
-        Pictures.pick(Lang.t("Une image pour ta planète"), path => root.read(path));
+        Pictures.pick(Lang.t("Une image pour ta planète"), path => root.read(path), { role: "newWorld" });
     }
 
     // A new sky for a world that already exists: copied like the others, then worn
     function chooseSky(id) {
-        Pictures.pick(Lang.t("Un ciel pour {0}", Planets.find(id).name), path => root.adoptSky(id, path));
+        Pictures.pick(Lang.t("Un ciel pour {0}", Planets.find(id).name), path => root.adoptSky(id, path), { role: "world", planetId: id });
     }
 
     function adoptSky(id, path) {

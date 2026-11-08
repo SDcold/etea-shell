@@ -45,7 +45,7 @@ ColumnLayout {
             if (id === "world")
                 Config.lockImage = "";
             else if (!Config.lockImage)
-                Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path);
+                Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path, { role: "lock" });
         }
     }
 
@@ -97,7 +97,7 @@ ColumnLayout {
 
             SettingButton {
                 label: Lang.t("Changer d'image")
-                onPicked: Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path)
+                onPicked: Pictures.pick(Lang.t("Une image pour l'écran de verrouillage"), path => Config.lockImage = path, { role: "lock" })
             }
 
             Text {
