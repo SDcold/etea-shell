@@ -22,54 +22,93 @@ Singleton {
         return Math.max(low, Math.min(high, value));
     }
 
-    function hex(hue, saturation, value) {
-        return String(Qt.hsva(Math.max(0, hue), saturation, value, 1));
-    }
-
     function read(path) {
         draft = null;
         image = path;
     }
 
-    // A sky, a terrain and a light from a picture's colours, or nothing if it has too few
-    function paletteOf(found) {
-        const colors = found.map(color => ({
-            hue: color.hsvHue,
-            saturation: color.hsvSaturation,
-            value: color.hsvValue,
-            light: color.r * 0.3 + color.g * 0.59 + color.b * 0.11,
-            vivid: color.hsvSaturation * color.hsvValue
-        }));
-        if (colors.length < 2)
-            return null;
+    // Colours in OKLCH, where lightness and colourfulness are as the eye sees them
+    function oklchOf(color) {
+        const linear = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        const r = linear(color.r), g = linear(color.g), b = linear(color.b);
+        const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+        const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+        const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+        const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
+        const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+        const B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+        return { l: L, c: Math.hypot(A, B), h: (Math.atan2(B, A) * 180 / Math.PI + 360) % 360 };
+    }
 
-        const byLight = colors.slice().sort((a, b) => a.light - b.light);
-        const dark = byLight[Math.floor(byLight.length * 0.12)];
-        const bright = byLight[Math.floor(byLight.length * 0.88)];
-        const vivid = colors.reduce((best, color) => color.vivid > best.vivid ? color : best);
-
-        // The picture's own hue comes from its colourful parts only, each counting as much as
-        // it is colourful: the hue of a grey is noise. Each colour stands for about as many
-        // pixels, so their mean saturation is how colourful the picture is as a whole, and
-        // nothing is made more colourful than it is.
-        let x = 0, y = 0, weight = 0;
-        for (const color of colors) {
-            if (color.hue < 0 || color.vivid < 0.04)
-                continue;
-            x += Math.cos(color.hue * 2 * Math.PI) * color.vivid;
-            y += Math.sin(color.hue * 2 * Math.PI) * color.vivid;
-            weight += color.vivid;
+    // Back to a colour, its chroma lowered until it fits on a screen
+    function oklch(lightness, chroma, hue) {
+        const toRgb = c => {
+            const a = c * Math.cos(hue * Math.PI / 180), b = c * Math.sin(hue * Math.PI / 180);
+            const l = Math.pow(lightness + 0.3963377774 * a + 0.2158037573 * b, 3);
+            const m = Math.pow(lightness - 0.1055613458 * a - 0.0638541728 * b, 3);
+            const s = Math.pow(lightness - 0.0894841775 * a - 1.291485548 * b, 3);
+            return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s];
+        };
+        const fits = rgb => rgb.every(v => v >= -0.0005 && v <= 1.0005);
+        let low = 0, high = chroma, rgb = toRgb(chroma);
+        if (!fits(rgb)) {
+            for (let i = 0; i < 18; i++) {
+                const mid = (low + high) / 2;
+                if (fits(toRgb(mid)))
+                    low = mid;
+                else
+                    high = mid;
+            }
+            rgb = toRgb(low);
         }
-        const hue = weight > 0 ? (Math.atan2(y, x) / (2 * Math.PI) + 1) % 1 : 0;
-        const seen = colors.filter(color => color.value > 0.12); // near black, saturation means nothing
-        const tint = seen.length ? seen.reduce((sum, color) => sum + color.saturation, 0) / seen.length : 0;
+        const gamma = v => {
+            v = clamp(v, 0, 1);
+            return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+        };
+        return String(Qt.rgba(gamma(rgb[0]), gamma(rgb[1]), gamma(rgb[2]), 1));
+    }
+
+    // A sky, a terrain and a light from a picture's colours, or nothing if it has too few.
+    // After Material You, as end4's colorgen uses it: the source colour is the one that
+    // scores best on how colourful it is and how much of the picture its hue covers, greys
+    // left out; a picture with little colour gets the neutral scheme, the others a tonal
+    // spot. Everything else is that one hue at chosen lightnesses, so it all belongs together.
+    function paletteOf(found) {
+        if (found.length < 2)
+            return null;
+        // Each colour stands for about as many pixels: the quantizer splits them evenly
+        const colors = found.map(color => oklchOf(color));
+        const share = 1 / colors.length;
+        const near = (a, b) => Math.abs(((a - b) % 360 + 540) % 360 - 180) <= 15;
+
+        let source = null, best = -Infinity;
+        for (const color of colors) {
+            if (color.c < 0.015)
+                continue; // a grey: its hue means nothing
+            const covered = colors.filter(other => other.c >= 0.015 && near(other.h, color.h)).length * share;
+            const score = covered * 70 + (color.c - 0.135) * (color.c < 0.135 ? 35 : 105);
+            if (score > best) {
+                best = score;
+                source = color;
+            }
+        }
+        const hue = source?.h ?? 0;
+        const sourceChroma = source?.c ?? 0;
+        // Neutral when the picture as a whole has little colour (end4 reads that as a
+        // colourfulness under 40), or its source does (under 20 of Material's chroma); a
+        // tonal spot otherwise. Never more colour than the picture has.
+        const colourful = colors.reduce((sum, color) => sum + color.c, 0) / colors.length;
+        const neutral = colourful < 0.04 || sourceChroma < 0.055;
+        const accent = neutral ? Math.min(sourceChroma, 0.034) : 0.1;
+        const quiet = neutral ? Math.min(sourceChroma, 0.012) : 0.025;
 
         return {
-            skyTop: hex(dark.hue, clamp(dark.saturation, 0, 0.75), clamp(dark.value, 0.14, 0.34)),
-            skyMid: hex(vivid.hue, clamp(vivid.saturation, 0, 0.8), clamp(vivid.value, 0.55, 0.85)),
-            skyLow: hex(bright.hue, clamp(bright.saturation, 0, 0.55), clamp(bright.value, 0.85, 0.97)),
-            terrain: [0.58, 0.42, 0.28, 0.15].map(value => hex(hue, clamp(tint * 1.15, 0, 0.6), value)),
-            light: hex(hue, clamp(tint * 2, 0.04, 0.22), 1)
+            skyTop: oklch(0.24, quiet, hue),
+            skyMid: oklch(0.62, accent, hue),
+            skyLow: oklch(0.9, quiet * 1.5, hue),
+            // The hills, back to front: lighter and a little quieter far off, darker close by
+            terrain: [[0.64, 0.8], [0.52, 1], [0.4, 0.9], [0.27, 0.7]].map(([lightness, amount]) => oklch(lightness, accent * amount, hue)),
+            light: oklch(0.96, neutral ? quiet : 0.03, hue)
         };
     }
 
