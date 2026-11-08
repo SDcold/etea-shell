@@ -163,7 +163,7 @@ Singleton {
             // Example: { file: "comet.svg", x: 0.2, y: 0.3, width: 0.1, opacity: 0.8, rotation: -12 }
             property var decorations: []
 
-            property string widgetStyle: "sky"
+            property string widgetStyle: "planet"
             property bool widgetsFrozen: false
             property string groundMusic: "lines"
             property real groundLift: 96
@@ -182,12 +182,12 @@ Singleton {
             property int pagesShown: 8
             property string lockImage: ""
             property bool welcome: true
-            property string lockScene: "hand"
+            property string lockScene: "planet"
             property string lockWith: "etea"
             property bool lockFingerprint: true
             property string barPosition: "top"
             property string barSize: "normal"
-            property string barStyle: "sky"
+            property string barStyle: "planet"
             property var barLayout: ({ left: ["pages"], center: ["clock", "media"], right: ["tray", "status"] })
             property var barTools: ["capture", "clipboard", "picker"]
             property var barResources: ["cpu", "memory"]
@@ -198,7 +198,7 @@ Singleton {
             property string mediaTitle: "scroll"
             property bool hotCorners: true
             property string barHide: "never"
-            property string pageStyle: "constellation"
+            property string pageStyle: "planet"
             property bool trayTint: false
             property int nightWarmth: 4200
             property int notifSeconds: 6

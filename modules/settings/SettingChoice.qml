@@ -8,6 +8,8 @@ SettingRow {
 
     property var options: [] // { id, label }
     property string current: ""
+    property bool planetOption: false // "planet" comes first: the setting follows each world
+    readonly property var shown: planetOption ? [{ id: "planet", label: Lang.t("Selon la planète") }].concat(options) : options
 
     signal picked(string id)
 
@@ -15,7 +17,7 @@ SettingRow {
         spacing: 6
 
         Repeater {
-            model: root.options
+            model: root.shown
 
             Item {
                 id: option

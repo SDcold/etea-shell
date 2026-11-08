@@ -65,6 +65,7 @@ ColumnLayout {
         label: Lang.t("Style des widgets")
         hint: Lang.t("Ciel écrit à même le ciel. Cadran céleste range tout dans des hublots.")
         options: [{ id: "sky", label: Lang.t("Ciel") }, { id: "celestial", label: Lang.t("Cadran céleste") }]
+        planetOption: true
         current: Config.widgetStyle
         onPicked: id => Config.widgetStyle = id
     }

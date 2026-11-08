@@ -23,6 +23,7 @@ ColumnLayout {
     SettingChoice {
         label: Lang.t("Style")
         options: [{ id: "sky", label: Lang.t("Ciel nu") }, { id: "islands", label: Lang.t("Îlots") }, { id: "band", label: Lang.t("Bande") }]
+        planetOption: true
         current: Config.barStyle
         onPicked: id => Config.barStyle = id
     }

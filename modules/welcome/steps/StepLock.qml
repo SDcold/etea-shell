@@ -9,6 +9,7 @@ ColumnLayout {
     SettingChoice {
         label: Lang.t("Scène")
         options: [{ id: "hand", label: Lang.t("La main tendue") }, { id: "skyward", label: Lang.t("Sous les étoiles") }]
+        planetOption: true
         current: Config.lockScene
         onPicked: id => Config.lockScene = id
     }

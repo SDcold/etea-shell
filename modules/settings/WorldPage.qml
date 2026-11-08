@@ -128,6 +128,21 @@ ColumnLayout {
         }
     }
 
+    // Every setting a world can bring, switched over at once. Off keeps what's worn now.
+    SettingSwitch {
+        readonly property var styles: ["barStyle", "pageStyle", "widgetStyle", "lockScene"]
+
+        Layout.fillWidth: true
+        label: Lang.t("Chaque planète a son style")
+        hint: Lang.t("La barre, les pages, les widgets et l'écran de verrouillage prennent le style du monde où tu vis. Tu peux toujours en reprendre un à la main.")
+        on: styles.every(setting => Config[setting] === "planet")
+        onToggled: {
+            const follow = !on;
+            for (const setting of styles)
+                Config[setting] = follow ? "planet" : Theme[setting];
+        }
+    }
+
     Text {
         Layout.topMargin: 8
         text: Lang.t("Créer ma planète")
@@ -224,5 +239,21 @@ ColumnLayout {
                 }
             }
         }
+    }
+
+    SettingSwitch {
+        visible: Forge.draft !== null
+        label: Lang.t("Garder l'image comme ciel")
+        hint: Lang.t("Ton image devient le fond. Le terrain, la barre et les fenêtres prennent ses couleurs.")
+        on: Forge.keepSky
+        onToggled: Forge.keepSky = !Forge.keepSky
+    }
+
+    SettingSwitch {
+        visible: Forge.draft !== null
+        label: Lang.t("Garder le relief")
+        hint: Lang.t("Les collines restent devant. Sans elles, ton image est seule à l'écran.")
+        on: Forge.keepGround
+        onToggled: Forge.keepGround = !Forge.keepGround
     }
 }

@@ -69,6 +69,11 @@ Scope {
         function land(page: int): void {
             Planet.leaveOrbit(page);
         }
+
+        // Plays the touchdown on the world you're on, to see it again
+        function arrive(): void {
+            Planet.arrive();
+        }
     }
 
     GlobalShortcut {

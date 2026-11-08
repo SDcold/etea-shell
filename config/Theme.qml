@@ -8,11 +8,26 @@ Singleton {
     readonly property var planet: Planets.find(Config.preview || Config.theme)
     readonly property real pace: Config.pace === "ceremony" ? 1.7 : 1 // stretches the big movements
 
+    // A setting left on "planet" wears what the planet brings, or what it was before if
+    // the planet brings nothing. Whatever you pick yourself stays yours.
+    function worn(setting, fallback) {
+        const own = Config[setting];
+        return own === "planet" ? planet.style?.[setting] ?? fallback : own;
+    }
+
+    readonly property string barStyle: worn("barStyle", "sky")
+    readonly property string widgetStyle: worn("widgetStyle", "sky")
+    readonly property string lockScene: worn("lockScene", "hand")
+    readonly property string pageStyle: worn("pageStyle", "constellation")
+
     // That sunset from the mockup, plus the grain that gives it some texture
     readonly property color skyTop: planet.skyTop
     readonly property color skyMid: planet.skyMid
     readonly property color skyLow: planet.skyLow
     readonly property real grain: 0.34 * Config.grain
+    // A world made from your own picture can keep it as its sky, and go without the hills
+    readonly property string skyImage: planet.sky ?? ""
+    readonly property bool ground: planet.ground ?? true
 
     // The hills, from the farthest to the closest
     readonly property var terrainLayers: planet.terrain
@@ -132,8 +147,8 @@ Singleton {
     readonly property color skyInk: Qt.tint(windowLit, Qt.alpha("#ffffff", 0.7))
 
     // Where things sit in the bar, so stars know where to fly
-    readonly property int pageWidth: Config.pageStyle === "numbers" ? Math.round(22 * barScale) : 42
-    readonly property int pageGap: Config.pageStyle === "numbers" ? 0 : 4
+    readonly property int pageWidth: pageStyle === "numbers" ? Math.round(22 * barScale) : 42
+    readonly property int pageGap: pageStyle === "numbers" ? 0 : 4
 
     // We bring our own font so nobody has to install anything
     Instantiator {

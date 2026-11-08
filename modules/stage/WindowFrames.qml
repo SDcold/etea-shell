@@ -138,6 +138,8 @@ Item {
                 seed: frame.modelData?.address ?? ""
                 windowWidth: frame.width
                 windowHeight: frame.height
+                screenLeft: frame.x
+                span: root.width
             }
         }
     }
