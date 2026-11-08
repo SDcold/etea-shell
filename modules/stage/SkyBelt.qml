@@ -321,8 +321,8 @@ Item {
             hovered: Skies.hovered === item && Math.abs(offset) < 6
             rise: yours ? Skies.formed : 1
             inked: yours ? Skies.formed : 1
-            // Off the screen, or still behind the folding sky
-            visible: entry !== null && Math.abs(offset) < 6.6 && (!yours || root.showYours) && y < root.height && y + height > 0 && x + width > 0 && x < root.width
+            // Off the screen, still behind the folding sky, or growing into one
+            visible: !((Skies.looking || Skies.landing) && item === Skies.chosen && Math.abs(offset - Skies.chosenAt) < 0.5) && entry !== null && Math.abs(offset) < 6.6 && (!yours || root.showYours) && y < root.height && y + height > 0 && x + width > 0 && x < root.width
         }
     }
 }

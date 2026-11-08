@@ -68,6 +68,12 @@ Singleton {
         browser.running = true;
     }
 
+    // The same, for an answer kept elsewhere
+    function browseThen(answer) {
+        browser.answer = answer;
+        browser.running = true;
+    }
+
     function url(path) {
         return "file://" + encodeURI(path).replace(/#/g, "%23").replace(/\?/g, "%3F");
     }

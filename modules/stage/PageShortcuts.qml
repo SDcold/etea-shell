@@ -98,6 +98,17 @@ Scope {
             Skies.flyTo(place - 1);
         }
 
+        // Looks at the sky at the top full size, or back up to its moon
+        function look(on: bool): void {
+            Skies.look(on);
+        }
+
+        // Lands the sky at the top all the way down without wearing it
+        function rehearse(): void {
+            Skies.rehearsal = true;
+            Skies.choose();
+        }
+
         function grab(path: string): void {
             Skies.grabWanted(path);
         }

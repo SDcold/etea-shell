@@ -446,10 +446,33 @@ Singleton {
         altitude = Math.max(0, Math.min(ceiling, height));
     }
 
-    // Back down from the skies, onto the page we left
-    function leaveSkies() {
-        if (inSkies)
-            leaveOrbit(current);
+    // Back down from the skies, onto the page we left, at the climb's pace or another
+    function leaveSkies(duration) {
+        if (!inSkies)
+            return;
+        look.stop();
+        descentTime = duration ?? Theme.skyRise;
+        leaveOrbit(current);
+    }
+
+    // Partway down and back up again, to see a sky full size behind your page
+    function lookTo(height) {
+        if (!inSkies || descent.running)
+            return;
+        rise.stop();
+        look.to = height;
+        look.restart();
+    }
+
+    // Something about to be shown needs a moment more before the stage can step aside
+    property bool hold: false
+    property bool waiting: false
+
+    onHoldChanged: {
+        if (!hold && waiting) {
+            waiting = false;
+            settle();
+        }
     }
 
     // The pages stay up until the scene has stepped aside, or the windows would blink out.
@@ -462,6 +485,10 @@ Singleton {
         if (newWorld) {
             newWorld = false;
             arrive();
+        }
+        if (hold) {
+            waiting = true;
+            return;
         }
         settle();
     }
@@ -545,7 +572,9 @@ Singleton {
     }
 
     function recover() {
-        for (const animation of [spin, rise, descent, fade, spinShift, systemShift, systemSlide])
+        hold = false;
+        waiting = false;
+        for (const animation of [spin, rise, descent, look, fade, spinShift, systemShift, systemSlide])
             animation.stop();
         for (const timer of [geometryDelay, orbitDelay, orbitLanding, captureTimeout, coverDelay, revealDelay])
             timer.stop();
@@ -721,6 +750,15 @@ Singleton {
         from: 0
         to: 1
         duration: Theme.orbitRise
+        easing.type: Easing.InOutCubic
+    }
+
+    NumberAnimation {
+        id: look
+
+        target: root
+        property: "altitude"
+        duration: Theme.skyLook
         easing.type: Easing.InOutCubic
     }
 

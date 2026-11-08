@@ -65,13 +65,46 @@ Variants {
             const span = (from, to) => Math.max(0, Math.min(1, (v - from) / (to - from)));
             const inOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(2 - 2 * t, 3) / 2;
             const inOutSine = t => (1 - Math.cos(Math.PI * t)) / 2;
+            // Far enough for the star to cover every corner, as StarMask reaches
+            const full = Math.pow(Math.pow(width / 2, 0.62) + Math.pow(height / 2, 0.62), 1 / 0.62) + 6;
+            const belt = Theme.skyBelt * planetRadius * unit;
+
+            // Looking or landing: the chosen moon grows back into a whole sky, on the way
+            // down. Its hills sink, it drifts to the middle and rounds into the star, which
+            // opens to the corners.
+            if (Skies.looking || Skies.landing) {
+                const u = 1 - v;
+                const along = (from, to) => Math.max(0, Math.min(1, (u - from) / (to - from)));
+                const m = Skies.placeOf(Skies.chosenAt, planetCenter, belt, unit, moonScale, width / height);
+                const sky = Skies.lensOf(Skies.chosen);
+                const half = m.halfHeight * m.aspect, k = along(0, 0.6), shape = inOutCubic(along(0.15, 0.6));
+                return {
+                    x: m.x + (width / 2 - m.x) * inOutSine(k),
+                    y: m.y + (height / 2 - m.y) * k * k * k,
+                    reach: half * Math.pow(full / half, inOutCubic(along(0.1, 0.7))),
+                    exponent: m.exponent + (0.62 - m.exponent) * shape,
+                    aspect: m.aspect + (1 - m.aspect) * shape,
+                    hills: 1 - along(0, 0.15),
+                    ring: 1 - along(0, 0.15),
+                    light: sky.palette?.light ?? Skies.planet.light,
+                    starSize: (4.5 + 3 * m.z) * unit,
+                    gap: (4.5 + 3 * m.z) * unit + 4 * unit,
+                    seed: sky.seed,
+                    wobbly: 1 - m.z,
+                    starLit: 1,
+                    hidden: false,
+                    path: sky.path,
+                    thumb: sky.thumb,
+                    palette: sky.palette,
+                    painted: sky.painted
+                };
+            }
+
             // Your sky's moon, or the zenith if it has turned out of sight
             const d = Skies.yours;
             const near = Math.abs(d) < 5;
-            const moon = Skies.placeOf(near ? d : 0, planetCenter, Theme.skyBelt * planetRadius * unit, unit, moonScale, width / height);
+            const moon = Skies.placeOf(near ? d : 0, planetCenter, belt, unit, moonScale, width / height);
             const half = near ? moon.halfHeight * moon.aspect : 1;
-            // Far enough for the star to cover every corner, as StarMask reaches
-            const full = Math.pow(Math.pow(width / 2, 0.62) + Math.pow(height / 2, 0.62), 1 / 0.62) + 6;
             const toMoon = inOutSine(span(0.3, 1)), round = inOutCubic(span(0.55, 0.95));
             return {
                 x: width / 2 + (moon.x - width / 2) * toMoon,
@@ -95,6 +128,9 @@ Variants {
         // At the edge: arrows a moon at a time, Page Up and Down a screenful, Home back to
         // your own sky, and typing goes to the picture whose name starts that way
         function skyKey(event) {
+            // Looking at a sky, Enter lands it
+            if (Skies.looking && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter))
+                Skies.choose();
             if (!lensHanded)
                 return;
             if (event.key === Qt.Key_Left)
@@ -107,6 +143,10 @@ Variants {
                 Skies.flyTo(Skies.zenith + 9);
             else if (event.key === Qt.Key_Home)
                 Skies.flyTo(Skies.wearing);
+            else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+                Skies.choose();
+            else if (event.key === Qt.Key_Space && !event.isAutoRepeat)
+                Skies.look(true);
             else if (event.text.length === 1 && event.text.trim() !== "" && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)))
                 Skies.type(event.text);
         }
@@ -188,7 +228,7 @@ Variants {
                             planetRadius: stage.planetRadius * stage.unit
                             unit: stage.unit
                             grow: stage.moonScale
-                            showYours: stage.lensHanded
+                            showYours: stage.lensHanded || Skies.looking || Skies.landing
                         }
                     }
                 }
@@ -316,6 +356,11 @@ Variants {
                     Planet.leaveOrbit(Planet.orbitStart + event.key - Qt.Key_1);
                 else if (!Planet.inSystem && event.key === Qt.Key_0 && Config.pages === 10)
                     Planet.leaveOrbit(Planet.orbitStart + 9);
+            }
+            // Letting go of Space brings a sky you were looking at back up to its moon
+            Keys.onReleased: event => {
+                if (Planet.inSkies && event.key === Qt.Key_Space && !event.isAutoRepeat)
+                    Skies.look(false);
             }
         }
 

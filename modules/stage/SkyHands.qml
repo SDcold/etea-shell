@@ -102,6 +102,8 @@ MouseArea {
     }
 
     onReleased: mouse => {
+        if (Skies.landing)
+            return;
         if (scrubbing) {
             const tick = tickAt(mouse.x, mouse.y);
             if (tick >= 0 && tick !== Skies.zenith)
@@ -120,10 +122,22 @@ MouseArea {
             return;
         }
         const k = moonAt(mouse.x, mouse.y);
-        if (k !== null && k !== 0)
+        if (k === 0)
+            Skies.choose(); // the moon at the top: that's the one
+        else if (k !== null)
             Skies.glideTo(Math.round(Skies.scroll) + k, 520 * (0.75 + 0.25 * Math.min(Math.abs(k), 5)), Easing.InOutSine);
         else if (k === null && (onCard(mouse.x, mouse.y) || Math.hypot(mouse.x - center.x, mouse.y - center.y) < planetRadius))
             Skies.leave(); // your page, or the planet under it
+    }
+
+    // A double click on any moon chooses it, from wherever it hangs
+    onDoubleClicked: mouse => {
+        const k = moonAt(mouse.x, mouse.y);
+        if (k === null)
+            return;
+        const index = Skies.wrap(Math.round(Skies.scroll) + k + Skies.shift);
+        Skies.holdTurn();
+        Skies.choose(index, Skies.along(index - Skies.shift, Skies.scroll));
     }
 
     // A mouse wheel turns it a moon a notch; two fingers on a touchpad follow 1:1, and it

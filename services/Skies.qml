@@ -2,6 +2,8 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Io
 import qs.config
 
 // La Ceinture des ciels: choosing a picture is a short climb to where your air ends,
@@ -50,6 +52,21 @@ Singleton {
     property var next: null
     property real sweep: 0
     property real sweepFrom: 0
+    // Looking at a sky full size, or landing one: the lens grows out of its moon, `chosenAt`
+    // places from the zenith, back into the whole sky behind your page
+    property bool looking: false
+    property bool landing: false
+    property int chosen: -1
+    property real chosenAt: 0
+    property bool committed: false
+    property bool rehearsal: false // lands it all the way without wearing it, to check how it goes
+    // Every sky is worn from a copy the size of the screen, made by vips: what the lens
+    // shows is then exactly what the background will load, and moving the original
+    // can't empty the sky. { path: copy } for the copies made so far.
+    property var copies: ({})
+    readonly property var screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+    readonly property size screenSize: Qt.size(screen?.width ?? 1920, screen?.height ?? 1080)
+    readonly property var largest: Quickshell.screens.reduce((best, s) => s.width * s.height > best.width * best.height ? s : best, Quickshell.screens[0])
     // Your sky's moon grows its hills once it has taken over from the folding sky
     property real formed: 0
 
@@ -216,6 +233,132 @@ Singleton {
         glide.start();
     }
 
+    function copyName(item) {
+        return `${Forge.skies}/worn-${Qt.md5(item.path + item.mtime)}-${largest.width}x${largest.height}.jpg`;
+    }
+
+    // The copy a picture is shown and worn from, once made; asked for after a moment at rest
+    function copyOf(item) {
+        return item?.path ? copies[item.path] ?? "" : "";
+    }
+
+    function wantCopy(item) {
+        if (!item?.path || copies[item.path] || copier.wanted?.path === item.path)
+            return;
+        copier.wanted = item;
+        copier.next();
+    }
+
+    // What the lens shows of an item: its copy, or the world's painted sky
+    function lensOf(index) {
+        const item = items[index];
+        return {
+            path: copyOf(item) || (item?.path ?? ""),
+            thumb: item?.path ? Pictures.thumb(Pictures.pictures.find(p => p.path === item.path) ?? item, 0) : "",
+            palette: paletteOf(item),
+            painted: !item?.path,
+            seed: seedOf(item)
+        };
+    }
+
+    // Space held: the camera sinks along the landing path, so the sky at the top grows behind
+    // your page; let go and everything climbs back
+    function look(on) {
+        if (!Planet.inSkies || landing || leaving)
+            return;
+        const item = items[zenith];
+        if (on && (!item || item.special === "elsewhere"))
+            return;
+        if (on) {
+            holdTurn();
+            chosen = zenith;
+            chosenAt = 0;
+            wantCopy(item);
+            looking = true;
+            Planet.lookTo(Planet.ceiling * 0.25);
+        } else if (looking) {
+            Planet.lookTo(Planet.ceiling);
+        }
+    }
+
+    // Choosing: down commits, as everywhere in ETEA. The chosen sky's colours sweep out of its
+    // moon, it grows back into your sky as you land, and is worn behind the stage on the way.
+    function choose(index, at) {
+        if (!Planet.inSkies || landing || leaving)
+            return;
+        index = index ?? zenith;
+        const item = items[index];
+        if (!item)
+            return;
+        if (item.special === "elsewhere") {
+            browse();
+            return;
+        }
+        if (index === wearing) {
+            leave();
+            return;
+        }
+        if (role !== "sky") {
+            // Asked for a path: it goes back to whoever asked
+            const answer = request?.answer;
+            leave();
+            if (answer && item.path)
+                answer(item.path, request?.from);
+            return;
+        }
+        holdTurn();
+        resting.stop();
+        chosen = index;
+        chosenAt = at ?? 0;
+        landing = true;
+        committed = false;
+        sweepOut(paletteOf(item), chosenAt, Theme.skyLand * 0.4);
+        wantCopy(item);
+        if (!item.path || copyOf(item) && preload.status === Image.Ready)
+            land();
+        else
+            copyWait.restart();
+    }
+
+    function land() {
+        copyWait.stop();
+        Planet.leaveSkies(Theme.skyLand);
+    }
+
+    // Three quarters of the way down, behind the stage, the world puts it on
+    function commit() {
+        committed = true;
+        if (rehearsal) {
+            console.info(`ETEA skies: rehearsed landing ${nameOf(items[chosen])}, copy ${copyOf(items[chosen]) ? "ready" : "missing"}`);
+            Planet.hold = true;
+            preload.source = Pictures.url(copyOf(items[chosen]) || items[chosen].path || "");
+            revealWait.waited = 0;
+            revealWait.restart();
+            return;
+        }
+        const item = items[chosen];
+        const id = planet.id;
+        if (item.special === "world") {
+            Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery"]);
+            return;
+        }
+        const palette = paletteOf(item);
+        const sky = copyOf(item) || item.path;
+        Planet.hold = true;
+        preload.source = Pictures.url(sky);
+        revealWait.waited = 0;
+        revealWait.restart();
+        Planets.tweak(id, Object.assign({}, palette ?? {}, { sky: sky, scenery: "" }));
+    }
+
+    // Somewhere else: the system's own picker, once the stage is out of its way
+    function browse() {
+        const answer = role === "sky" ? (path => Forge.wear(path)) : request?.answer;
+        leave();
+        browsing.answer = answer;
+        browsing.restart();
+    }
+
     // The colours sweep out of a moon over the last ones, which are worn from then on
     function sweepOut(palette, from, duration) {
         const wearing = next ?? shown ?? planet;
@@ -328,6 +471,12 @@ Singleton {
 
         // Up at the edge, the folded sky hands over to its moon, whose hills rise
         function onAltitudeChanged() {
+            if (root.landing && !root.committed && Planet.altitude <= Planet.ceiling * 0.25)
+                root.commit();
+            if (root.looking && !Planet.inSkies)
+                root.looking = false;
+            if (root.looking && Planet.altitude >= Planet.ceiling)
+                root.looking = false;
             if (Planet.inSkies && !root.leaving && Planet.altitude >= Planet.ceiling && root.formed === 0 && !rising.running) {
                 rising.start();
                 resting.restart();
@@ -342,6 +491,11 @@ Singleton {
                 rising.stop();
                 root.formed = 0;
                 resting.stop();
+                root.looking = false;
+                root.landing = false;
+                root.rehearsal = false;
+                root.chosen = -1;
+                root.tidy();
                 sweeping.stop();
                 root.shown = null;
                 root.next = null;
@@ -375,12 +529,125 @@ Singleton {
         property: "scroll"
     }
 
-    // At rest a moment, the zenith's colours are tried on
+    // At rest a moment, the zenith's colours are tried on, and a little later its copy made
     Timer {
         id: resting
 
         interval: 140
-        onTriggered: root.tryOn()
+        onTriggered: {
+            root.tryOn();
+            copyLater.restart();
+        }
+    }
+
+    Timer {
+        id: copyLater
+
+        interval: 160
+        onTriggered: {
+            if (Planet.inSkies && !root.turning)
+                root.wantCopy(root.items[root.zenith]);
+        }
+    }
+
+    // Copies are made one at a time, the latest wish only
+    Process {
+        id: copier
+
+        property var wanted: null
+        property var making: null
+
+        function next() {
+            if (running || !wanted)
+                return;
+            making = wanted;
+            wanted = null;
+            const out = root.copyName(making);
+            const largest = root.largest;
+            command = ["sh", "-c", `
+                [ -s "$2" ] && { echo "$2"; exit 0; }
+                mkdir -p "$(dirname "$2")"
+                w=$(vipsheader -f width "$1") && h=$(vipsheader -f height "$1") || exit 1
+                # Covering the screen, never larger than the picture itself
+                if [ $((w * $4)) -gt $((h * $3)) ]; then
+                    vips thumbnail "$1" "$2.part.jpg[Q=95,subsample-mode=off,strip]" 100000 --height "$4" --size down
+                else
+                    vips thumbnail "$1" "$2.part.jpg[Q=95,subsample-mode=off,strip]" "$3" --height 100000 --size down
+                fi && mv "$2.part.jpg" "$2" && echo "$2"`, "sh", making.path, out, String(largest.width), String(largest.height)];
+            running = true;
+        }
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const made = text.trim();
+                const item = copier.making;
+                if (made && item) {
+                    root.copies[item.path] = made;
+                    root.copies = root.copies;
+                    preload.source = Pictures.url(made);
+                }
+            }
+        }
+        onExited: {
+            making = null;
+            next();
+        }
+    }
+
+    // The copy decoded once at the size the background asks for, so it finds it ready
+    Image {
+        id: preload
+
+        visible: false
+        asynchronous: true
+        fillMode: Image.PreserveAspectCrop
+        sourceSize: root.screenSize
+        onStatusChanged: {
+            if (status === Image.Ready && copyWait.running)
+                root.land();
+        }
+    }
+
+    // Chosen too early, it waits for its copy, a little and no more
+    Timer {
+        id: copyWait
+
+        interval: 1500
+        onTriggered: root.land()
+    }
+
+    // Worn, the stage steps aside once the sky is decoded and has had time to be drawn,
+    // or after a second and a half whatever happens
+    Timer {
+        id: revealWait
+
+        property int waited: 0
+
+        interval: 160
+        repeat: true
+        onTriggered: {
+            waited += interval;
+            if (preload.status !== Image.Loading || waited >= 1500) {
+                stop();
+                Planet.hold = false;
+            }
+        }
+    }
+
+    Timer {
+        id: browsing
+
+        property var answer: null
+
+        interval: Theme.skyRise + 200
+        onTriggered: Pictures.browseThen(answer)
+    }
+
+    // Copies no world is wearing any more are deleted once the belt has closed
+    function tidy() {
+        const worn = Planets.all.map(p => p.sky ?? "").filter(sky => sky.includes("/worn-"));
+        copies = ({});
+        Quickshell.execDetached(["sh", "-c", 'cd "$1" 2>/dev/null || exit 0; shift; for f in worn-*.jpg; do [ -e "$f" ] || continue; keep=0; for w in "$@"; do [ "$w" = "$PWD/$f" ] && keep=1; done; [ $keep = 1 ] || rm -f "$f"; done', "sh", Forge.skies].concat(worn));
     }
 
     NumberAnimation {

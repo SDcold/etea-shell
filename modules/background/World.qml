@@ -121,7 +121,19 @@ Item {
                 sourceComponent: root.belt
             }
 
-            // The picture small, for when the lens is: the full one would shimmer down there
+            // The sky in the lens: yours, or the one being looked at or landed. The same
+            // picture at the same size as the background's, so it shares its decoding.
+            Image {
+                id: lensPicture
+
+                visible: false
+                asynchronous: true
+                fillMode: Image.PreserveAspectCrop
+                sourceSize: Qt.size(root.width, root.height)
+                source: root.lens?.path ? Pictures.url(root.lens.path) : root.skyImage ? Pictures.url(root.skyImage) : ""
+            }
+
+            // And small, for when the lens is: the full one would shimmer down there
             Image {
                 id: smallPicture
 
@@ -130,15 +142,18 @@ Item {
                 mipmap: true
                 fillMode: Image.PreserveAspectCrop
                 sourceSize: Qt.size(512, Math.round(512 * root.height / Math.max(1, root.width)))
-                source: root.skyImage ? Pictures.url(root.skyImage) : ""
+                source: root.lens?.thumb ? root.lens.thumb : root.lens?.path ? Pictures.url(root.lens.path) : root.skyImage ? Pictures.url(root.skyImage) : ""
             }
 
             ShaderEffect {
                 // Only the lens's own box is drawn, once it no longer covers the screen
                 readonly property real across: root.edge ? root.lens.reach : 0
                 readonly property real down: root.edge ? root.lens.reach / root.lens.aspect : 0
-                // Big, it shows the sky in place; small, the whole sky shrinks into it
-                readonly property real shrink: Math.min(1, across / (root.width / 2))
+                // Big, it shows the sky in place; small, the whole sky shrinks into it, as tall
+                // as the lens, the way a moon shows it
+                readonly property real shrink: Math.min(1, down / (root.height / 2))
+                readonly property bool flat: root.lens?.painted ?? root.skyImage === ""
+                readonly property var colours: root.lens?.palette ?? root.planet
                 readonly property real toMiddle: Math.max(0, Math.min(1, (1 - shrink) / (1 - Theme.portholeWidth / 1600)))
 
                 // with room around it for the ring and the star on top
@@ -148,15 +163,15 @@ Item {
                 y: Math.max(0, Math.floor((root.edge ? root.lens.y : 0) - down - room))
                 width: Math.min(root.width, Math.ceil((root.edge ? root.lens.x : 0) + across + room)) - x
                 height: Math.min(root.height, Math.ceil((root.edge ? root.lens.y : 0) + down + room)) - y
-                visible: root.edge && !root.lens.hidden && width > 0 && height > 0 && (root.skyImage === "" || pictureSource.status === Image.Ready)
+                visible: root.edge && !root.lens.hidden && width > 0 && height > 0 && (flat || lensPicture.status === Image.Ready)
 
-                property color colorTop: root.planet.skyTop
-                property color colorMid: root.planet.skyMid
-                property color colorLow: root.planet.skyLow
+                property color colorTop: colours.skyTop
+                property color colorMid: colours.skyMid
+                property color colorLow: colours.skyLow
                 property vector2d resolution: Qt.vector2d(root.width, root.height)
                 property vector2d box: Qt.vector2d(x, y)
                 property vector2d boxSize: Qt.vector2d(width, height)
-                property vector2d pictureSize: Qt.vector2d(pictureSource.implicitWidth, pictureSource.implicitHeight)
+                property vector2d pictureSize: Qt.vector2d(lensPicture.implicitWidth, lensPicture.implicitHeight)
                 property vector2d smallSize: Qt.vector2d(smallPicture.implicitWidth, smallPicture.implicitHeight)
                 property vector2d center: root.edge ? Qt.vector2d(root.lens.x, root.lens.y) : Qt.vector2d(0, 0)
                 property vector2d anchor: Qt.vector2d(center.x + (root.width / 2 - center.x) * toMiddle, center.y + (root.height / 2 - center.y) * toMiddle)
@@ -164,15 +179,15 @@ Item {
                 property real exponent: root.edge ? root.lens.exponent : 2
                 property real aspect: root.edge ? root.lens.aspect : 1
                 property real scale: shrink
-                property real painted: root.skyImage === "" ? 1 : 0
+                property real painted: flat ? 1 : 0
                 property real grain: Theme.grain
-                property var picture: pictureSource
+                property var picture: lensPicture
                 property var small: smallPicture
                 property real smallReady: smallPicture.status === Image.Ready ? 1 : 0
-                property color terrain0: root.planet.terrain[0]
-                property color terrain1: root.planet.terrain[1]
-                property color terrain2: root.planet.terrain[2]
-                property color terrain3: root.planet.terrain[3]
+                property color terrain0: colours.terrain[0]
+                property color terrain1: colours.terrain[1]
+                property color terrain2: colours.terrain[2]
+                property color terrain3: colours.terrain[3]
                 property real hills: root.edge ? root.lens.hills : 0
                 property real unit: root.unit
                 property real rough: root.planet.rough ?? 1
