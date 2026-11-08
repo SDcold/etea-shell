@@ -35,6 +35,19 @@ Item {
     // `shown`, and `next` sweeps over them as ETEA's star from x, y, as far as reach.
     property var tryOn: null
     readonly property var dress: tryOn?.shown ?? planet
+    // A new day on this world: outside the dawn's edge the old colours, inside the new
+    // (for a dusk the other way round), rising from under the horizon at the sun's place
+    readonly property bool morphing: Morph.busy && Morph.from !== null && Morph.planetId === planet.id
+    readonly property var tintA: morphing ? (Morph.dusk ? Morph.to : Morph.from) : dress
+    readonly property var tintB: morphing ? (Morph.dusk ? Morph.from : Morph.to) : dress
+    readonly property point dawnFrom: Qt.point(width * (planet.sun ?? 0.25), height * horizon + height * 0.12)
+    readonly property real dawnEdge: {
+        if (!morphing)
+            return 0;
+        const across = Math.max(dawnFrom.x, width - dawnFrom.x) / 2.6;
+        const reach = Math.hypot(across, dawnFrom.y) + 4;
+        return reach * (Morph.dusk ? 1 - Morph.tint : Morph.tint);
+    }
     readonly property var sweeping: tryOn?.next ?? null
     readonly property real unit: width / 1600
     readonly property point center: Qt.point(width / 2, height * horizon + radius * unit)
@@ -54,14 +67,21 @@ Item {
         // Painted, or while your picture is still on its way
         visible: !root.edge && (root.skyImage === "" || pictureSource.status !== Image.Ready)
 
-        property color colorTop: root.planet.skyTop
-        property color colorMid: root.planet.skyMid
-        property color colorLow: root.planet.skyLow
+        property color colorTop: root.tintA.skyTop
+        property color colorMid: root.tintA.skyMid
+        property color colorLow: root.tintA.skyLow
+        property color colorTopB: root.tintB.skyTop
+        property color colorMidB: root.tintB.skyMid
+        property color colorLowB: root.tintB.skyLow
+        property vector2d dawnCenter: Qt.vector2d(root.dawnFrom.x, root.dawnFrom.y)
+        property real dawnEdge: root.dawnEdge
+        property real bandInside: Morph.dusk ? 0 : 1
+        property color dawnLight: root.morphing ? Morph.to.light : "white"
         property vector2d resolution: Qt.vector2d(width, height)
         property real grain: Theme.grain
         property real space: root.space
 
-        layer.enabled: root.cached
+        layer.enabled: root.cached && !root.morphing
         fragmentShader: Qt.resolvedUrl("../../shaders/sky.frag.qsb")
     }
 
@@ -87,7 +107,11 @@ Item {
         property real grain: Theme.grain
         property real space: root.space
 
-        layer.enabled: root.cached
+        layer.enabled: root.cached && !root.morphing
+        property vector2d dawnCenter: Qt.vector2d(root.dawnFrom.x, root.dawnFrom.y)
+        property real dawnEdge: root.dawnEdge
+        property real bandInside: Morph.dusk ? 0 : 1
+        property color dawnLight: root.morphing ? Morph.to.light : "white"
         fragmentShader: Qt.resolvedUrl("../../shaders/skyimage.frag.qsb")
     }
 
@@ -286,17 +310,26 @@ Item {
         visible: opacity > 0
 
         // planetAngle is what will spin the planet between pages
-        property color layer0: root.dress.terrain[0]
-        property color layer1: root.dress.terrain[1]
-        property color layer2: root.dress.terrain[2]
-        property color layer3: root.dress.terrain[3]
+        property color layer0: root.tintA.terrain[0]
+        property color layer1: root.tintA.terrain[1]
+        property color layer2: root.tintA.terrain[2]
+        property color layer3: root.tintA.terrain[3]
+        property color layerB0: root.tintB.terrain[0]
+        property color layerB1: root.tintB.terrain[1]
+        property color layerB2: root.tintB.terrain[2]
+        property color layerB3: root.tintB.terrain[3]
+        property color rimB: root.tintB.skyLow
+        property vector2d dawnCenter: Qt.vector2d(root.dawnFrom.x, root.dawnFrom.y)
+        property real dawnEdge: root.dawnEdge
+        property real bandInside: Morph.dusk ? 0 : 1
+        property color dawnLight: root.morphing ? Morph.to.light : "white"
         property vector2d resolution: Qt.vector2d(width, height)
         property real horizon: root.horizon
         property real relief: Config.terrainRelief * (root.planet.relief ?? 1)
         property real curve: root.radius
         property real planetAngle: root.angle
         property real orbit: root.space
-        property color rimColor: root.dress.skyLow
+        property color rimColor: root.tintA.skyLow
         property vector4d l0: root.bands(0)
         property vector4d l1: root.bands(4)
         property vector4d l2: root.bands(8)
@@ -325,7 +358,7 @@ Item {
         }
         property real grain: Theme.grain
 
-        layer.enabled: root.cached && music === 0 && arrival === 0
+        layer.enabled: root.cached && music === 0 && arrival === 0 && !root.morphing
         fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
     }
 

@@ -175,6 +175,7 @@ Singleton {
 
     // A picture of the focused stage, saved to a file, to check a step without looking
     signal grabWanted(string path)
+    signal backgroundWanted(string path)
 
     // Turning the belt. Everything comes to rest on a moon.
     function holdTurn() {

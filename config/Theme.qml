@@ -5,7 +5,9 @@ import Quickshell
 
 // The whole look of ETEA lives here. Later on, every planet gets its own.
 Singleton {
-    readonly property var planet: Planets.find(Config.preview || Config.theme)
+    // The world you're on, as shown: while its colours are changing, the shell keeps the
+    // old light until the new day's edge reaches the bar
+    readonly property var planet: Morph.shown(Planets.find(Config.preview || Config.theme))
     readonly property real pace: Config.pace === "ceremony" ? 1.7 : 1 // stretches the big movements
 
     // A setting left on "planet" wears what the planet brings, or what you last picked

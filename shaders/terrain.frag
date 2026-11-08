@@ -42,6 +42,17 @@ layout(std140, binding = 0) uniform buf {
     vec4 sweepLight;
     vec2 sweepCenter;
     float sweepReach;
+    // A new day, as in sky.frag: inside the ellipse the hills wear B, and its rim of light
+    // runs over the crests in three flat steps, the touchdown's light
+    vec4 layerB0;
+    vec4 layerB1;
+    vec4 layerB2;
+    vec4 layerB3;
+    vec4 rimB;
+    vec2 dawnCenter;
+    float dawnEdge;
+    float bandInside;
+    vec4 dawnLight;
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -109,9 +120,16 @@ void main() {
     float sweepShape = pow(pow(sweepAt.x, 0.62) + pow(sweepAt.y, 0.62), 1.0 / 0.62);
     float sweepSlope = max(length(vec2(dFdx(sweepShape), dFdy(sweepShape))), 1e-4);
     float swept = sweepReach > 0.0 ? clamp((sweepReach - sweepShape) / sweepSlope + 0.5, 0.0, 1.0) : 0.0;
-    vec4 tone0 = mix(layer0, next0, swept), tone1 = mix(layer1, next1, swept);
-    vec4 tone2 = mix(layer2, next2, swept), tone3 = mix(layer3, next3, swept);
-    vec4 rimTone = mix(rimColor, nextRim, swept);
+    vec2 pixel = qt_TexCoord0 * resolution;
+    float dawnN = length(vec2((pixel.x - dawnCenter.x) / 2.6, pixel.y - dawnCenter.y));
+    float dawnSlope = max(length(vec2(dFdx(dawnN), dFdy(dawnN))), 1e-4);
+    float day = dawnEdge > 0.0 ? clamp((dawnEdge - dawnN) / dawnSlope + 0.5, 0.0, 1.0) : 0.0;
+    float dayBehind = bandInside > 0.5 ? dawnEdge - dawnN : dawnN - dawnEdge;
+    float dayLight = dawnEdge > 0.0 && dayBehind > 0.0 ? ceil(clamp(1.0 - dayBehind / 90.0, 0.0, 1.0) * 3.0) / 3.0 : 0.0;
+    float dayLine = dawnEdge > 0.0 ? clamp(0.75 + 0.5 - abs(dawnEdge - dawnN) / dawnSlope, 0.0, 1.0) : 0.0;
+    vec4 tone0 = mix(mix(layer0, layerB0, day), next0, swept), tone1 = mix(mix(layer1, layerB1, day), next1, swept);
+    vec4 tone2 = mix(mix(layer2, layerB2, day), next2, swept), tone3 = mix(mix(layer3, layerB3, day), next3, swept);
+    vec4 rimTone = mix(mix(rimColor, rimB, day), nextRim, swept);
     vec4 colors[4] = vec4[](tone0, tone1, tone2, tone3);
     float depth[4] = float[](0.0, 0.0065, 0.014, 0.023);
     float amp[4] = float[](1.0, 0.8, 0.7, 0.55);
@@ -185,6 +203,8 @@ void main() {
         // The crest catches the light, the slope below barely any
         float crest = smoothstep(edge - 2.8, edge - 1.6, r);
         vec3 tone = mix(colors[l].rgb, arrivalLight.rgb, shine * mix(0.05, 0.95, crest));
+        // The new day's rim lights the crests it crosses, and its line runs over the ground
+        tone = mix(tone, dawnLight.rgb, max(dayLight * mix(0.05, 0.95, crest), dayLine));
         color = mix(color, vec4(tone, 1.0), inside);
     }
 

@@ -77,6 +77,26 @@ Scope {
     }
 
     IpcHandler {
+        target: "morph"
+
+        // Plays your world's colours changing to another world's, there and back, keeping nothing
+        function rehearse(other: string): void {
+            const source = Planets.find(other), changes = {};
+            for (const key of Morph.tints)
+                changes[key] = source[key];
+            Morph.rehearse(Theme.planet.id, changes);
+        }
+
+        function grab(path: string): void {
+            Skies.backgroundWanted(path);
+        }
+
+        function state(): string {
+            return `busy ${Morph.busy}, ${Morph.dusk ? "dusk" : "dawn"} ${Morph.tint.toFixed(2)}, crossed ${Morph.crossed}, light ${Theme.link}`;
+        }
+    }
+
+    IpcHandler {
         target: "skies"
 
         // Climbs to the belt for your own sky, without changing anything yet

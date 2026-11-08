@@ -20,6 +20,7 @@ Singleton {
             skyLow: "#f2b872",
             terrain: ["#a8553c", "#7a3a33", "#4f2630", "#2c1622"],
             light: "#ffe2a8",
+            sun: 0.75, // on the right: the giant keeps its shading
             // Saturn: its ring is the bar, its moons turn in the dials
             style: { barStyle: "band", pageStyle: "constellation", widgetStyle: "celestial", lockScene: "hand" }
         },

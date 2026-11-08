@@ -32,13 +32,14 @@ ColumnLayout {
         return /^t[0-3]$/.test(key) ? planet.terrain[Number(key[1])] : planet[key];
     }
 
+    // A new colour comes as a new day over the world, not all at once
     function setColor(key, color) {
         if (/^t[0-3]$/.test(key)) {
             const terrain = planet.terrain.slice();
             terrain[Number(key[1])] = String(color);
-            Planets.tweak(planetId, { terrain: terrain });
+            Morph.apply(planetId, { terrain: terrain });
         } else {
-            Planets.tweak(planetId, { [key]: String(color) });
+            Morph.apply(planetId, { [key]: String(color) });
         }
     }
 
@@ -290,6 +291,6 @@ ColumnLayout {
         visible: Config.planetTweaks[root.planetId] !== undefined
         label: Lang.t("Revenir à l'original")
         quiet: true
-        onPicked: Planets.untweak(root.planetId)
+        onPicked: Morph.apply(root.planetId, null, true)
     }
 }
