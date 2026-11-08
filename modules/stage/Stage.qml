@@ -38,6 +38,33 @@ Variants {
             return orbit + (screenHeight * 0.44 - planetRadius - (screenHeight / 2 - Theme.orbitRadius)) * beyond;
         }
 
+        // Choosing a sky, your own sky folds from the whole screen into ETEA's star, then
+        // rounds into a porthole at the zenith, where the belt holds it. All of it hangs off
+        // the altitude, so leaving plays it backwards from wherever it is.
+        readonly property var lens: {
+            if (Planet.ceiling === 1)
+                return null;
+            const v = Math.max(0, Math.min(1, Planet.altitude / Planet.ceiling));
+            const span = (from, to) => Math.max(0, Math.min(1, (v - from) / (to - from)));
+            const inOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(2 - 2 * t, 3) / 2;
+            const inOutSine = t => (1 - Math.cos(Math.PI * t)) / 2;
+            // The zenith slot of the belt, which grows and shrinks with the planet
+            const atEdge = Math.exp(Math.log(Theme.terrainCurve) + (Math.log(Theme.orbitRadius) - Math.log(Theme.terrainCurve)) * Theme.skyEdge);
+            const radius = planetRadius * unit;
+            const slotY = (planetTop + planetRadius) * unit - Theme.skyBelt * radius;
+            const half = Theme.portholeWidth / 2 * (planetRadius / atEdge) * unit;
+            // Far enough for the star to cover every corner, as StarMask reaches
+            const full = Math.pow(Math.pow(width / 2, 0.62) + Math.pow(height / 2, 0.62), 1 / 0.62) + 6;
+            const toSlot = inOutSine(span(0.3, 1)), round = inOutCubic(span(0.55, 0.95));
+            return {
+                x: width / 2,
+                y: height / 2 + (slotY - height / 2) * toSlot,
+                reach: full * Math.pow(half / full, inOutCubic(span(0.05, 0.85))),
+                exponent: 0.62 + (4.6 - 0.62) * round,
+                aspect: 1 + (width / height - 1) * round
+            };
+        }
+
         screen: modelData
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
@@ -105,6 +132,7 @@ Variants {
                     horizon: stage.planetTop / stage.screenHeight
                     space: Math.min(1, Planet.altitude * 1.6)
                     groundOpacity: 1 - Planet.systemLevel
+                    lens: stage.lens
                 }
             }
 

@@ -440,6 +440,12 @@ Singleton {
             orbitLanding.restart();
     }
 
+    // Stops the climb somewhere along the way, to look at it there
+    function holdAt(height) {
+        rise.stop();
+        altitude = Math.max(0, Math.min(ceiling, height));
+    }
+
     // Back down from the skies, onto the page we left
     function leaveSkies() {
         if (inSkies)

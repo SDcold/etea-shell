@@ -24,6 +24,13 @@ Item {
     property var planet: Theme.planet
     property string skyImage: planet.sky ?? ""
     property bool ground: planet.ground ?? true
+    // Up at the edge of the air: night and your air in bands behind, and your own sky in a
+    // lens, folding from the whole screen into a porthole. { x, y, reach, exponent, aspect }
+    // in pixels, or nothing to draw the sky as usual.
+    property var lens: null
+    readonly property bool edge: lens !== null
+    readonly property real unit: width / 1600
+    readonly property point center: Qt.point(width / 2, height * horizon + radius * unit)
 
     // Four sound levels at a time, the way the shader wants them. Only read while the ground
     // dances: otherwise every level another listener hears would redraw the cached hills.
@@ -38,7 +45,7 @@ Item {
         anchors.fill: parent
 
         // Painted, or while your picture is still on its way
-        visible: root.skyImage === "" || pictureSource.status !== Image.Ready
+        visible: !root.edge && (root.skyImage === "" || pictureSource.status !== Image.Ready)
 
         property color colorTop: root.planet.skyTop
         property color colorMid: root.planet.skyMid
@@ -65,7 +72,7 @@ Item {
     ShaderEffect {
         anchors.fill: parent
 
-        visible: root.skyImage !== "" && pictureSource.status === Image.Ready
+        visible: !root.edge && root.skyImage !== "" && pictureSource.status === Image.Ready
 
         property var picture: pictureSource
         property vector2d pictureSize: Qt.vector2d(pictureSource.implicitWidth, pictureSource.implicitHeight)
@@ -75,6 +82,78 @@ Item {
 
         layer.enabled: root.cached
         fragmentShader: Qt.resolvedUrl("../../shaders/skyimage.frag.qsb")
+    }
+
+    // Only built while up at the edge: the backgrounds never need any of it
+    Loader {
+        anchors.fill: parent
+        active: root.edge
+
+        sourceComponent: Item {
+            ShaderEffect {
+                anchors.fill: parent
+
+                property color colorTop: root.planet.skyTop
+                property color night: Theme.launcherShade
+                property vector2d resolution: Qt.vector2d(width, height)
+                property vector2d center: Qt.vector2d(root.center.x, root.center.y)
+                property real radius: root.radius * root.unit
+                property real edge: Theme.skyBelt * radius
+                property real grain: Theme.grain
+                property real drift: 0
+
+                fragmentShader: Qt.resolvedUrl("../../shaders/atmosphere.frag.qsb")
+            }
+
+            // The picture small, for when the lens is: the full one would shimmer down there
+            Image {
+                id: smallPicture
+
+                visible: false
+                asynchronous: true
+                mipmap: true
+                fillMode: Image.PreserveAspectCrop
+                sourceSize: Qt.size(512, Math.round(512 * root.height / Math.max(1, root.width)))
+                source: root.skyImage ? Pictures.url(root.skyImage) : ""
+            }
+
+            ShaderEffect {
+                // Only the lens's own box is drawn, once it no longer covers the screen
+                readonly property real across: root.edge ? root.lens.reach : 0
+                readonly property real down: root.edge ? root.lens.reach / root.lens.aspect : 0
+                // Big, it shows the sky in place; small, the whole sky shrinks into it
+                readonly property real shrink: Math.min(1, across / (root.width / 2))
+                readonly property real toMiddle: Math.max(0, Math.min(1, (1 - shrink) / (1 - Theme.portholeWidth / 1600)))
+
+                x: Math.max(0, Math.floor((root.edge ? root.lens.x : 0) - across - 2))
+                y: Math.max(0, Math.floor((root.edge ? root.lens.y : 0) - down - 2))
+                width: Math.min(root.width, Math.ceil((root.edge ? root.lens.x : 0) + across + 2)) - x
+                height: Math.min(root.height, Math.ceil((root.edge ? root.lens.y : 0) + down + 2)) - y
+                visible: root.edge && width > 0 && height > 0 && (root.skyImage === "" || pictureSource.status === Image.Ready)
+
+                property color colorTop: root.planet.skyTop
+                property color colorMid: root.planet.skyMid
+                property color colorLow: root.planet.skyLow
+                property vector2d resolution: Qt.vector2d(root.width, root.height)
+                property vector2d box: Qt.vector2d(x, y)
+                property vector2d boxSize: Qt.vector2d(width, height)
+                property vector2d pictureSize: Qt.vector2d(pictureSource.implicitWidth, pictureSource.implicitHeight)
+                property vector2d smallSize: Qt.vector2d(smallPicture.implicitWidth, smallPicture.implicitHeight)
+                property vector2d center: root.edge ? Qt.vector2d(root.lens.x, root.lens.y) : Qt.vector2d(0, 0)
+                property vector2d anchor: Qt.vector2d(center.x + (root.width / 2 - center.x) * toMiddle, center.y + (root.height / 2 - center.y) * toMiddle)
+                property real reach: across
+                property real exponent: root.edge ? root.lens.exponent : 2
+                property real aspect: root.edge ? root.lens.aspect : 1
+                property real scale: shrink
+                property real painted: root.skyImage === "" ? 1 : 0
+                property real grain: Theme.grain
+                property var picture: pictureSource
+                property var small: smallPicture
+                property real smallReady: smallPicture.status === Image.Ready ? 1 : 0
+
+                fragmentShader: Qt.resolvedUrl("../../shaders/skylens.frag.qsb")
+            }
+        }
     }
 
     // The world's own sky: its moons, its rings, its clouds. Gone once we've left the air.
@@ -190,6 +269,7 @@ Item {
         property real arrival: root.arrival
         property color arrivalLight: root.planet.light
         property real rough: root.planet.rough ?? 1
+        property real flatRim: root.edge ? 1 : 0
 
         Behavior on music {
             NumberAnimation { duration: 1800; easing.type: Easing.InOutSine }

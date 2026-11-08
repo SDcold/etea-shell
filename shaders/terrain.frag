@@ -31,6 +31,7 @@ layout(std140, binding = 0) uniform buf {
     float arrival; // 0 at rest, then from touching down on a new world to the end of it
     vec4 arrivalLight;
     float rough; // how jagged the crests are: long swells at 0, broken rock at 1
+    float flatRim; // 1 at the edge of the air: a flat limb and a day side in flat steps
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -177,26 +178,46 @@ void main() {
     float edgeDistance = length(q);
     vec4 rim = vec4(0.0);
     if (orbit > 0.001) {
-        if (edgeDistance < 1.0) {
-            float depthZ = sqrt(1.0 - edgeDistance * edgeDistance);
-            vec3 normal = vec3(q, depthZ);
+        // Worked out for every pixel, so its slope across a pixel is known everywhere
+        float depthZ = sqrt(max(0.0, 1.0 - edgeDistance * edgeDistance));
+        vec3 normal = vec3(q, depthZ);
+        float facing = dot(normal, sun);
+        float aa = max(fwidth(facing), 1e-4);
+        if (edgeDistance < 1.0 + 2.0 / curve) {
             vec2 surface = vec2(atan(q.x, depthZ) + planetAngle, asin(clamp(q.y, -1.0, 1.0))) * 2.6;
             float ground = land(surface + 1.7);
             vec3 tone = mix(layer3.rgb, layer2.rgb, smoothstep(0.34, 0.42, ground));
             tone = mix(tone, layer1.rgb, smoothstep(0.44, 0.52, ground));
             tone = mix(tone, layer0.rgb, smoothstep(0.54, 0.62, ground));
-            float day = smoothstep(-0.12, 0.65, dot(normal, sun));
-            vec3 lit = tone * mix(0.1, 1.0, day);
+            vec3 lit = tone * mix(0.1, 1.0, smoothstep(-0.12, 0.65, facing));
+            if (flatRim > 0.5) {
+                // Night comes in two hard steps, like a paper cut-out
+                float dusk = clamp((0.25 - facing) / aa + 0.5, 0.0, 1.0);
+                float dark = clamp((-0.1 - facing) / aa + 0.5, 0.0, 1.0);
+                lit = tone * (1.0 - 0.42 * dusk) * (1.0 - 0.5 * dark);
+            }
             float solid = smoothstep(1.0, 1.0 - 2.0 / curve, edgeDistance);
+            // Under a flat limb the disc runs a pixel past the edge, so the ring's soft inner
+            // pixel lies on solid ground and nothing shows through between them
+            if (flatRim > 0.5)
+                solid = clamp((1.0 - edgeDistance) * curve * k + 1.5, 0.0, 1.0);
             color = mix(color, vec4(lit, 1.0), orbit * solid);
         }
-        float side = 0.25 + 0.75 * max(0.0, dot(normalize(q), normalize(sun.xy)));
-        float glow = exp(-abs(edgeDistance - 1.0) * 26.0) * side * orbit;
-        rim = vec4(rimColor.rgb * glow, glow);
+        if (flatRim > 0.5) {
+            // The limb: a flat ring of your low sky colour, three units wide
+            float out_ = (edgeDistance - 1.0) * curve * k;
+            float ring = clamp(out_ + 0.5, 0.0, 1.0) * clamp(3.0 * k - out_ + 0.5, 0.0, 1.0) * orbit;
+            rim = vec4(rimColor.rgb * ring, ring);
+        } else {
+            float side = 0.25 + 0.75 * max(0.0, dot(normalize(q), normalize(sun.xy)));
+            float glow = exp(-abs(edgeDistance - 1.0) * 26.0) * side * orbit;
+            rim = vec4(rimColor.rgb * glow, glow);
+        }
     }
 
     float n = mix(0.376, 0.627, hash(floor(gl_FragCoord.xy))); // per screen pixel, like the sky
     vec3 rgb = mix(color.rgb, overlay(color.rgb, n), grain);
     vec4 result = vec4(rgb * color.a, color.a);
-    fragColor = (result + rim * (1.0 - result.a * 0.35)) * qt_Opacity;
+    vec4 lit = flatRim > 0.5 ? rim + result * (1.0 - rim.a) : result + rim * (1.0 - result.a * 0.35);
+    fragColor = lit * qt_Opacity;
 }

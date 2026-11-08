@@ -92,6 +92,12 @@ Scope {
             Skies.grabWanted(path);
         }
 
+        // Holds the climb at a height, from 0 to the edge, to grab it there
+        function hold(altitude: real): void {
+            if (Planet.inSkies)
+                Planet.holdAt(altitude);
+        }
+
         function state(): string {
             return `open ${Skies.open}, role ${Skies.role || "none"}, items ${Skies.items.length}, palettes ${Object.keys(Palettes.known).length}, phase ${Planet.phase}, altitude ${Planet.altitude.toFixed(3)}, ceiling ${Planet.ceiling}`;
         }

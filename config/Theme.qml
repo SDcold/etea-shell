@@ -116,6 +116,9 @@ Singleton {
     // Choosing a sky: a shorter climb, to « la lisière », where your air ends
     readonly property real skyEdge: 0.6 // its altitude, orbit being 1
     readonly property int skyRise: 640 * pace
+    readonly property real skyBelt: 1.64 // the belt's radius, and the edge of the air, in planet radii
+    readonly property real portholeWidth: 240 // the sky at the zenith, at the edge, on a 1600 wide screen; shaped like the screen
+    readonly property real moonSize: 125
 
     // The launcher: a dimmed sky, a question and a constellation of apps
     readonly property color launcherShade: "#05060e"

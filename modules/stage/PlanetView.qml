@@ -36,6 +36,7 @@ ShaderEffect {
     property real arrival: 0
     property color arrivalLight: "transparent"
     property real rough: planet.rough ?? 1
+    property real flatRim: 0
 
     fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
 
