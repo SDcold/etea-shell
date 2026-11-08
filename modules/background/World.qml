@@ -25,8 +25,11 @@ Item {
     property string skyImage: planet.sky ?? ""
     property bool ground: planet.ground ?? true
 
-    // Four sound levels at a time, the way the shader wants them
+    // Four sound levels at a time, the way the shader wants them. Only read while the ground
+    // dances: otherwise every level another listener hears would redraw the cached hills.
     function bands(first) {
+        if (!(terrain.music > 0))
+            return Qt.vector4d(0, 0, 0, 0);
         const levels = Beat.shown;
         return Qt.vector4d(levels[first] ?? 0, levels[first + 1] ?? 0, levels[first + 2] ?? 0, levels[first + 3] ?? 0);
     }
@@ -154,6 +157,8 @@ Item {
     }
 
     ShaderEffect {
+        id: terrain
+
         anchors.fill: parent
 
         // Without hills the ground only shows once it has become a planet, up in orbit
