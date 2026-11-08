@@ -43,6 +43,6 @@ ShaderEffect {
         to: Math.PI * 2
         duration: 90000
         loops: Animation.Infinite
-        running: root.spinning && root.visible
+        running: root.spinning && root.visible && (root.Window.window?.visible ?? false) // not in a closed window
     }
 }
