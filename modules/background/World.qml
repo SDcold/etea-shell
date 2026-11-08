@@ -359,6 +359,8 @@ Item {
         // The front runs out over the whole screen and a little more, slowing as it goes
         property real reformFront: root.reshaping ? (1 - (1 - Morph.front) * (1 - Morph.front)) * 2140 : -1
         property real sink: root.sinking ? Morph.sink : 0
+        property real sunAt: root.planet.sun ?? 0.25
+        property real cut: root.planet.cut ? 1 : 0
         property color next0: root.sweeping?.terrain[0] ?? layer0
         property color next1: root.sweeping?.terrain[1] ?? layer1
         property color next2: root.sweeping?.terrain[2] ?? layer2

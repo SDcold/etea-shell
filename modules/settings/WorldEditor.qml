@@ -217,6 +217,22 @@ ColumnLayout {
     }
 
     SettingSlider {
+        label: Lang.t("Soleil")
+        hint: Lang.t("D'où vient la lumière, le long de l'horizon.")
+        value: root.planet.sun ?? 0.25
+        shownAs: 100
+        unit: " %"
+        onMoved: value => Planets.tweak(root.planetId, { sun: value })
+    }
+
+    SettingSwitch {
+        label: Lang.t("Faces taillées")
+        hint: Lang.t("Les pentes tournées vers le soleil, un ton plus clair.")
+        on: root.planet.cut ?? false
+        onToggled: Planets.tweak(root.planetId, { cut: !on })
+    }
+
+    SettingSlider {
         label: Lang.t("Graine")
         hint: Lang.t("Déplace les crêtes et les continents.")
         value: root.planet.seed ?? 1.2

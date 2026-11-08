@@ -41,6 +41,7 @@ ShaderEffect {
     property real farA: Morph.formOf(planet, "far")
     property real nearA: Morph.formOf(planet, "near")
     property real reformFront: -1
+    property real sunAt: planet.sun ?? 0.25
 
     fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
 

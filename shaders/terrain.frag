@@ -66,6 +66,10 @@ layout(std140, binding = 0) uniform buf {
     float reformAt; // the angle it starts from, as seen on screen
     float reformFront; // how far the front has run, in units; below 0 nothing re-forms
     float sink; // 0 standing, 1 sunk past the bottom of the screen
+    // The sun, never drawn: 0 to 1 along a low arc from left to right. It lights the day
+    // side from orbit, and with cut on, the faces turned to it are one flat step brighter.
+    float sunAt;
+    float cut;
 };
 
 // Tables: the swell cut into flat tops and short steep cliffs, a little grit on the tops
@@ -236,7 +240,8 @@ void main() {
     for (int l = 0; l < 4; l++) {
         float a = angle + planetAngle * (1.0 - float(l) * 0.012);
         bool far_ = l < 2;
-        float shape = heightOf(far_ ? farA : nearA, seed + float(l) * 3.3, a, sampleStep);
+        float layerSeed = seed + float(l) * 3.3;
+        float shape = heightOf(far_ ? farA : nearA, layerSeed, a, sampleStep);
         if (reformFront >= 0.0) {
             // The front runs both ways from where it started, each nearer layer a little behind
             float t = clamp((reformFront - float(l) * 80.0 - abs(angle - reformAt) * curve) / 300.0, 0.0, 1.0);
@@ -255,7 +260,26 @@ void main() {
         float inside = smoothstep(edge + 0.6, edge - 0.6, r);
         // The crest catches the light, the slope below barely any
         float crest = smoothstep(edge - 2.8, edge - 1.6, r);
-        vec3 tone = mix(colors[l].rgb, arrivalLight.rgb, shine * mix(0.05, 0.95, crest));
+        vec3 tone = colors[l].rgb;
+        // Cut faces: from the pixel, go up toward the sun along a steep line until the crest.
+        // The face it comes out on says the light: one going down toward the sun faces it
+        // and is a step lighter. Each face is so bounded by straight lines running down from
+        // the crests and hollows at the sun's angle, as a cut-out would be.
+        if (cut > 0.5 && orbit < 0.5 && inside > 0.0 && reformFront < 0.0 && push == 0.0) {
+            float toward = sunAt > 0.5 ? 1.0 : -1.0;
+            float base = curve * (1.0 - depth[l]);
+            float out_ = a + toward * max(0.0, edge - r) / (curve * 1.6);
+            for (int j = 0; j < 2; j++) {
+                float h = base + maxAmp * amp[l] * heightOf(far_ ? farA : nearA, layerSeed, out_, sampleStep);
+                out_ = a + toward * max(0.0, h - r) / (curve * 1.6);
+            }
+            // The slope over a few segments, so faces are broad and the fine grit doesn't
+            // stripe them; a flat stays as it is
+            float w = 4.0 * sampleStep;
+            float rising = heightOf(far_ ? farA : nearA, layerSeed, out_ + w, sampleStep) - heightOf(far_ ? farA : nearA, layerSeed, out_ - w, sampleStep);
+            tone = mix(tone, arrivalLight.rgb, toward * rising < -0.06 ? 0.14 : 0.0);
+        }
+        tone = mix(tone, arrivalLight.rgb, shine * mix(0.05, 0.95, crest));
         // The new day's rim lights the crests it crosses, and its line runs over the ground
         tone = mix(tone, dawnLight.rgb, max(dayLight * mix(0.05, 0.95, crest), dayLine));
         color = mix(color, vec4(tone, 1.0), inside);
@@ -263,7 +287,7 @@ void main() {
 
     // From space it's a real planet: continents, a day side and a night side, and a
     // thin glow of atmosphere catching the light around the edge
-    vec3 sun = normalize(vec3(-0.55, -0.6, 0.58));
+    vec3 sun = normalize(vec3(-0.55 + 1.1 * (sunAt - 0.25) / 0.5, -0.6, 0.58)); // 0.25 is today's light, upper left
     vec2 q = (p - center) / curve;
     float edgeDistance = length(q);
     vec4 rim = vec4(0.0);
