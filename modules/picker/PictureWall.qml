@@ -7,7 +7,7 @@ import qs.modules.settings
 import qs.services
 
 // The pictures themselves, on their card. Only the thumbnails on screen are made, each one
-// loaded off the main thread at its own small size, then kept so the next time is instant.
+// loaded off the main thread at its own small size, from a thumbnail whenever there is one.
 Item {
     id: card
 
@@ -146,15 +146,14 @@ Item {
                 Image {
                     id: thumb
 
-                    // 0: the system's thumbnail, 1: ours, 2: the picture itself
+                    // 0: the system's x-large thumbnail, 1: its large one, 2: ours, 3: the picture itself
                     property int stage: Pictures.firstStage(tile.modelData)
-                    property bool kept: false
 
                     anchors.fill: parent
                     asynchronous: true
                     fillMode: Image.PreserveAspectCrop
                     sourceSize: Qt.size(Math.ceil(width * 1.5), Math.ceil(height * 1.5))
-                    source: [Pictures.url(Pictures.systemThumb(tile.modelData.path)), Pictures.url(Pictures.ownThumb(tile.modelData)), Pictures.url(tile.modelData.path)][stage]
+                    source: Pictures.thumb(tile.modelData, stage)
                     opacity: status === Image.Ready ? 1 : 0
 
                     Behavior on opacity {
@@ -162,21 +161,8 @@ Item {
                     }
 
                     onStatusChanged: {
-                        if (status === Image.Error && stage < 2)
+                        if (status === Image.Error && stage < 3)
                             stage += 1;
-                    }
-
-                    // Made from the picture itself: once it's fully in, keep it small for next time
-                    onOpacityChanged: {
-                        if (opacity === 1 && stage === 2 && !kept) {
-                            kept = true;
-                            const file = Pictures.ownThumb(tile.modelData);
-                            const picture = tile.modelData;
-                            grabToImage(result => {
-                                if (result.saveToFile(file))
-                                    Pictures.kept(picture);
-                            }, sourceSize);
-                        }
                     }
                 }
 
@@ -205,7 +191,6 @@ Item {
             // A recycled tile starts over from the quickest source for its new picture
             GridView.onReused: {
                 thumb.stage = Pictures.firstStage(tile.modelData);
-                thumb.kept = false;
             }
 
             MouseArea {

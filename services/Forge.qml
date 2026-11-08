@@ -71,15 +71,14 @@ Singleton {
     }
 
     // A wallpaper picked from the bar becomes the sky of the world you're on, and that world's
-    // colours are drawn from it again: no new planet. The colours are read from the picture's
-    // thumbnail, already small, and the picture is loaded at screen size before anything
+    // colours are drawn from it again: no new planet. The colours come from Palettes, read
+    // once from a thumbnail, and the picture is loaded at screen size before anything
     // changes, so the star opens onto it whole.
     property var wearing: null // { path, from, palette, loaded }
 
     function wear(path, from) {
-        wearing = { path: path, from: from, palette: null, loaded: false };
-        wallColors.source = "";
-        wallColors.source = Pictures.quickest(path);
+        const picture = Pictures.pictures.find(p => p.path === path) ?? { path: path, mtime: "" };
+        wearing = { path: path, picture: picture, from: from, palette: Palettes.of(picture)?.palette ?? null, loaded: false };
         preload.source = "";
         preload.source = Pictures.url(path);
     }
@@ -99,15 +98,14 @@ Singleton {
         Planet.changeLook(() => Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery"]), from);
     }
 
-    ColorQuantizer {
-        id: wallColors
+    // Its colours, if they weren't known yet when it was picked
+    Connections {
+        target: Palettes
 
-        depth: 4
-        rescaleSize: 64
-        onColorsChanged: {
-            if (!root.wearing || colors.length < 2)
+        function onLearnt(path) {
+            if (!root.wearing || root.wearing.path !== path)
                 return;
-            root.wearing.palette = root.paletteOf(colors);
+            root.wearing.palette = Palettes.of(root.wearing.picture)?.palette ?? null;
             root.wearWhenReady();
         }
     }
