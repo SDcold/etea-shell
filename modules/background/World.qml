@@ -73,6 +73,16 @@ Item {
         fragmentShader: Qt.resolvedUrl("../../shaders/skyimage.frag.qsb")
     }
 
+    // The world's own sky: its moons, its rings, its clouds. Gone once we've left the air.
+    Scenery {
+        anchors.fill: parent
+        planet: root.planet
+        angle: root.angle
+        horizon: root.horizon
+        visible: root.space < 0.33
+        opacity: 1 - root.space * 3
+    }
+
     // Everyone's own images, placed by proportion so they fit on any screen
     Repeater {
         model: Config.decorations
@@ -182,5 +192,16 @@ Item {
 
         layer.enabled: root.cached && music === 0 && arrival === 0
         fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
+    }
+
+    // And what drifts in front of its hills: mist, dust, the volcanoes close by
+    Scenery {
+        anchors.fill: parent
+        planet: root.planet
+        front: true
+        angle: root.angle
+        horizon: root.horizon
+        visible: root.space < 0.33 && root.groundOpacity > 0
+        opacity: (1 - root.space * 3) * root.groundOpacity
     }
 }
