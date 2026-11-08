@@ -32,7 +32,8 @@ Singleton {
     // The hills, from the farthest to the closest
     readonly property var terrainLayers: planet.terrain
     readonly property real terrainHeight: Config.terrainHeight // share of the screen height
-    readonly property real terrainRelief: Config.terrainRelief // 0 is smooth, 1 is normal, 2 gets pretty wild
+    readonly property real terrainRelief: Config.terrainRelief * (planet.relief ?? 1) // 0 is smooth, 1 is normal, 2 gets pretty wild
+    readonly property real terrainRough: planet.rough ?? 1 // how jagged the crests are: swells at 0, rocks at 1
     readonly property real terrainCurve: 3600 // planet radius, on a 1600 wide screen
 
     // Our stars: white when they shine, grey while they sleep
