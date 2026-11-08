@@ -28,6 +28,7 @@ ColumnLayout {
     ]
     readonly property color current: colorOf(colors[picked].key)
 
+    readonly property var others: Planets.all.filter(other => other.id !== planetId).map(other => ({ id: other.id, label: other.name }))
     readonly property var forms: [{ id: "ridges", label: Lang.t("Crêtes") }, { id: "tables", label: Lang.t("Tables") }, { id: "dunes", label: Lang.t("Dunes") }]
 
     function colorOf(key) {
@@ -328,6 +329,38 @@ ColumnLayout {
         options: [{ id: "hand", label: Lang.t("La main tendue") }, { id: "skyward", label: Lang.t("Sous les étoiles") }]
         current: root.planet.style?.lockScene ?? "hand"
         onPicked: id => root.setStyle("lockScene", id)
+    }
+
+    // Any stratum of another world, taken as it is: its colours, its ground, its sky
+    SettingSection {
+        text: Lang.t("Prendre à un autre monde")
+    }
+
+    Repeater {
+        model: Morph.strata
+
+        SettingChoice {
+            id: stratum
+
+            required property var modelData
+            readonly property string from: root.planet.borrowed?.[modelData.id] ?? ""
+            readonly property bool changed: modelData.keys.some(key => (Config.planetTweaks[root.planetId] ?? {})[key] !== undefined)
+
+            label: modelData.label
+            hint: from ? Lang.t("comme sur {0}", Planets.find(from).name) : ""
+            // Put back sits with the worlds, once there's something to put back
+            options: root.others.concat(changed ? [{ id: "back", label: Lang.t("Revenir") }] : [])
+            current: from
+            onPicked: id => id === "back" ? Morph.revert(root.planetId, modelData.id) : Morph.borrow(root.planetId, id, [modelData.id])
+        }
+    }
+
+    SettingChoice {
+        label: Lang.t("Tout prendre")
+        hint: Lang.t("Une seule vague : l'aube porte les couleurs, le relief suit le même bord.")
+        options: root.others
+        current: ""
+        onPicked: id => Morph.borrow(root.planetId, id)
     }
 
     SettingButton {

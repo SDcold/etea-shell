@@ -91,6 +91,11 @@ Scope {
             Skies.backgroundWanted(path);
         }
 
+        // Plays taking every stratum from another world, there and back, keeping nothing
+        function borrow(other: string): void {
+            Morph.borrow(Theme.planet.id, other, null, true);
+        }
+
         // Plays what hangs in the sky changing, there and back, keeping nothing
         function restage(scene: string): void {
             Morph.rehearse(Theme.planet.id, { scenery: scene });

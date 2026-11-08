@@ -22,6 +22,16 @@ Singleton {
     id: root
 
     readonly property var tints: ["skyTop", "skyMid", "skyLow", "terrain", "light"]
+    // A world is strata stacked by altitude, each a named group of its keys, so any world
+    // can take any stratum from any other
+    readonly property var strata: [
+        { id: "allure", label: Lang.t("Allure"), keys: ["style"] },
+        { id: "astres", label: Lang.t("Astres"), keys: ["scenery"] },
+        { id: "ciel", label: Lang.t("Ciel"), keys: ["sky"] },
+        { id: "soleil", label: Lang.t("Soleil"), keys: ["sun", "cut"] },
+        { id: "teintes", label: Lang.t("Teintes"), keys: ["skyTop", "skyMid", "skyLow", "terrain", "light"] },
+        { id: "relief", label: Lang.t("Relief"), keys: ["form", "seed", "relief", "rough", "ground"] }
+    ]
     readonly property var forms: ["ridges", "tables", "dunes"]
     property bool tinted: false // this change brings new colours
     property bool reshaped: false // and a new form for the ground
@@ -85,6 +95,41 @@ Singleton {
         if (changes)
             Planets.tweak(id, changes);
         start(id, before, Object.assign({}, Planets.find(id)));
+    }
+
+    // Takes strata from another world, all of them when none are named, as one change. The
+    // world remembers where each came from.
+    function borrow(id, other, ids, onlyRehearse) {
+        const source = Planets.find(other), planet = Planets.find(id), changes = {};
+        const taken = strata.filter(stratum => !ids || ids.includes(stratum.id));
+        for (const stratum of taken) {
+            for (const key of stratum.keys)
+                changes[key] = source[key];
+        }
+        const borrowed = Object.assign({}, planet.borrowed ?? {});
+        for (const stratum of taken)
+            borrowed[stratum.id] = other;
+        changes.borrowed = borrowed;
+        // A key the other world doesn't have goes back to how this one came
+        const reset = taken.reduce((keys, stratum) => keys.concat(stratum.keys), []).filter(key => source[key] === undefined);
+        for (const key of reset)
+            delete changes[key];
+        if (onlyRehearse) {
+            const original = Planets.original(id) ?? {};
+            for (const key of reset)
+                changes[key] = original[key];
+            rehearse(id, changes);
+        } else {
+            apply(id, changes, reset.length ? reset : null);
+        }
+    }
+
+    // A stratum back to how the world came
+    function revert(id, stratumId) {
+        const stratum = strata.find(s => s.id === stratumId);
+        const borrowed = Object.assign({}, Planets.find(id).borrowed ?? {});
+        delete borrowed[stratumId];
+        apply(id, { borrowed: borrowed }, stratum.keys);
     }
 
     // The same move, without writing anything: there, a moment, and back
