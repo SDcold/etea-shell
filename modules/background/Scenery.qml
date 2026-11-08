@@ -5,7 +5,7 @@ import qs.services
 
 // What stands in a world's sky and on its ground. The shapes come from
 // scripts/world-scenery.py, each world's scene places them and sets them moving. Twice per
-// world: once behind the hills for the sky, once in front of them for mist and dust.
+// world: once behind the hills for the sky, once in front of them for anything closer.
 Loader {
     id: root
 
@@ -14,7 +14,7 @@ Loader {
     property real angle: 0 // the planet's turn, which carries what stands on its ground
     property real horizon: 0.9
 
-    readonly property string scene: planet.scenery ?? ({ aster: "Aster", nere: "Nere", ocre: "Ocre", vesper: "Vesper" })[planet.id] ?? ""
+    readonly property string scene: planet.scenery ?? ({ aster: "Aster" })[planet.id] ?? ""
     readonly property real unit: width / 1600 // the hills' own unit
     readonly property real skyUnit: Math.min(width / 1600, height / 900) // so a wide screen doesn't blow the sky up
     readonly property real horizonY: height * horizon
@@ -29,29 +29,11 @@ Loader {
     readonly property real groundPivot: horizonY + Theme.terrainCurve * unit
 
     active: scene !== "" && visible
-    sourceComponent: ({ Aster: aster, Nere: nere, Ocre: ocre, Vesper: vesper })[scene] ?? null
+    sourceComponent: ({ Aster: aster })[scene] ?? null
 
     Component {
         id: aster
 
         AsterScene {}
-    }
-
-    Component {
-        id: nere
-
-        NereScene {}
-    }
-
-    Component {
-        id: ocre
-
-        OcreScene {}
-    }
-
-    Component {
-        id: vesper
-
-        VesperScene {}
     }
 }

@@ -194,7 +194,7 @@ Item {
         fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
     }
 
-    // And what drifts in front of its hills: mist, dust, the volcanoes close by
+    // And whatever stands in front of its hills, for a world that has any
     Scenery {
         anchors.fill: parent
         planet: root.planet

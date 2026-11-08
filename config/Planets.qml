@@ -20,8 +20,6 @@ Singleton {
             skyLow: "#f2b872",
             terrain: ["#a8553c", "#7a3a33", "#4f2630", "#2c1622"],
             light: "#ffe2a8",
-            relief: 1,
-            rough: 1,
             // Saturn: its ring is the bar, its moons turn in the dials
             style: { barStyle: "band", pageStyle: "constellation", widgetStyle: "celestial", lockScene: "hand" }
         },
@@ -34,8 +32,6 @@ Singleton {
             skyLow: "#b9e5d3",
             terrain: ["#3f9089", "#2a6a70", "#1a4a55", "#0e2c3a"],
             light: "#c8fff0",
-            relief: 0.55,
-            rough: 0.22,
             // Neptune, the sea god: open water, and the stars to steer by
             style: { barStyle: "sky", pageStyle: "constellation", widgetStyle: "sky", lockScene: "skyward" }
         },
@@ -48,8 +44,6 @@ Singleton {
             skyLow: "#ecdca0",
             terrain: ["#8a7a35", "#5f5a2e", "#3f4227", "#22281b"],
             light: "#fff0b0",
-            relief: 0.8,
-            rough: 0.42,
             // Mars: scattered outposts, mission numbers, habitat portholes
             style: { barStyle: "islands", pageStyle: "numbers", widgetStyle: "celestial", lockScene: "hand" }
         },
@@ -62,8 +56,6 @@ Singleton {
             skyLow: "#e59ac0",
             terrain: ["#7a3f8a", "#54306e", "#382352", "#1c1430"],
             light: "#ffc8e6",
-            relief: 0.7,
-            rough: 0.6,
             // Venus, the evening star: the first light once night has come
             style: { barStyle: "sky", pageStyle: "constellation", widgetStyle: "sky", lockScene: "skyward" }
         }
