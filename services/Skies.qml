@@ -294,8 +294,8 @@ Singleton {
             browse();
             return;
         }
-        if (index === wearing) {
-            leave();
+        if (index === wearing && role === "sky") {
+            leave(); // your own sky already
             return;
         }
         if (role !== "sky") {
