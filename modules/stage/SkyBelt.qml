@@ -86,6 +86,101 @@ Item {
         }
     }
 
+    // The vernier: the whole folder as a band of colour along your horizon, one tick per
+    // picture in its own colour, the months written along it where they fit. Its ticks
+    // grow out of the limb as you arrive.
+    readonly property real spread: 52 * Math.PI / 180
+    readonly property real ticks: {
+        const v = Planet.altitude / Planet.ceiling;
+        return Math.max(0, Math.min(1, (v - 0.6) / 0.4));
+    }
+    readonly property var months: {
+        const list = [], n = Skies.count;
+        let last = "", lastAt = -1e9;
+        for (let i = 0; i < n; i++) {
+            const month = Skies.items[i].month;
+            if (!month || month === last)
+                continue;
+            last = month;
+            const angle = -spread + 2 * spread * i / Math.max(1, n - 1);
+            // Room for its name along the limb, in units of a 1600 wide screen
+            if ((angle + spread) * planetRadius / unit - lastAt < 70)
+                continue;
+            lastAt = (angle + spread) * planetRadius / unit;
+            list.push({ angle: angle, name: new Date(Number(Skies.items[i].mtime) * 1000).toLocaleDateString(Qt.locale(Lang.locale), "MMMM") });
+        }
+        return list;
+    }
+
+    // Each item's colour, a pixel each, for the vernier to read
+    Canvas {
+        id: strip
+
+        width: Math.max(1, Skies.count)
+        height: 1
+        visible: false
+        onPaint: {
+            const g = getContext("2d");
+            for (let i = 0; i < Skies.count; i++) {
+                g.fillStyle = Skies.dominantOf(Skies.items[i]);
+                g.fillRect(i, 0, 1, 1);
+            }
+        }
+
+        Connections {
+            target: Palettes
+
+            function onVersionChanged() {
+                strip.requestPaint();
+            }
+        }
+
+        Connections {
+            target: Skies
+
+            function onItemsChanged() {
+                strip.requestPaint();
+            }
+        }
+    }
+
+    ShaderEffect {
+        anchors.fill: parent
+        visible: root.ticks > 0
+
+        property color light: Skies.planet.light
+        property vector2d resolution: Qt.vector2d(width, height)
+        property vector2d center: Qt.vector2d(root.center.x, root.center.y)
+        property real radius: root.planetRadius
+        property real count: Skies.count
+        property real spread: root.spread
+        property real grow: root.ticks
+        property real unit: root.unit
+        property real at: Skies.vernierAt
+        property real yours: Skies.wearing
+        property var strip: strip
+
+        fragmentShader: Qt.resolvedUrl("../../shaders/vernier.frag.qsb")
+    }
+
+    Repeater {
+        model: root.months
+
+        Text {
+            required property var modelData
+            readonly property real reach: root.planetRadius + 27 * root.unit
+
+            x: root.center.x + Math.sin(modelData.angle) * reach - width / 2
+            y: root.center.y - Math.cos(modelData.angle) * reach - height / 2
+            rotation: modelData.angle * 180 / Math.PI
+            text: modelData.name
+            color: Qt.alpha(Theme.skyInk, 0.5 * root.ticks)
+            font.family: Theme.font
+            font.pixelSize: Math.round(11 * root.unit)
+            visible: root.ticks > 0
+        }
+    }
+
     // The ink line, broken around each moon
     ShaderEffect {
         id: line

@@ -31,6 +31,9 @@ Singleton {
     property int zenith: wrap(Math.round(scroll) + shift) // the item at the top, as the belt shows it
     property real yours: 0 // how far your sky's moon hangs from the zenith, or 99 off the screen
     property int hovered: -1 // the item under the pointer
+    // Where the zenith is along the whole folder, for the vernier: it follows the belt, and
+    // a long flight carries it the true distance while the belt only turns a screenful
+    property real vernierAt: 0
     readonly property bool turning: stepper.running || glide.running
     // The sky the world is wearing, which your own sky's moon stands for
     readonly property int wearing: {
@@ -148,6 +151,12 @@ Singleton {
     function holdTurn() {
         stepper.stop();
         glide.stop();
+        vernierFlight.stop();
+    }
+
+    onScrollChanged: {
+        if (!vernierFlight.running && count)
+            vernierAt = ((scroll + shift) % count + count) % count;
     }
 
     // By hand: the fingers or the pointer move it 1:1
@@ -166,6 +175,7 @@ Singleton {
     function step(moons) {
         const from = stepper.running ? stepper.to : Math.round(scroll);
         glide.stop();
+        vernierFlight.stop();
         stepper.from = scroll;
         stepper.to = from + moons;
         stepper.restart();
@@ -180,8 +190,13 @@ Singleton {
             return;
         }
         const shown = Math.sign(moons) * Math.min(Math.abs(moons), 9);
+        const duration = 520 * (0.75 + 0.25 * Math.min(Math.abs(shown), 5));
         shift += moons - shown;
-        glideTo(Math.round(scroll) + shown, 520 * (0.75 + 0.25 * Math.min(Math.abs(shown), 5)), Easing.InOutSine);
+        glideTo(Math.round(scroll) + shown, duration, Easing.InOutSine);
+        vernierFlight.from = vernierAt;
+        vernierFlight.to = wrap(index);
+        vernierFlight.duration = duration;
+        vernierFlight.restart();
     }
 
     function glideTo(to, duration, easing) {
@@ -233,6 +248,7 @@ Singleton {
         shift = 0;
         scroll = wearing;
         zenith = wearing;
+        vernierAt = wearing;
         yours = 0;
         formed = 0;
         leaving = false;
@@ -296,6 +312,14 @@ Singleton {
         duration: 360
         easing.type: Easing.OutBack
         easing.overshoot: 0.3
+    }
+
+    NumberAnimation {
+        id: vernierFlight
+
+        target: root
+        property: "vernierAt"
+        easing.type: Easing.InOutSine
     }
 
     NumberAnimation {

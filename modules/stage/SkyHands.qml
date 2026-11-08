@@ -22,6 +22,16 @@ MouseArea {
     property real lastTime: 0
     property real speed: 0 // moons a second
     property bool turning: false
+    property bool scrubbing: false // along the vernier, from one end of the folder to the other
+    readonly property real spread: 52 * Math.PI / 180
+
+    // The vernier's tick under the pointer, along the limb, or -1
+    function tickAt(x, y) {
+        const r = Math.hypot(x - center.x, y - center.y), angle = angleAt(x, y);
+        if (r < planetRadius || r > planetRadius + 30 * unit || Math.abs(angle) > spread + 0.02)
+            return -1;
+        return Math.max(0, Math.min(Skies.count - 1, Math.round((angle + spread) / (2 * spread) * (Skies.count - 1))));
+    }
 
     function angleAt(x, y) {
         return Math.atan2(x - center.x, center.y - y);
@@ -60,12 +70,20 @@ MouseArea {
         lastTime = Date.now();
         speed = 0;
         turning = false;
+        scrubbing = tickAt(mouse.x, mouse.y) >= 0;
     }
 
     onPositionChanged: mouse => {
         if (!pressed) {
             const k = moonAt(mouse.x, mouse.y);
             Skies.hovered = k === null ? -1 : Skies.wrap(Skies.zenith + k);
+            return;
+        }
+        if (scrubbing) {
+            const r = Math.hypot(mouse.x - center.x, mouse.y - center.y);
+            const tick = Math.max(0, Math.min(Skies.count - 1, Math.round((angleAt(mouse.x, mouse.y) + spread) / (2 * spread) * (Skies.count - 1))));
+            if (r > planetRadius * 0.8 && tick !== Skies.zenith)
+                Skies.flyTo(tick);
             return;
         }
         if (!turning && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) > 8) {
@@ -84,6 +102,13 @@ MouseArea {
     }
 
     onReleased: mouse => {
+        if (scrubbing) {
+            const tick = tickAt(mouse.x, mouse.y);
+            if (tick >= 0 && tick !== Skies.zenith)
+                Skies.flyTo(tick);
+            scrubbing = false;
+            return;
+        }
         if (turning) {
             // Held still before letting go, it just settles where it is
             Skies.fling(Date.now() - lastTime > 120 ? 0 : speed);

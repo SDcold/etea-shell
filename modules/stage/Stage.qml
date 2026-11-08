@@ -171,8 +171,8 @@ Variants {
                     space: Math.min(1, Planet.altitude * 1.6)
                     groundOpacity: 1 - Planet.systemLevel
                     lens: stage.lens
-                    // Still at the edge, the world holds still while the belt turns
-                    cached: stage.lensHanded
+                    cached: false
+                    listening: Planet.ceiling === 1 // choosing a sky, the ground doesn't dance
 
                     belt: Component {
                         SkyBelt {
