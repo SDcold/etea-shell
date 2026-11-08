@@ -14,6 +14,11 @@ layout(std140, binding = 0) uniform buf {
     float edge; // where the air ends: the belt, in pixels from the centre
     float grain;
     float drift; // the stars slide a little as the belt turns
+    // A sky being tried on sweeps out of its moon as ETEA's star, led by a line of its light
+    vec4 nextTop;
+    vec4 sweepLight;
+    vec2 sweepCenter;
+    float sweepReach; // 0 when nothing sweeps
 };
 
 float hash(vec2 p) {
@@ -32,6 +37,10 @@ vec3 overlay(vec3 base, float n) {
 void main() {
     vec2 p = qt_TexCoord0 * resolution;
     float n = mix(0.376, 0.627, hash(floor(gl_FragCoord.xy)));
+    vec2 a = abs(p - sweepCenter);
+    float sweepShape = pow(pow(a.x, 0.62) + pow(a.y, 0.62), 1.0 / 0.62);
+    float sweepSlope = max(length(vec2(dFdx(sweepShape), dFdy(sweepShape))), 1e-4);
+    float swept = sweepReach > 0.0 ? clamp((sweepReach - sweepShape) / sweepSlope + 0.5, 0.0, 1.0) : 0.0;
 
     // Stars as small round dots, so they slide smoothly when the belt turns: one maybe in
     // each 3 px cell, at its own place inside it, looked for in the cells around
@@ -57,9 +66,14 @@ void main() {
     const float dark[4] = float[](0.82, 0.6, 0.38, 0.16);
     for (int i = 0; i < 4; i++) {
         float inside = clamp(radius + span * reach[i] - r + 0.5, 0.0, 1.0);
-        vec3 band = mix(colorTop.rgb, night.rgb, dark[i]);
+        vec3 band = mix(mix(colorTop.rgb, nextTop.rgb, swept), night.rgb, dark[i]);
         band = mix(band, overlay(band, n), grain) + (n - 0.5) * grain * 0.065;
         color = mix(color, band, inside);
+    }
+    // The sweep's edge, over the air only: inside the belt, which is where it ends
+    if (sweepReach > 0.0 && r < edge) {
+        float line = clamp(0.75 + 0.5 - abs(sweepShape - sweepReach) / sweepSlope, 0.0, 1.0);
+        color = mix(color, sweepLight.rgb, line);
     }
     fragColor = vec4(color, 1.0) * qt_Opacity;
 }

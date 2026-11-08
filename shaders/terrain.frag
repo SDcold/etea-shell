@@ -32,6 +32,16 @@ layout(std140, binding = 0) uniform buf {
     vec4 arrivalLight;
     float rough; // how jagged the crests are: long swells at 0, broken rock at 1
     float flatRim; // 1 at the edge of the air: a flat limb and a day side in flat steps
+    // A sky being tried on: its colours sweep over the planet as ETEA's star, led by a
+    // line of its light. A reach of 0 sweeps nothing.
+    vec4 next0;
+    vec4 next1;
+    vec4 next2;
+    vec4 next3;
+    vec4 nextRim;
+    vec4 sweepLight;
+    vec2 sweepCenter;
+    float sweepReach;
 };
 
 // A bit of per-pixel randomness to make the grain from
@@ -95,7 +105,14 @@ void main() {
     float r = distance(p, center);
     float angle = atan(p.x - center.x, center.y - p.y);
 
-    vec4 colors[4] = vec4[](layer0, layer1, layer2, layer3);
+    vec2 sweepAt = abs(qt_TexCoord0 * resolution - sweepCenter);
+    float sweepShape = pow(pow(sweepAt.x, 0.62) + pow(sweepAt.y, 0.62), 1.0 / 0.62);
+    float sweepSlope = max(length(vec2(dFdx(sweepShape), dFdy(sweepShape))), 1e-4);
+    float swept = sweepReach > 0.0 ? clamp((sweepReach - sweepShape) / sweepSlope + 0.5, 0.0, 1.0) : 0.0;
+    vec4 tone0 = mix(layer0, next0, swept), tone1 = mix(layer1, next1, swept);
+    vec4 tone2 = mix(layer2, next2, swept), tone3 = mix(layer3, next3, swept);
+    vec4 rimTone = mix(rimColor, nextRim, swept);
+    vec4 colors[4] = vec4[](tone0, tone1, tone2, tone3);
     float depth[4] = float[](0.0, 0.0065, 0.014, 0.023);
     float amp[4] = float[](1.0, 0.8, 0.7, 0.55);
     float maxAmp = min(curve * 0.024, 34.0) * relief * (1.0 - orbit);
@@ -187,14 +204,14 @@ void main() {
         float ground = land(surface + 1.7);
         float groundAa = max(fwidth(ground), 1e-4);
         if (edgeDistance < 1.0 + 2.0 / curve) {
-            vec3 tone = mix(layer3.rgb, layer2.rgb, smoothstep(0.34, 0.42, ground));
-            tone = mix(tone, layer1.rgb, smoothstep(0.44, 0.52, ground));
-            tone = mix(tone, layer0.rgb, smoothstep(0.54, 0.62, ground));
+            vec3 tone = mix(tone3.rgb, tone2.rgb, smoothstep(0.34, 0.42, ground));
+            tone = mix(tone, tone1.rgb, smoothstep(0.44, 0.52, ground));
+            tone = mix(tone, tone0.rgb, smoothstep(0.54, 0.62, ground));
             if (flatRim > 0.5) {
                 // Continents cut out flat, each tone a clean shape, antialiased over a pixel
-                tone = mix(layer3.rgb, layer2.rgb, clamp((ground - 0.38) / groundAa + 0.5, 0.0, 1.0));
-                tone = mix(tone, layer1.rgb, clamp((ground - 0.48) / groundAa + 0.5, 0.0, 1.0));
-                tone = mix(tone, layer0.rgb, clamp((ground - 0.58) / groundAa + 0.5, 0.0, 1.0));
+                tone = mix(tone3.rgb, tone2.rgb, clamp((ground - 0.38) / groundAa + 0.5, 0.0, 1.0));
+                tone = mix(tone, tone1.rgb, clamp((ground - 0.48) / groundAa + 0.5, 0.0, 1.0));
+                tone = mix(tone, tone0.rgb, clamp((ground - 0.58) / groundAa + 0.5, 0.0, 1.0));
             }
             vec3 lit = tone * mix(0.1, 1.0, smoothstep(-0.12, 0.65, facing));
             if (flatRim > 0.5) {
@@ -208,13 +225,18 @@ void main() {
             // pixel lies on solid ground and nothing shows through between them
             if (flatRim > 0.5)
                 solid = clamp((1.0 - edgeDistance) * curve * k + 1.5, 0.0, 1.0);
+            // The edge of a sweep runs over the ground too, in that sky's light
+            if (sweepReach > 0.0) {
+                float line = clamp(0.75 + 0.5 - abs(sweepShape - sweepReach) / sweepSlope, 0.0, 1.0);
+                lit = mix(lit, sweepLight.rgb, line);
+            }
             color = mix(color, vec4(lit, 1.0), orbit * solid);
         }
         if (flatRim > 0.5) {
             // The limb: a flat ring of your low sky colour, three units wide
             float out_ = (edgeDistance - 1.0) * curve * k;
             float ring = clamp(out_ + 0.5, 0.0, 1.0) * clamp(3.0 * k - out_ + 0.5, 0.0, 1.0) * orbit;
-            rim = vec4(rimColor.rgb * ring, ring);
+            rim = vec4(rimTone.rgb * ring, ring);
         } else {
             float side = 0.25 + 0.75 * max(0.0, dot(normalize(q), normalize(sun.xy)));
             float glow = exp(-abs(edgeDistance - 1.0) * 26.0) * side * orbit;

@@ -31,6 +31,11 @@ Item {
     readonly property bool edge: lens !== null
     // What hangs at the edge of the air, between the night and your sky: the belt of skies
     property Component belt: null
+    // A sky tried on up there: { shown, next, x, y, reach }. The air and the planet wear
+    // `shown`, and `next` sweeps over them as ETEA's star from x, y, as far as reach.
+    property var tryOn: null
+    readonly property var dress: tryOn?.shown ?? planet
+    readonly property var sweeping: tryOn?.next ?? null
     readonly property real unit: width / 1600
     readonly property point center: Qt.point(width / 2, height * horizon + radius * unit)
 
@@ -95,7 +100,7 @@ Item {
             ShaderEffect {
                 anchors.fill: parent
 
-                property color colorTop: root.planet.skyTop
+                property color colorTop: root.dress.skyTop
                 property color night: Theme.launcherShade
                 property vector2d resolution: Qt.vector2d(width, height)
                 property vector2d center: Qt.vector2d(root.center.x, root.center.y)
@@ -103,6 +108,10 @@ Item {
                 property real edge: Theme.skyBelt * radius
                 property real grain: Theme.grain
                 property real drift: Skies.scroll * 14 * root.unit // the stars slide a little as the belt turns
+                property color nextTop: root.sweeping?.skyTop ?? colorTop
+                property color sweepLight: root.sweeping?.light ?? "white"
+                property vector2d sweepCenter: root.sweeping ? Qt.vector2d(root.tryOn.x, root.tryOn.y) : Qt.vector2d(0, 0)
+                property real sweepReach: root.sweeping ? root.tryOn.reach : 0
 
                 fragmentShader: Qt.resolvedUrl("../../shaders/atmosphere.frag.qsb")
             }
@@ -269,17 +278,17 @@ Item {
         visible: opacity > 0
 
         // planetAngle is what will spin the planet between pages
-        property color layer0: root.planet.terrain[0]
-        property color layer1: root.planet.terrain[1]
-        property color layer2: root.planet.terrain[2]
-        property color layer3: root.planet.terrain[3]
+        property color layer0: root.dress.terrain[0]
+        property color layer1: root.dress.terrain[1]
+        property color layer2: root.dress.terrain[2]
+        property color layer3: root.dress.terrain[3]
         property vector2d resolution: Qt.vector2d(width, height)
         property real horizon: root.horizon
         property real relief: Config.terrainRelief * (root.planet.relief ?? 1)
         property real curve: root.radius
         property real planetAngle: root.angle
         property real orbit: root.space
-        property color rimColor: root.planet.skyLow
+        property color rimColor: root.dress.skyLow
         property vector4d l0: root.bands(0)
         property vector4d l1: root.bands(4)
         property vector4d l2: root.bands(8)
@@ -294,6 +303,14 @@ Item {
         property color arrivalLight: root.planet.light
         property real rough: root.planet.rough ?? 1
         property real flatRim: root.edge ? 1 : 0
+        property color next0: root.sweeping?.terrain[0] ?? layer0
+        property color next1: root.sweeping?.terrain[1] ?? layer1
+        property color next2: root.sweeping?.terrain[2] ?? layer2
+        property color next3: root.sweeping?.terrain[3] ?? layer3
+        property color nextRim: root.sweeping?.skyLow ?? rimColor
+        property color sweepLight: root.sweeping?.light ?? "white"
+        property vector2d sweepCenter: root.sweeping ? Qt.vector2d(root.tryOn.x, root.tryOn.y) : Qt.vector2d(0, 0)
+        property real sweepReach: root.sweeping ? root.tryOn.reach : 0
 
         Behavior on music {
             NumberAnimation { duration: 1800; easing.type: Easing.InOutSine }

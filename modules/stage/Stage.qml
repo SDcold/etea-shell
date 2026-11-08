@@ -38,15 +38,22 @@ Variants {
             return orbit + (screenHeight * 0.44 - planetRadius - (screenHeight / 2 - Theme.orbitRadius)) * beyond;
         }
 
-        // Choosing a sky, your own sky folds from the whole screen into ETEA's star, then
-        // rounds into a porthole at the zenith, where the belt holds it. All of it hangs off
-        // the altitude, so leaving plays it backwards from wherever it is.
         // The planet's centre on screen, and how big the moons of the belt are drawn: they
         // grow and shrink with the planet, and are their true size at the edge
         readonly property point planetCenter: Qt.point(width / 2, (planetTop + planetRadius) * unit)
         readonly property real moonScale: planetRadius / Math.exp(Math.log(Theme.terrainCurve) + (Math.log(Theme.orbitRadius) - Math.log(Theme.terrainCurve)) * Theme.skyEdge)
         // At rest up there, your sky is its moon; on the way up or down, it's this lens
         readonly property bool lensHanded: Planet.inSkies && !Skies.leaving && Planet.altitude >= Planet.ceiling
+
+        // Skies tried on up there sweep out of their moon, which moves with the camera
+        readonly property var tryOn: {
+            if (Planet.ceiling === 1)
+                return null;
+            const from = Skies.placeOf(Skies.sweepFrom, planetCenter, Theme.skyBelt * planetRadius * unit, unit, moonScale, width / height);
+            const across = Math.max(from.x, width - from.x), down = Math.max(from.y, height - from.y);
+            const full = Math.pow(Math.pow(across, 0.62) + Math.pow(down, 0.62), 1 / 0.62) + 6;
+            return { shown: Skies.shown, next: Skies.next, x: from.x, y: from.y, reach: full * Skies.sweep };
+        }
 
         // Choosing a sky, your own sky folds from the whole screen into ETEA's star, then
         // rounds into its moon on the belt, at the zenith. All of it hangs off the altitude,
@@ -171,6 +178,7 @@ Variants {
                     space: Math.min(1, Planet.altitude * 1.6)
                     groundOpacity: 1 - Planet.systemLevel
                     lens: stage.lens
+                    tryOn: stage.tryOn
                     cached: false
                     listening: Planet.ceiling === 1 // choosing a sky, the ground doesn't dance
 

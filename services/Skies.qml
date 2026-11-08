@@ -42,6 +42,14 @@ Singleton {
         return Math.max(0, found);
     }
     property bool leaving: false
+    // Trying skies on: the air and the planet up here wear `shown`, your world's colours
+    // at first. Once the belt rests on a moon, its picture's colours sweep out of it as a
+    // star; that sweep is `next`, `sweep` from 0 to 1, out of the moon `sweepFrom` places
+    // from the zenith. Your page is never touched.
+    property var shown: null
+    property var next: null
+    property real sweep: 0
+    property real sweepFrom: 0
     // Your sky's moon grows its hills once it has taken over from the folding sky
     property real formed: 0
 
@@ -208,6 +216,30 @@ Singleton {
         glide.start();
     }
 
+    // The colours sweep out of a moon over the last ones, which are worn from then on
+    function sweepOut(palette, from, duration) {
+        const wearing = next ?? shown ?? planet;
+        if (!palette || palette === wearing)
+            return;
+        if (sweeping.running)
+            shown = next;
+        next = palette;
+        sweepFrom = from;
+        sweeping.duration = duration;
+        sweeping.restart();
+    }
+
+    function tryOn() {
+        if (!Planet.inSkies || leaving || turning)
+            return;
+        sweepOut(paletteOf(items[zenith]), 0, 600);
+    }
+
+    onTurningChanged: {
+        if (!turning)
+            resting.restart();
+    }
+
     // Four fingers sideways turn the belt as they turn pages: fingers to the left bring on
     // the next moons, a page's worth of swipe is three moons, and it settles when they lift
     property real swipeSpeed: 0
@@ -252,6 +284,10 @@ Singleton {
         yours = 0;
         formed = 0;
         leaving = false;
+        sweeping.stop();
+        shown = null;
+        next = null;
+        sweep = 0;
         Pictures.refresh();
         Planet.enterSkies();
     }
@@ -260,6 +296,9 @@ Singleton {
         if (!Planet.inSkies)
             return;
         leaving = true;
+        resting.stop();
+        // Your own colours sweep back from your sky's moon, or from the zenith
+        sweepOut(planet, Math.abs(yours) < 5 ? yours : 0, 320);
         Planet.leaveSkies();
     }
 
@@ -289,8 +328,10 @@ Singleton {
 
         // Up at the edge, the folded sky hands over to its moon, whose hills rise
         function onAltitudeChanged() {
-            if (Planet.inSkies && !root.leaving && Planet.altitude >= Planet.ceiling && root.formed === 0 && !rising.running)
+            if (Planet.inSkies && !root.leaving && Planet.altitude >= Planet.ceiling && root.formed === 0 && !rising.running) {
                 rising.start();
+                resting.restart();
+            }
         }
 
         // Once the stage is back down, the request is over
@@ -300,6 +341,11 @@ Singleton {
                 root.leaving = false;
                 rising.stop();
                 root.formed = 0;
+                resting.stop();
+                sweeping.stop();
+                root.shown = null;
+                root.next = null;
+                root.sweep = 0;
             }
         }
     }
@@ -327,6 +373,29 @@ Singleton {
 
         target: root
         property: "scroll"
+    }
+
+    // At rest a moment, the zenith's colours are tried on
+    Timer {
+        id: resting
+
+        interval: 140
+        onTriggered: root.tryOn()
+    }
+
+    NumberAnimation {
+        id: sweeping
+
+        target: root
+        property: "sweep"
+        from: 0
+        to: 1
+        easing.type: Easing.InOutSine
+        onFinished: {
+            root.shown = root.next;
+            root.next = null;
+            root.sweep = 0;
+        }
     }
 
     Timer {
