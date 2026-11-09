@@ -59,9 +59,9 @@ Item {
     readonly property point center: Qt.point(width / 2, height * horizon + radius * unit)
 
     // Four sound levels at a time, the way the shader wants them. Only read while the ground
-    // dances: otherwise every level another listener hears would redraw the cached hills.
+    // dances: otherwise every level another listener hears would redraw the music strip.
     function bands(first) {
-        if (!(terrain.music > 0))
+        if (!(music.dance > 0))
             return Qt.vector4d(0, 0, 0, 0);
         const levels = Beat.shown;
         return Qt.vector4d(levels[first] ?? 0, levels[first + 1] ?? 0, levels[first + 2] ?? 0, levels[first + 3] ?? 0);
@@ -323,6 +323,58 @@ Item {
         visible: root.showWidgets && opacity > 0
     }
 
+    // The music on the ground, in a strip of its own at the bottom: only that strip is drawn
+    // again each frame it dances, the hills in front of it stay a still picture
+    ShaderEffect {
+        id: music
+
+        // Fades in as the music starts and out as it stops, behind the hills
+        property real dance: root.listening && Beat.dancing && Beat.shown.length ? 1 : 0
+        readonly property real hillsShown: root.ground ? 1 : Math.min(1, root.space * 3)
+        readonly property real climb: Theme.groundLift * (hillsShown > 0.5 ? 1.5 : 1.1) // how high, in units
+        readonly property real maxAmp: Math.min(root.radius * 0.024, 34) * Config.terrainRelief * (root.planet.relief ?? 1) * (1 - root.space)
+        // From just above the highest it can climb, down to the bottom of the screen
+        readonly property real stripTop: hillsShown > 0.5 ? root.height * root.horizon - (maxAmp + climb + 12) * root.unit : root.height - (climb + 12) * root.unit
+
+        Behavior on dance {
+            NumberAnimation { duration: 1800; easing.type: Easing.InOutSine }
+        }
+
+        x: 0
+        y: Math.max(0, Math.floor(stripTop))
+        width: root.width
+        height: root.height - y
+        opacity: dance * (1 - root.space) * root.groundOpacity
+        visible: opacity > 0 && Config.groundMusic !== "off"
+
+        property vector4d l0: root.bands(0)
+        property vector4d l1: root.bands(4)
+        property vector4d l2: root.bands(8)
+        property vector4d l3: root.bands(12)
+        property vector4d l4: root.bands(16)
+        property vector4d l5: root.bands(20)
+        property vector4d l6: root.bands(24)
+        property color ink: ({ ink: Desk.ink, world: root.planet.light })[Config.musicColor] ?? root.tintA.skyLow
+        property color light: Config.musicColor === "ink" ? Desk.ink : "#fff8eb"
+        property vector2d world: Qt.vector2d(root.width, root.height)
+        property vector2d origin: Qt.vector2d(x, y)
+        property vector2d size: Qt.vector2d(width, height)
+        property real horizon: root.horizon
+        property real curve: root.radius
+        property real relief: Config.terrainRelief * (root.planet.relief ?? 1)
+        property real orbit: root.space
+        property real planetAngle: root.angle
+        property real seed: root.formA.seed ?? 1.2
+        property real farA: Morph.formOf(root.formA, "far")
+        property real rough: root.planet.rough ?? 1
+        property real hills: hillsShown
+        property real style: ({ lines: 0, bars: 1, stars: 2 })[Config.groundMusic] ?? 0
+        property real reach: climb
+        property real density: Config.musicDensity
+
+        fragmentShader: Qt.resolvedUrl("../../shaders/music.frag.qsb")
+    }
+
     ShaderEffect {
         id: terrain
 
@@ -354,16 +406,6 @@ Item {
         property real planetAngle: root.angle
         property real orbit: root.space
         property color rimColor: root.tintA.skyLow
-        property vector4d l0: root.bands(0)
-        property vector4d l1: root.bands(4)
-        property vector4d l2: root.bands(8)
-        property vector4d l3: root.bands(12)
-        property vector4d l4: root.bands(16)
-        property vector4d l5: root.bands(20)
-        property vector4d l6: root.bands(24)
-        property real music: root.listening && Beat.dancing && Beat.shown.length ? 1 : 0
-        property real lift: Theme.groundLift
-        property real bars: Config.groundMusic === "bars" ? 1 : 0
         property real arrival: root.arrival
         property color arrivalLight: root.planet.light
         property real rough: root.planet.rough ?? 1
@@ -389,12 +431,9 @@ Item {
         property vector2d sweepCenter: root.sweeping ? Qt.vector2d(root.tryOn.x, root.tryOn.y) : Qt.vector2d(0, 0)
         property real sweepReach: root.sweeping ? root.tryOn.reach : 0
 
-        Behavior on music {
-            NumberAnimation { duration: 1800; easing.type: Easing.InOutSine }
-        }
         property real grain: Theme.grain
 
-        layer.enabled: root.cached && music === 0 && arrival === 0 && !root.morphing
+        layer.enabled: root.cached && arrival === 0 && !root.morphing
         fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
     }
 

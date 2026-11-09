@@ -515,5 +515,20 @@
     "Mondes": "Worlds",
     "Prendre à…": "Take from…",
     "Le même, pris à un autre de tes mondes.": "The same, taken from another of your worlds.",
-    "Tout le monde": "The whole world"
+    "Tout le monde": "The whole world",
+    "Musique sur le sol": "Music on the ground",
+    "Visible sur les pages vides, pendant qu'un lecteur joue.": "On empty pages, while a player is playing.",
+    "Étoiles": "Stars",
+    "Hauteur": "Height",
+    "Densité": "Density",
+    "Combien de colonnes en travers de l'écran.": "How many columns across the screen.",
+    "Sensibilité": "Sensitivity",
+    "Ce qu'elle fait d'un son faible.": "What it makes of a quiet sound.",
+    "Réaction": "Response",
+    "À quelle vitesse elle répond au rythme.": "How quickly it answers the beat.",
+    "Retombée": "Fall",
+    "À quelle vitesse elle redescend après un coup.": "How quickly it comes back down after a beat.",
+    "Couleur": "Colour",
+    "Lumière du ciel": "The sky's light",
+    "Le sol": "The ground"
 }

@@ -16,22 +16,94 @@ ColumnLayout {
         font.pixelSize: 20
     }
 
+    // The music on the ground, on empty pages: its style, its size, how it moves
+    SettingSection {
+        text: Lang.t("Musique sur le sol")
+        words: ["visualiseur", "visualizer", "cava", "spectre", "musique", "music", "égaliseur"]
+    }
+
     SettingChoice {
         key: "groundMusic"
-        label: Lang.t("Musique sur le terrain")
-        hint: Lang.t("Visible sur les pages vides.")
-        options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "off", label: Lang.t("Rien") }]
+        label: Lang.t("Style")
+        hint: Lang.t("Visible sur les pages vides, pendant qu'un lecteur joue.")
+        options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "stars", label: Lang.t("Étoiles") }, { id: "off", label: Lang.t("Rien") }]
         current: Config.groundMusic
         onPicked: id => Config.groundMusic = id
     }
 
-    SettingSlider {
-        key: "groundLift"
-        label: Lang.t("Hauteur de la musique")
-        value: Config.groundLift
-        minimum: 40
-        maximum: 200
-        onMoved: value => Config.groundLift = Math.round(value)
+    ColumnLayout {
+        Layout.fillWidth: true
+        visible: Config.groundMusic !== "off"
+        spacing: 18
+
+        SettingSlider {
+            key: "groundLift"
+            label: Lang.t("Hauteur")
+            value: Config.groundLift
+            minimum: 40
+            maximum: 200
+            onMoved: value => Config.groundLift = Math.round(value)
+        }
+
+        SettingSlider {
+            key: "musicDensity"
+            visible: Config.groundMusic !== "lines"
+            label: Lang.t("Densité")
+            hint: Lang.t("Combien de colonnes en travers de l'écran.")
+            value: Config.musicDensity
+            minimum: 16
+            maximum: 120
+            onMoved: value => Config.musicDensity = Math.round(value)
+        }
+
+        SettingSlider {
+            key: "musicGain"
+            label: Lang.t("Sensibilité")
+            hint: Lang.t("Ce qu'elle fait d'un son faible.")
+            value: Config.musicGain
+            minimum: 0.4
+            maximum: 2.5
+            shownAs: 100
+            unit: " %"
+            onMoved: value => Config.musicGain = value
+        }
+
+        SettingSlider {
+            key: "musicRise"
+            label: Lang.t("Réaction")
+            hint: Lang.t("À quelle vitesse elle répond au rythme.")
+            value: Config.musicRise
+            minimum: 0.1
+            maximum: 0.9
+            shownAs: 100
+            unit: " %"
+            onMoved: value => Config.musicRise = value
+        }
+
+        SettingSlider {
+            key: "musicFall"
+            label: Lang.t("Retombée")
+            hint: Lang.t("À quelle vitesse elle redescend après un coup.")
+            value: Config.musicFall
+            minimum: 0.04
+            maximum: 0.6
+            shownAs: 100
+            unit: " %"
+            onMoved: value => Config.musicFall = value
+        }
+
+        SettingChoice {
+            key: "musicColor"
+            label: Lang.t("Couleur")
+            options: [{ id: "light", label: Lang.t("Lumière du ciel") }, { id: "ink", label: Lang.t("Encre des widgets") }, { id: "world", label: Lang.t("Lumière du monde") }]
+            current: Config.musicColor
+            onPicked: id => Config.musicColor = id
+        }
+    }
+
+    // The ground itself
+    SettingSection {
+        text: Lang.t("Le sol")
     }
 
     SettingSwitch {
