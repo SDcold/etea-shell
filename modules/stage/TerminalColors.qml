@@ -6,7 +6,7 @@ import qs.services
 
 // kitty wears the world's colours: its night is the cards' night, its ink the sky's, and
 // its sixteen colours lean toward the world's hue so they belong with it. They're written
-// to ~/.config/etea/kitty-colors.conf, which kitty.conf includes, and every open kitty is
+// to ~/.config/etea/kitty-colors.conf, and when kitty.conf includes it, every open kitty is
 // told to read it again. Switched off, the file is left empty and kitty keeps its own.
 Scope {
     id: root
@@ -78,6 +78,17 @@ Scope {
             if (file.loaded && file.text() === root.colours)
                 return;
             file.setText(root.colours);
+            // A reload is a big moment for kitty, so only when it would see the new colours
+            if (Kitty.included)
+                reread.running = true;
+        }
+    }
+
+    // The include line was just added from Settings: show kitty the world straight away
+    Connections {
+        target: Kitty
+
+        function onAdded() {
             reread.running = true;
         }
     }

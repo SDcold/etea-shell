@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell.Hyprland
 import qs.config
 import qs.modules.bar.menus
+import qs.services
 
 // How the focused window catches the light, and which apps let the sky show through.
 ColumnLayout {
@@ -104,6 +105,18 @@ ColumnLayout {
         hint: Lang.t("Son fond, son encre et ses seize couleurs suivent le monde où tu es. Éteint, kitty garde les siennes.")
         on: Config.terminalColors
         onToggled: Config.terminalColors = !on
+    }
+
+    // Updating ETEA doesn't run the installer again, so kitty.conf may not read them yet
+    SettingRow {
+        visible: Config.terminalColors && Kitty.present && !Kitty.included
+        label: Lang.t("kitty ne lit pas encore ces couleurs")
+        hint: Lang.t("Il lui faut une ligne à la fin de kitty.conf. ETEA peut l'ajouter pour toi.")
+
+        SettingButton {
+            label: Lang.t("Ajouter la ligne")
+            onPicked: Kitty.include()
+        }
     }
 
     SettingSection {
