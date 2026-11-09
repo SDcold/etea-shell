@@ -44,8 +44,8 @@ Singleton {
             const next = [];
             let highest = 0;
             for (let i = 0; i < count; i++) {
-                const target = root.levels[i] ?? 0, now = root.shown[i] ?? 0;
-                const speed = target > now ? 0.45 : root.wanted ? 0.2 : Theme.groundSettle;
+                const target = Math.min(1, (root.levels[i] ?? 0) * Config.musicGain), now = root.shown[i] ?? 0;
+                const speed = target > now ? Config.musicRise : root.wanted ? Config.musicFall : Theme.groundSettle;
                 const value = now + (target - now) * (1 - Math.pow(1 - speed, steps));
                 next.push(value);
                 highest = Math.max(highest, value);

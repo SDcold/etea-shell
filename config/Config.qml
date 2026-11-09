@@ -15,6 +15,18 @@ Singleton {
     readonly property string locale: Lang.locale
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
     property bool ready: false // the file has been read, so the values below are really yours
+    // Every saved value as it comes, before your file is read: what a setting goes back to,
+    // and what tells a setting you've changed from one you haven't
+    property var defaults: ({})
+
+    function changed(key) {
+        return key in defaults && JSON.stringify(root[key]) !== JSON.stringify(defaults[key]);
+    }
+
+    function reset(key) {
+        if (key in defaults)
+            root[key] = JSON.parse(JSON.stringify(defaults[key]));
+    }
 
     // What the bar can hold, and where each piece can go
     readonly property var barModuleChoices: [
@@ -107,6 +119,13 @@ Singleton {
     property alias keyboardLayouts: saved.keyboardLayouts // like ["us", "fr"]; empty leaves Hyprland's config alone
     property alias focusMinutes: saved.focusMinutes // the focus timer's work time
     property alias restMinutes: saved.restMinutes // and its break
+    property alias hillsOnPictures: saved.hillsOnPictures // a picture worn as the sky keeps the world's hills
+    property alias widgetInk: saved.widgetInk // "auto" reads the sky, or "light", "dark", "world"
+    property alias musicDensity: saved.musicDensity // columns of music across the screen
+    property alias musicGain: saved.musicGain // how much it makes of what it hears
+    property alias musicRise: saved.musicRise // how quickly it answers a beat, 0 to 1
+    property alias musicFall: saved.musicFall // and how quickly it settles back
+    property alias musicColor: saved.musicColor // "light" from the sky, "ink" the widgets', "world" its light
 
     // A style you pick yourself is remembered, so following the planet later doesn't lose it
     function remember(setting) {
@@ -157,6 +176,16 @@ Singleton {
 
         JsonAdapter {
             id: saved
+
+            Component.onCompleted: {
+                const values = {};
+                for (const key of Object.keys(saved)) {
+                    const value = saved[key];
+                    if (key !== "objectName" && !key.endsWith("Changed") && typeof value !== "function" && (value === null || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype))
+                        values[key] = JSON.parse(JSON.stringify(value));
+                }
+                root.defaults = values;
+            }
 
             property string theme: "aster"
             property var customPlanets: []
@@ -222,6 +251,13 @@ Singleton {
             property var keyboardLayouts: []
             property int focusMinutes: 25
             property int restMinutes: 5
+            property bool hillsOnPictures: false
+            property string widgetInk: "auto"
+            property int musicDensity: 58
+            property real musicGain: 1
+            property real musicRise: 0.45
+            property real musicFall: 0.2
+            property string musicColor: "light"
             // kitty and Zen are see-through on their own and only need the blur
             property var glassApps: [
                 { class: "kitty" },

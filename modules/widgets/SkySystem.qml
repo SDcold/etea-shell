@@ -27,7 +27,7 @@ Column {
     CoreConstellation {
         width: parent.width
         height: root.sky * 0.15
-        ink: Theme.skyInk
+        ink: Desk.ink
     }
 
     Row {
@@ -48,14 +48,14 @@ Column {
 
                 Text {
                     text: parent.modelData.label
-                    color: Qt.alpha(Theme.skyInk, 0.65)
+                    color: Qt.alpha(Desk.ink, 0.65)
                     font.family: Theme.font
                     font.pixelSize: root.sky * 0.013
                 }
 
                 Text {
                     text: parent.modelData.value
-                    color: Theme.skyInk
+                    color: Desk.ink
                     font.family: Theme.font
                     font.pixelSize: root.sky * 0.03
                     font.weight: Font.Medium

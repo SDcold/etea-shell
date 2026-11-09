@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.config
 import qs.services
@@ -25,10 +26,22 @@ Variants {
         }
 
         World {
+            id: world
+
             anchors.fill: parent
             // Hyprland's slide moves the windows only, the world stays where it is
             angle: Config.pageTransition === "slide" ? 0 : Planet.resting
             interactive: true
+        }
+
+        // The background of the focused screen, saved to a file, to check a change unseen
+        Connections {
+            target: Skies
+
+            function onBackgroundWanted(path) {
+                if (Hyprland.focusedMonitor?.name === modelData.name)
+                    world.grabToImage(result => console.info(`ETEA background grab: ${result.saveToFile(path) ? path : "failed"}`));
+            }
         }
     }
 }

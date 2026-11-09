@@ -25,6 +25,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "windowGlow"
         label: Lang.t("Force de la lueur")
         value: Config.windowGlow
         shownAs: 100
@@ -33,6 +34,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "windowGlowSize"
         label: Lang.t("Taille de la lueur")
         value: Config.windowGlowSize
         minimum: 6
@@ -42,6 +44,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "windowDim"
         label: Lang.t("Ombre des fenêtres inactives")
         value: Config.windowDim
         maximum: 0.6
@@ -51,6 +54,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "traceWidth"
         label: Lang.t("Épaisseur du cadre")
         value: Config.traceWidth
         minimum: 1
@@ -60,6 +64,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "traceSpacing"
         label: Lang.t("Espace entre les étoiles")
         hint: Lang.t("Plus c'est grand, moins il y a d'étoiles sur le cadre.")
         value: Config.traceSpacing
@@ -70,6 +75,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "windowGapOuter"
         label: Lang.t("Marge autour des fenêtres")
         value: Config.windowGapOuter
         minimum: 0
@@ -79,6 +85,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "windowGapInner"
         label: Lang.t("Espace entre les fenêtres")
         value: Config.windowGapInner
         minimum: 0
@@ -89,6 +96,7 @@ ColumnLayout {
 
     SettingSection {
         text: Lang.t("Verre")
+        words: ["flou", "blur", "transparence", "transparent", "opacité", "opacity", "glass"]
     }
 
     Text {

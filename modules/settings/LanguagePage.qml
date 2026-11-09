@@ -36,6 +36,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "language"
         label: Lang.t("Langue du shell")
         hint: Lang.t("Automatique suit la langue de ton système.")
         options: [{ id: "auto", label: Lang.t("Automatique") }].concat(Lang.languages)
@@ -55,6 +56,7 @@ ColumnLayout {
 
     SettingSection {
         text: Lang.t("Clavier")
+        words: ["keyboard", "azerty", "qwerty", "disposition", "layout"]
     }
 
     Text {

@@ -136,7 +136,7 @@ Scope {
                         visible: !Desk.frozen
                         Layout.fillWidth: true
                         value: (Desk.size(panel.shown) - 0.5) / 1.1
-                        onMoved: value => Desk.update(panel.shown, { size: Math.round((0.5 + value * 1.1) * 100) / 100 })
+                        onMoved: value => Desk.resize(panel.shown, 0.5 + value * 1.1)
                     }
 
                     MenuRow {
@@ -167,12 +167,14 @@ Scope {
                     }
 
                     MenuRow {
+                        id: photoChoice
+
                         visible: panel.shown === "photo"
                         Layout.fillWidth: true
                         label: panel.widget?.image ? Lang.t("Changer d'image") : Lang.t("Choisir une image")
                         onPicked: {
                             Desk.menuFor = "";
-                            Pictures.pick(Lang.t("Une image pour le ciel"), path => Desk.update("photo", { image: path }));
+                            Pictures.pick(Lang.t("Une image pour le ciel"), path => Desk.update("photo", { image: path }), { role: "photo", item: photoChoice });
                         }
                     }
 

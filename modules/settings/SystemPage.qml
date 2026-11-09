@@ -26,6 +26,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "nightWarmth"
         label: Lang.t("Chaleur")
         hint: Lang.t("Plus c'est bas, plus l'écran est orangé.")
         value: Config.nightWarmth
@@ -47,6 +48,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "notifSeconds"
         label: Lang.t("Durée d'affichage")
         hint: Lang.t("Quand l'application ne précise rien.")
         value: Config.notifSeconds

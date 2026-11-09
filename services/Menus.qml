@@ -12,6 +12,15 @@ Singleton {
     property var trayItem: null // the background app whose menu is open
 
     property bool settingsOpen: false
+    // Where Réglages should open: a setting's key, "@page", or "?words" for a search
+    property string settingsTarget: ""
+
+    function openSettings(address) {
+        settingsTarget = address ?? "";
+        settingsOpen = true;
+    }
+    // A settings page drawn offscreen and saved to a file, to check it without opening it
+    signal pageWanted(string page, string path)
     property bool sessionOpen: false
     property bool welcomeOpen: false
     property string lastClosed: ""

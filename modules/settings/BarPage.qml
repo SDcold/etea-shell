@@ -38,6 +38,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "barPosition"
         label: Lang.t("Position")
         options: [{ id: "top", label: Lang.t("En haut") }, { id: "bottom", label: Lang.t("En bas") }]
         current: Config.barPosition
@@ -45,6 +46,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "barSize"
         label: Lang.t("Taille")
         options: [{ id: "compact", label: Lang.t("Compacte") }, { id: "normal", label: Lang.t("Normale") }, { id: "large", label: Lang.t("Grande") }]
         current: Config.barSize
@@ -52,6 +54,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "barStyle"
         label: Lang.t("Style")
         hint: Lang.t("Le texte à même le ciel, chaque groupe sur son îlot, ou une seule bande.")
         options: [{ id: "sky", label: Lang.t("Ciel nu") }, { id: "islands", label: Lang.t("Îlots") }, { id: "band", label: Lang.t("Bande") }]
@@ -61,6 +64,7 @@ ColumnLayout {
     }
 
     SettingSwitch {
+        key: "hotCorners"
         label: Lang.t("Coins actifs")
         hint: Lang.t("Un clic dans un coin du côté de la barre ouvre le panneau de ce côté.")
         on: Config.hotCorners
@@ -68,6 +72,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "barHide"
         label: Lang.t("Masquer la barre")
         hint: Lang.t("Cachée, elle revient quand la souris touche le bord de l'écran. Ses coins s'allument d'abord pour montrer où viser.")
         options: [{ id: "never", label: Lang.t("Jamais") }, { id: "always", label: Lang.t("Toujours") }, { id: "fullscreen", label: Lang.t("En plein écran") }]
@@ -109,6 +114,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "clockFormat"
         label: Lang.t("Format")
         options: [{ id: "24", label: "24 h" }, { id: "12", label: "12 h" }]
         current: Config.clockFormat
@@ -116,12 +122,14 @@ ColumnLayout {
     }
 
     SettingSwitch {
+        key: "clockSeconds"
         label: Lang.t("Secondes")
         on: Config.clockSeconds
         onToggled: Config.clockSeconds = !Config.clockSeconds
     }
 
     SettingChoice {
+        key: "dateFormat"
         label: Lang.t("Date")
         options: [{ id: "long", label: Lang.t("Longue") }, { id: "short", label: Lang.t("Courte") }, { id: "off", label: Lang.t("Masquée") }]
         current: Config.dateFormat
@@ -133,6 +141,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "pagesShown"
         label: Lang.t("Pages par groupe")
         hint: Lang.t("Au-delà, la barre bascule sur le groupe suivant au lieu de revenir au début.")
         value: Config.pagesShown
@@ -142,6 +151,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "pageStyle"
         label: Lang.t("Pages")
         hint: Lang.t("Une constellation par page, ou simplement son numéro, plus compact.")
         options: [{ id: "constellation", label: Lang.t("Constellations") }, { id: "numbers", label: Lang.t("Numéros") }]
@@ -151,6 +161,7 @@ ColumnLayout {
     }
 
     SettingChoice {
+        key: "mediaTitle"
         label: Lang.t("Titre en cours")
         options: [{ id: "scroll", label: Lang.t("Défilant") }, { id: "short", label: Lang.t("Court") }, { id: "off", label: Lang.t("Note seule") }]
         current: Config.mediaTitle
@@ -180,6 +191,7 @@ ColumnLayout {
     }
 
     SettingSwitch {
+        key: "barPercent"
         label: Lang.t("Pourcentages")
         hint: Lang.t("Les chiffres à côté du volume, de la batterie et des ressources.")
         on: Config.barPercent
@@ -187,6 +199,7 @@ ColumnLayout {
     }
 
     SettingSwitch {
+        key: "trayTint"
         label: Lang.t("Plateau aux couleurs du shell")
         hint: Lang.t("Les icônes des applis en arrière-plan, teintées comme le reste.")
         on: Config.trayTint

@@ -22,20 +22,16 @@ ShaderEffect {
     property real orbit: 1
     property color rimColor: planet.skyLow
 
-    // The music and its bars only exist on the ground, but the shader asks for them
-    property vector4d l0: Qt.vector4d(0, 0, 0, 0)
-    property vector4d l1: l0
-    property vector4d l2: l0
-    property vector4d l3: l0
-    property vector4d l4: l0
-    property vector4d l5: l0
-    property vector4d l6: l0
-    property real music: 0
-    property real lift: 0
-    property real bars: 0
     property real arrival: 0
     property color arrivalLight: "transparent"
     property real rough: planet.rough ?? 1
+    property real flatRim: 0
+    property real seed: planet.seed ?? 1.2
+    property real farA: Morph.formOf(planet, "far")
+    property real nearA: Morph.formOf(planet, "near")
+    property real reformFront: -1
+    property real hills: 1
+    property real sunAt: planet.sun ?? 0.25
 
     fragmentShader: Qt.resolvedUrl("../../shaders/terrain.frag.qsb")
 

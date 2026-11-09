@@ -59,10 +59,10 @@ Row {
                         if (root.source?.audio)
                             root.source.audio.muted = !root.source.audio.muted;
                         break;
-                    // The world you're on takes the picture and its colours: no new planet,
-                    // worlds are made in Settings and picked in orbit
+                    // A short climb to the belt of skies: the world you're on takes the picture you
+                    // land and its colours. No new planet, worlds are made in Settings.
                     case "wallpaper":
-                        Pictures.pick(Lang.t("Un fond d'écran"), (path, from) => Forge.wear(path, from), tool.on ? { label: Lang.t("Ciel du monde"), act: () => Forge.unwear() } : null);
+                        Skies.ask({ role: "sky", title: Lang.t("Un fond d'écran"), answer: null, from: null, planetId: Theme.planet.id });
                         break;
                     }
                 }

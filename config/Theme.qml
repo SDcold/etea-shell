@@ -5,7 +5,9 @@ import Quickshell
 
 // The whole look of ETEA lives here. Later on, every planet gets its own.
 Singleton {
-    readonly property var planet: Planets.find(Config.preview || Config.theme)
+    // The world you're on, as shown: while its colours are changing, the shell keeps the
+    // old light until the new day's edge reaches the bar
+    readonly property var planet: Morph.shown(Planets.find(Config.preview || Config.theme))
     readonly property real pace: Config.pace === "ceremony" ? 1.7 : 1 // stretches the big movements
 
     // A setting left on "planet" wears what the planet brings, or what you last picked
@@ -27,7 +29,7 @@ Singleton {
     readonly property real grain: 0.34 * Config.grain
     // A world made from your own picture can keep it as its sky, and go without the hills
     readonly property string skyImage: planet.sky ?? ""
-    readonly property bool ground: planet.ground ?? true
+    readonly property bool ground: Planets.groundOf(planet)
 
     // The hills, from the farthest to the closest
     readonly property var terrainLayers: planet.terrain
@@ -113,6 +115,15 @@ Singleton {
     readonly property real orbitRadius: 190 // size of the planet, on a 1600 wide screen
     readonly property real orbitCard: 0.145 // how small a page gets up there
 
+    // Choosing a sky: a shorter climb, to « la lisière », where your air ends
+    readonly property real skyEdge: 0.6 // its altitude, orbit being 1
+    readonly property int skyRise: 640 * pace
+    readonly property int skyLand: 720 * pace // a chosen sky growing back into your sky
+    readonly property int skyLook: 360 * pace // and the look on the way, to see it full size
+    readonly property real skyBelt: 1.64 // the belt's radius, and the edge of the air, in planet radii
+    readonly property real portholeWidth: 240 // the sky at the zenith, at the edge, on a 1600 wide screen; shaped like the screen
+    readonly property real moonSize: 125
+
     // The launcher: a dimmed sky, a question and a constellation of apps
     readonly property color launcherShade: "#05060e"
     readonly property real launcherDim: 0.72
@@ -120,7 +131,18 @@ Singleton {
     readonly property int launcherSpacing: 170 // distance between two stars
 
     // Notifications: comets that land and open up
-    readonly property color cardDeep: "#0d0f1c"
+    // The night inside every card: the bar, the panels, the menus. A world made from a
+    // picture brings its own, in its hue; one wearing a picture from before that takes its
+    // sky's top, darkened. The worlds as they came keep their deep blue.
+    readonly property color cardDeep: {
+        if (planet.deep)
+            return planet.deep;
+        if (planet.sky && planet.sky !== Planets.original(planet.id)?.sky) {
+            const top = Qt.color(planet.skyTop);
+            return Qt.hsla(Math.max(0, top.hslHue), Math.min(top.hslSaturation, 0.35), 0.085, 1);
+        }
+        return "#0d0f1c";
+    }
 
     // Colours a card can take when its content has none of its own
     readonly property var tones: ["#ffc98a", "#f59a7a", "#e98fb0", "#b9a2f0", "#8fc7e8", "#8fd6b4"]

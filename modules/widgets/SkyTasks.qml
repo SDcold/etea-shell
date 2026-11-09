@@ -17,7 +17,7 @@ Column {
 
     Text {
         text: Tasks.items.length ? `${Lang.t("Tâches")} · ${Tasks.items.filter(task => !task.done).length}` : Lang.t("Tâches")
-        color: Qt.alpha(Theme.skyInk, 0.8)
+        color: Qt.alpha(Desk.ink, 0.8)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.016
         font.weight: Font.Medium
@@ -53,7 +53,7 @@ Column {
                 text: task.modelData.text
                 elide: Text.ElideRight
                 font.strikeout: task.modelData.done
-                color: task.modelData.done ? Qt.alpha(Theme.skyInk, 0.45) : Theme.skyInk
+                color: task.modelData.done ? Qt.alpha(Desk.ink, 0.45) : Desk.ink
                 font.family: Theme.font
                 font.pixelSize: root.sky * 0.021
             }
@@ -69,7 +69,7 @@ Column {
     Text {
         visible: Tasks.items.length > root.most
         text: `+ ${Tasks.items.length - root.most}`
-        color: Qt.alpha(Theme.skyInk, 0.6)
+        color: Qt.alpha(Desk.ink, 0.6)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.014
     }
@@ -79,7 +79,7 @@ Column {
         width: root.width
         text: Lang.t("Rien à faire. Le ciel est à toi.")
         wrapMode: Text.WordWrap
-        color: Theme.skyInk
+        color: Desk.ink
         font.family: Theme.font
         font.pixelSize: root.sky * 0.02
     }
@@ -89,7 +89,7 @@ Column {
         width: root.width
         text: Lang.t("Ajoute-en dans le panneau de gauche, Super + A.")
         wrapMode: Text.WordWrap
-        color: Qt.alpha(Theme.skyInk, 0.6)
+        color: Qt.alpha(Desk.ink, 0.6)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.013
     }

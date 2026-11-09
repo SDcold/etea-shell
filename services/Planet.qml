@@ -46,7 +46,13 @@ Singleton {
     property real altitude: 0
     property var orbitPages: []
     property bool goingUp: false
-    readonly property bool orbiting: phase === Planet.Phase.Orbit
+    // How high this trip goes: 1 for orbit, Theme.skyEdge for a shorter climb to the edge
+    // of the air, where skies are chosen. Pages reach the top of the planet when the camera
+    // reaches the ceiling, wherever it is.
+    property real ceiling: 1
+    readonly property bool aloft: phase === Planet.Phase.Orbit
+    readonly property bool orbiting: aloft && ceiling === 1
+    readonly property bool inSkies: aloft && ceiling < 1
 
     // One level above orbit: every planet you could live on
     property bool inSystem: false
@@ -246,7 +252,9 @@ Singleton {
 
     // Going up: ground, then orbit, then the whole system, then back home
     function toggleOrbit() {
-        if (phase === Planet.Phase.Idle)
+        if (inSkies)
+            leaveSkies();
+        else if (phase === Planet.Phase.Idle)
             enterOrbit();
         else if (orbiting && !inSystem)
             enterSystem();
@@ -256,7 +264,9 @@ Singleton {
 
     // One level down at a time
     function goDown() {
-        if (inSystem)
+        if (inSkies)
+            leaveSkies();
+        else if (inSystem)
             leaveSystem();
         else if (orbiting)
             leaveOrbit(current);
@@ -381,6 +391,21 @@ Singleton {
 
     // Same trick as a page change: photograph this page, then the stand-ins take over
     function enterOrbit() {
+        climb(1, Theme.orbitRise);
+    }
+
+    // Up to the edge of the air: the orbit's camera, stopped part of the way
+    function enterSkies() {
+        climb(Theme.skyEdge, Theme.skyRise);
+    }
+
+    function climb(height, duration) {
+        if (phase !== Planet.Phase.Idle)
+            return;
+        ceiling = height;
+        rise.to = height;
+        rise.duration = duration;
+        descentTime = duration;
         origin = current;
         orbitStart = groupOf(current);
         target = current;
@@ -400,7 +425,7 @@ Singleton {
 
     // Going back down, turning to the chosen page on the way
     function leaveOrbit(page) {
-        if (!orbiting || descent.running)
+        if (!aloft || descent.running)
             return;
         target = page;
         spinShift.stop();
@@ -415,6 +440,42 @@ Singleton {
             orbitLanding.restart();
     }
 
+    // Stops the climb somewhere along the way, to look at it there
+    function holdAt(height) {
+        rise.stop();
+        look.stop();
+        altitude = Math.max(0, Math.min(ceiling, height));
+    }
+
+    // Back down from the skies, onto the page we left, at the climb's pace or another
+    function leaveSkies(duration) {
+        if (!inSkies)
+            return;
+        look.stop();
+        descentTime = duration ?? Theme.skyRise;
+        leaveOrbit(current);
+    }
+
+    // Partway down and back up again, to see a sky full size behind your page
+    function lookTo(height) {
+        if (!inSkies || descent.running)
+            return;
+        rise.stop();
+        look.to = height;
+        look.restart();
+    }
+
+    // Something about to be shown needs a moment more before the stage can step aside
+    property bool hold: false
+    property bool waiting: false
+
+    onHoldChanged: {
+        if (!hold && waiting) {
+            waiting = false;
+            settle();
+        }
+    }
+
     // The pages stay up until the scene has stepped aside, or the windows would blink out.
     // From here on the page we landed on is the one at the top of the planet.
     function landed() {
@@ -425,6 +486,10 @@ Singleton {
         if (newWorld) {
             newWorld = false;
             arrive();
+        }
+        if (hold) {
+            waiting = true;
+            return;
         }
         settle();
     }
@@ -508,7 +573,9 @@ Singleton {
     }
 
     function recover() {
-        for (const animation of [spin, rise, descent, fade, spinShift, systemShift, systemSlide])
+        hold = false;
+        waiting = false;
+        for (const animation of [spin, rise, descent, look, fade, spinShift, systemShift, systemSlide])
             animation.stop();
         for (const timer of [geometryDelay, orbitDelay, orbitLanding, captureTimeout, coverDelay, revealDelay])
             timer.stop();
@@ -517,6 +584,7 @@ Singleton {
         distance = 0;
         handTurn = 0;
         altitude = 0;
+        ceiling = 1;
         systemLevel = 0;
         inSystem = false;
         goingUp = false;
@@ -534,6 +602,7 @@ Singleton {
         arriving = [];
         orbitPages = [];
         sceneOpacity = 1;
+        ceiling = 1;
         phase = Planet.Phase.Idle;
         if (queued && queued !== current) {
             const next = queued;
@@ -615,7 +684,7 @@ Singleton {
     // The scene covers every window while a transition runs, so a transition that gets
     // stuck would hide the whole desktop. However it went wrong, this gives the screen back.
     Timer {
-        running: root.phase !== Planet.Phase.Idle && root.phase !== Planet.Phase.Orbit && !root.following
+        running: root.phase !== Planet.Phase.Idle && !root.aloft && !root.following
         interval: 6000
         onTriggered: {
             console.warn("ETEA: transition stuck, giving the screen back");
@@ -685,6 +754,18 @@ Singleton {
         easing.type: Easing.InOutCubic
     }
 
+    NumberAnimation {
+        id: look
+
+        target: root
+        property: "altitude"
+        duration: Theme.skyLook
+        easing.type: Easing.InOutCubic
+    }
+
+    // As long as the climb it undoes
+    property int descentTime: Theme.orbitRise
+
     ParallelAnimation {
         id: descent
 
@@ -692,7 +773,7 @@ Singleton {
             target: root
             property: "altitude"
             to: 0
-            duration: Theme.orbitRise
+            duration: root.descentTime
             easing.type: Easing.InOutCubic
         }
         NumberAnimation {
@@ -700,7 +781,7 @@ Singleton {
             property: "travel"
             from: 0
             to: root.distance
-            duration: Theme.orbitRise
+            duration: root.descentTime
             easing.type: Easing.InOutCubic
         }
         onFinished: root.landed()
@@ -778,6 +859,11 @@ Singleton {
             if (event.name !== "custom" || !event.data.startsWith("etea:swipe,"))
                 return;
             const [, step, value] = event.data.split(",");
+            // At the edge of the air, the fingers turn the belt of skies instead
+            if (root.inSkies) {
+                Skies.swipe(step, value);
+                return;
+            }
             if (step === "start")
                 root.swipeStart();
             else if (step === "move")

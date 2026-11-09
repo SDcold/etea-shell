@@ -21,7 +21,7 @@ Column {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: Weather.known ? `${Math.round(Weather.temperature)}°` : "–"
-            color: Theme.skyInk
+            color: Desk.ink
             font.family: Theme.font
             font.pixelSize: root.sky * 0.11
             font.weight: Font.Medium
@@ -44,12 +44,12 @@ Column {
             Icon {
                 name: root.now.icon
                 size: Math.round(root.sky * 0.036)
-                tint: Theme.skyInk
+                tint: Desk.ink
             }
 
             Text {
                 text: Weather.known ? root.now.label : Weather.failed || Lang.t("On regarde le ciel…")
-                color: Theme.skyInk
+                color: Desk.ink
                 font.family: Theme.font
                 font.pixelSize: root.sky * 0.02
                 font.weight: Font.Medium
@@ -58,7 +58,7 @@ Column {
             Text {
                 visible: Weather.place !== ""
                 text: Weather.place
-                color: Qt.alpha(Theme.skyInk, 0.7)
+                color: Qt.alpha(Desk.ink, 0.7)
                 font.family: Theme.font
                 font.pixelSize: root.sky * 0.014
             }
@@ -82,7 +82,7 @@ Column {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Config.time(modelData.time, { suffix: false })
-                    color: Qt.alpha(Theme.skyInk, 0.65)
+                    color: Qt.alpha(Desk.ink, 0.65)
                     font.family: Theme.font
                     font.pixelSize: root.sky * 0.012
                 }
@@ -91,13 +91,13 @@ Column {
                     anchors.horizontalCenter: parent.horizontalCenter
                     name: Weather.look(modelData.code, modelData.day).icon
                     size: Math.round(root.sky * 0.02)
-                    tint: Theme.skyInk
+                    tint: Desk.ink
                 }
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: `${Math.round(modelData.temperature)}°`
-                    color: Theme.skyInk
+                    color: Desk.ink
                     font.family: Theme.font
                     font.pixelSize: root.sky * 0.015
                     font.weight: Font.Medium

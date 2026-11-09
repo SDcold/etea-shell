@@ -10,7 +10,7 @@ import qs.services
 Item {
     id: root
 
-    property color ink: Theme.skyInk
+    property color ink: Desk.ink
     property bool alive: Planet.pageEmpty
 
     // The readings, held still while nobody can see them

@@ -20,6 +20,7 @@ Singleton {
             skyLow: "#f2b872",
             terrain: ["#a8553c", "#7a3a33", "#4f2630", "#2c1622"],
             light: "#ffe2a8",
+            sun: 0.75, // on the right: the giant keeps its shading
             // Saturn: its ring is the bar, its moons turn in the dials
             style: { barStyle: "band", pageStyle: "constellation", widgetStyle: "celestial", lockScene: "hand" }
         },
@@ -69,6 +70,15 @@ Singleton {
     // unless picked. An empty name means none.
     function sceneOf(planet) {
         return planet.scenery ?? ({ aster: "Aster" })[planet.id] ?? "";
+    }
+
+    // Whether a world shows its hills: as you set it, or else yes under its own sky, and
+    // under a picture of yours only if you want hills over pictures
+    function groundOf(planet) {
+        if (planet?.ground !== undefined)
+            return planet.ground;
+        const sky = planet?.sky ?? "";
+        return !sky || sky === original(planet.id)?.sky || Config.hillsOnPictures;
     }
 
     // How the world was before you touched it
