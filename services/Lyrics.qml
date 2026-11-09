@@ -67,6 +67,7 @@ Singleton {
     }
 
     onSongChanged: {
+        skew = 0;
         anchor();
         ask();
         fetch();
@@ -112,9 +113,11 @@ Singleton {
     // The player tells us where it is now and then; in between, we count ourselves
     property real anchorPosition: 0
     property real anchorTime: 0
+    // How far Quickshell's count is from what the player says, learnt at each ask
+    property real skew: 0
 
     function anchor() {
-        anchorPosition = player?.position ?? 0;
+        anchorPosition = (player?.position ?? 0) - skew;
         anchorTime = Date.now();
         now = anchorPosition;
     }
@@ -148,6 +151,7 @@ Singleton {
                 return;
             root.anchorPosition = micro / 1e6;
             root.anchorTime = (Number(before) + Number(after)) * 500;
+            root.skew = (root.player?.position ?? 0) - root.guess();
             if (!root.player?.isPlaying)
                 root.now = root.anchorPosition;
         }
@@ -156,11 +160,15 @@ Singleton {
     Connections {
         target: root.player
 
-        // Only a jump means something: a seek. The rest is Quickshell's own count.
+        // Only a jump in Quickshell's count means something: a seek. Its value is off by
+        // the skew, so the true place is asked for rather than taken from it, or the
+        // words would hop back a line and forth again.
         function onPositionChanged() {
-            if (Math.abs(root.player.position - root.guess()) > 1.5) {
-                root.anchor();
-                root.ask();
+            if (Math.abs(root.player.position - root.skew - root.guess()) > 1.5) {
+                if (root.player.dbusName)
+                    root.ask();
+                else
+                    root.anchor();
             }
         }
 
