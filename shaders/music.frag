@@ -159,63 +159,51 @@ void main() {
         float rise = clamp(up / reach, 0.0, 1.0);
         color = vec4(mix(ink.rgb, light.rgb, rise * 0.75), 1.0) * shape * (0.55 + 0.4 * rise);
     } else {
-        // A living constellation: one star per column riding on what it hears, bigger and
-        // whiter the louder it is, breathing on its own; on a loud beat it throws out its
-        // four rays; little sparks rise off the loud ones and go out as they climb; a thread
-        // of ink joins each star to the next, waving with the music.
-        float wide = 1600.0 / max(4.0, density * 0.4);
-        float cell = floor(p.x / wide);
-        float lift = reach * 1.6; // stars float higher than bars stand
+        // A constellation that breathes with the music: one star per band of what's heard,
+        // riding on it and growing with it, whiter the louder; on a loud note it throws out
+        // its four rays; a thread of ink joins it to the next. Each pixel reads three bands
+        // at most, so it moves as smoothly as the bars.
+        vec4 rows[7] = vec4[](l0, l1, l2, l3, l4, l5, l6);
+        float wide = 1600.0 / 26.0;
+        float cell = clamp(floor(p.x / wide), 0.0, 25.0);
+        float lift = reach * 1.3;
         vec2 at = vec2(p.x, up);
-        vec4 threads = vec4(0.0);
-        vec4 stars = vec4(0.0);
-        for (int n = -1; n <= 1; n++) {
-            float c = cell + float(n);
-            float x = (c + 0.5) * wide;
-            float heard = noteAt(x);
-            float seedC = hash(c + 17.0);
-            vec2 here = vec2(x, 10.0 + heard * lift);
-
-            // The thread to the next star along
-            float xn = x + wide, heardN = noteAt(xn);
-            vec2 next = vec2(xn, 10.0 + heardN * lift);
-            float d = toSegment(at, here, next) / px;
-            float thread = clamp(0.45 - d + 0.5, 0.0, 1.0) * (0.3 + 0.35 * (heard + heardN));
-            threads = over(vec4(ink.rgb, 1.0) * thread, threads);
-
-            // Breathing, each at its own pace
-            float breath = 1.0 + 0.14 * sin(time * (1.6 + seedC) + seedC * 6.283);
-            float size_ = (3.5 + 13.0 * heard) * breath;
-            vec2 q = at - here;
-
-            // On a loud beat, four long thin rays in two flat steps
-            float flare = smoothstep(0.35, 0.9, heard);
-            if (flare > 0.0) {
-                float len = size_ * (1.3 + 3.0 * flare);
-                float wRay = 0.5 * px + 0.04 * size_;
-                float h = abs(q.y) < wRay ? (abs(q.x) < len * 0.5 ? 0.6 : abs(q.x) < len ? 0.28 : 0.0) : 0.0;
-                float v = abs(q.x) < wRay ? (abs(q.y) < len * 0.5 ? 0.6 : abs(q.y) < len ? 0.28 : 0.0) : 0.0;
-                stars = over(vec4(light.rgb, 1.0) * max(h, v) * flare, stars);
-            }
-
-            // The star itself, from asleep to lit
-            float body = clamp((size_ - starShape(q)) / px + 0.5, 0.0, 1.0);
-            vec3 tone = mix(ink.rgb, light.rgb, smoothstep(0.2, 0.8, heard));
-            stars = over(vec4(tone, 1.0) * body * (0.5 + 0.5 * heard), stars);
-
-            // Sparks rising off the loud ones, shrinking and going out as they climb
-            if (heard > 0.15) {
-                for (int k = 0; k < 4; k++) {
-                    float seedK = hash(c * 7.0 + float(k) * 3.1);
-                    float phase = fract(time * (0.3 + 0.35 * seedK) + seedK);
-                    vec2 spark = here + vec2(sin(phase * 5.0 + seedK * 6.283) * wide * 0.2, size_ + 4.0 + phase * lift * 0.9);
-                    float s = (1.0 - phase) * (1.2 + 3.2 * heard);
-                    float lit = clamp((s - starShape(at - spark)) / px + 0.5, 0.0, 1.0);
-                    stars = over(vec4(light.rgb, 1.0) * lit * (1.0 - phase) * heard, stars);
-                }
-            }
+        float heights[3];
+        float louds[3];
+        for (int n = 0; n < 3; n++) {
+            float c = clamp(cell + float(n - 1), 0.0, 25.0);
+            int i = int(c);
+            float b = rows[i / 4][i % 4];
+            float heard = 1.0 - exp(-b * 1.9 * (0.6 + 0.7 * c / 25.0));
+            louds[n] = heard;
+            heights[n] = 10.0 + heard * lift;
         }
-        color = over(stars, threads);
+        vec2 here = vec2((cell + 0.5) * wide, heights[1]);
+        // The threads to either side
+        float d = min(cell > 0.0 ? toSegment(at, vec2(here.x - wide, heights[0]), here) : 1e4, cell < 25.0 ? toSegment(at, here, vec2(here.x + wide, heights[2])) : 1e4) / px;
+        vec4 thread = vec4(ink.rgb, 1.0) * clamp(0.45 - d + 0.5, 0.0, 1.0) * (0.35 + 0.4 * louds[1]);
+
+        float heard = louds[1];
+        float seedC = hash(cell + 17.0);
+        float breath = 1.0 + 0.12 * sin(time * (1.4 + seedC) + seedC * 6.283);
+        float size_ = (3.2 + 11.0 * heard) * breath;
+        vec2 q = abs(at - here);
+        // ETEA's star, near enough with square roots, and cheap: (√|x| + √|y|)² = r
+        float shape = sqrt(q.x) + sqrt(q.y);
+        shape *= shape;
+        float body = clamp((size_ - shape) / (1.5 * px) + 0.5, 0.0, 1.0);
+        vec3 tone = mix(ink.rgb, light.rgb, smoothstep(0.2, 0.8, heard));
+        vec4 star = vec4(tone, 1.0) * body * (0.5 + 0.5 * heard);
+        // Its rays on a loud note, in two flat steps, kept within its own column
+        float flare = smoothstep(0.4, 0.9, heard);
+        float len = min(size_ * (1.2 + 2.4 * flare), wide * 0.48);
+        float w = 0.5 * px + 0.03 * size_;
+        vec2 thin = clamp((w - q.yx) / px + 0.5, 0.0, 1.0);
+        vec2 inner = clamp((len * 0.5 - q) / px + 0.5, 0.0, 1.0);
+        vec2 outer = clamp((len - q) / px + 0.5, 0.0, 1.0);
+        vec2 rays = thin * (0.25 * outer + 0.3 * inner);
+        star = over(star, vec4(light.rgb, 1.0) * min(rays.x + rays.y, 0.55) * flare);
+        color = over(star, thread);
     }
     fragColor = color * qt_Opacity;
 }

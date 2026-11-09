@@ -336,8 +336,8 @@ Item {
         readonly property real climb: Theme.groundLift * (hillsShown > 0.5 ? 1.5 : 1.1) // how high, in units
         readonly property real maxAmp: Math.min(root.radius * 0.024, 34) * Config.terrainRelief * (root.planet.relief ?? 1) * (1 - root.space)
         // From just above the highest it can climb, down to the bottom of the screen
-        // Stars float higher, and their sparks higher still
-        readonly property real tallest: climb * (Config.groundMusic === "stars" ? 2.6 : 1)
+        // Stars float a little higher than bars stand
+        readonly property real tallest: Config.groundMusic === "stars" ? climb * 1.3 + 40 : climb
         readonly property real stripTop: hillsShown > 0.5 ? root.height * root.horizon - (maxAmp + tallest + 12) * root.unit : root.height - (tallest + 12) * root.unit
 
         Behavior on dance {
