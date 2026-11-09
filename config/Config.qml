@@ -114,6 +114,7 @@ Singleton {
     property alias pageStyle: saved.pageStyle // "constellation" or "numbers"
     property alias trayTint: saved.trayTint // background apps drawn in the shell's colours
     property alias glassApps: saved.glassApps // windows blurred behind; with an opacity, Hyprland also fades them
+    property alias terminalColors: saved.terminalColors // kitty wears the world's colours
     property alias nightWarmth: saved.nightWarmth // the night light's colour, in kelvin
     property alias notifSeconds: saved.notifSeconds // how long a notification stays when its app doesn't say
     property alias keyboardLayouts: saved.keyboardLayouts // like ["us", "fr"]; empty leaves Hyprland's config alone
@@ -260,6 +261,7 @@ Singleton {
             property real musicRise: 0.45
             property real musicFall: 0.2
             property string musicColor: "accent"
+            property bool terminalColors: true
             // kitty and Zen are see-through on their own and only need the blur
             property var glassApps: [
                 { class: "kitty" },

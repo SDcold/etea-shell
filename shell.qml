@@ -23,6 +23,7 @@ ShellRoot {
     Stage {}
     PageShortcuts {}
     Illumination {}
+    TerminalColors {}
     Bar {}
     TrayRecall {}
     BarMenus {}

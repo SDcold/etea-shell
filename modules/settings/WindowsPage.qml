@@ -95,6 +95,18 @@ ColumnLayout {
     }
 
     SettingSection {
+        text: Lang.t("Terminal")
+    }
+
+    SettingSwitch {
+        key: "terminalColors"
+        label: Lang.t("kitty aux couleurs du monde")
+        hint: Lang.t("Son fond, son encre et ses seize couleurs suivent le monde où tu es. Éteint, kitty garde les siennes.")
+        on: Config.terminalColors
+        onToggled: Config.terminalColors = !on
+    }
+
+    SettingSection {
         text: Lang.t("Verre")
         words: ["flou", "blur", "transparence", "transparent", "opacité", "opacity", "glass"]
     }
