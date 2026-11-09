@@ -286,7 +286,7 @@ ColumnLayout {
     SettingSwitch {
         label: Lang.t("Collines")
         hint: Lang.t("Sans elles, le ciel est seul à l'écran.")
-        on: root.planet.ground ?? true
+        on: Planets.groundOf(root.planet)
         onToggled: Morph.apply(root.planetId, { ground: !on })
     }
 

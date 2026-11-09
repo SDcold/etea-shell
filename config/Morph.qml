@@ -144,7 +144,7 @@ Singleton {
     function start(id, before, after) {
         tinted = changesTint(before, after);
         reshaped = changesForm(before, after);
-        sinking = (before.ground ?? true) !== (after.ground ?? true);
+        sinking = Planets.groundOf(before) !== Planets.groundOf(after);
         restaged = Planets.sceneOf(before) !== Planets.sceneOf(after);
         if (!tinted && !reshaped && !sinking && !restaged)
             return;
@@ -172,8 +172,8 @@ Singleton {
             bodies.restart();
         }
         if (sinking) {
-            sinkingAway.from = (before.ground ?? true) ? 0 : 1;
-            sinkingAway.to = (after.ground ?? true) ? 0 : 1;
+            sinkingAway.from = Planets.groundOf(before) ? 0 : 1;
+            sinkingAway.to = Planets.groundOf(after) ? 0 : 1;
             sinkingAway.duration = 600 * Theme.pace;
             sinkingAway.restart();
         }

@@ -29,7 +29,7 @@ Singleton {
     readonly property real grain: 0.34 * Config.grain
     // A world made from your own picture can keep it as its sky, and go without the hills
     readonly property string skyImage: planet.sky ?? ""
-    readonly property bool ground: planet.ground ?? true
+    readonly property bool ground: Planets.groundOf(planet)
 
     // The hills, from the farthest to the closest
     readonly property var terrainLayers: planet.terrain

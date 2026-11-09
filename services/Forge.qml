@@ -143,13 +143,16 @@ Singleton {
             return;
         wearing = null;
         const id = Config.theme;
-        Planet.changeLook(() => Planets.tweak(id, Object.assign({}, next.palette, { sky: next.path, scenery: "" })), next.from);
+        Planet.changeLook(() => {
+            Planets.untweak(id, ["ground"]);
+            Planets.tweak(id, Object.assign({}, next.palette, { sky: next.path, scenery: "" }));
+        }, next.from);
     }
 
     // The world's own sky and colours again
     function unwear(from) {
         const id = Config.theme;
-        Planet.changeLook(() => Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery"]), from);
+        Planet.changeLook(() => Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery", "ground"]), from);
     }
 
     // Its colours, if they weren't known yet when it was picked
@@ -247,12 +250,26 @@ Singleton {
         skyCopier.running = true;
     }
 
+    // Hills over the pictures worn as skies, or not. The world on screen raises or sinks
+    // its land, if it's wearing one and hasn't been set either way.
+    function setHillsOnPictures(on) {
+        const id = Theme.planet.id, before = Planets.groundOf(Theme.planet);
+        Config.hillsOnPictures = on;
+        if (Planets.groundOf(Planets.find(id)) !== before) {
+            // Played from how it was: the setting is already in, so start it by hand
+            Morph.rehearsal = false;
+            Morph.start(id, Object.assign({}, Planets.find(id), { ground: before }), Object.assign({}, Planets.find(id)));
+        }
+    }
+
     // Back to the painted sky. A copy only this world was using goes with it.
     function dropSky(id) {
         const sky = Planets.find(id).sky ?? "";
         if (sky.startsWith(skies + "/") && sky !== Planets.original(id)?.sky)
             Quickshell.execDetached(["rm", "-f", sky]);
         Planets.tweak(id, { sky: "" });
+        // Its painted sky back, its hills come back with it
+        Morph.apply(id, null, ["ground"]);
     }
 
     Process {
@@ -263,6 +280,7 @@ Singleton {
 
         onExited: code => {
             if (code === 0)
+                Planets.untweak(planetId, ["ground"]);
                 Planets.tweak(planetId, { sky: sky });
         }
     }

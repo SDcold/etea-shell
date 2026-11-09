@@ -72,6 +72,15 @@ Singleton {
         return planet.scenery ?? ({ aster: "Aster" })[planet.id] ?? "";
     }
 
+    // Whether a world shows its hills: as you set it, or else yes under its own sky, and
+    // under a picture of yours only if you want hills over pictures
+    function groundOf(planet) {
+        if (planet?.ground !== undefined)
+            return planet.ground;
+        const sky = planet?.sky ?? "";
+        return !sky || sky === original(planet.id)?.sky || Config.hillsOnPictures;
+    }
+
     // How the world was before you touched it
     function original(id) {
         return builtIn.concat(Config.customPlanets).find(planet => planet.id === id) ?? null;

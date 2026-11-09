@@ -377,7 +377,7 @@ Singleton {
         const item = items[chosen];
         const id = planet.id;
         if (item.special === "world") {
-            Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery"]);
+            Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery", "ground"]);
             return;
         }
         const palette = paletteOf(item);
@@ -386,6 +386,7 @@ Singleton {
         preload.source = Pictures.url(sky);
         revealWait.waited = 0;
         revealWait.restart();
+        Planets.untweak(id, ["ground"]); // a new picture follows the rule for hills
         Planets.tweak(id, Object.assign({}, palette ?? {}, { sky: sky, scenery: "" }));
     }
 

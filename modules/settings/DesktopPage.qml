@@ -34,6 +34,15 @@ ColumnLayout {
         onMoved: value => Config.groundLift = Math.round(value)
     }
 
+    SettingSwitch {
+        key: "hillsOnPictures"
+        label: Lang.t("Collines sur les images")
+        hint: Lang.t("Un fond d'écran à toi laisse l'image seule. Avec ceci, les collines du monde restent devant.")
+        words: ["collines", "hills", "terrain", "fond d'écran", "wallpaper"]
+        on: Config.hillsOnPictures
+        onToggled: Forge.setHillsOnPictures(!on)
+    }
+
     SettingSlider {
         key: "terrainHeight"
         label: Lang.t("Hauteur du terrain")

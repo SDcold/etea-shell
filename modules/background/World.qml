@@ -23,7 +23,7 @@ Item {
     // The world drawn: the one you live on, or any other to look at it
     property var planet: Theme.planet
     property string skyImage: planet.sky ?? ""
-    property bool ground: planet.ground ?? true
+    property bool ground: Planets.groundOf(planet)
     // Up at the edge of the air: night and your air in bands behind, and your own sky in a
     // lens, folding from the whole screen into a porthole. { x, y, reach, exponent, aspect }
     // in pixels, or nothing to draw the sky as usual.
