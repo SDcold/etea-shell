@@ -23,6 +23,7 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "orbitSpeed"
         label: Lang.t("Vitesse de l'orbite")
         hint: Lang.t("La vitesse de la montée en orbite (balayage à quatre doigts vers le haut, Super + Tab).")
         value: Config.orbitSpeed

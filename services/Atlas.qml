@@ -36,6 +36,7 @@ Singleton {
         dateFormat: ["date", "jour"],
         pageStyle: ["workspaces", "bureaux virtuels", "espaces de travail"],
         pace: ["vitesse", "animations", "lent", "rapide", "speed"],
+        orbitSpeed: ["orbite", "orbit", "montée", "vitesse", "speed", "super tab"],
         livePages: ["vidéo", "lecture", "live"],
         pageTransition: ["rotation", "glissement", "slide", "workspace animation"],
         groundMusic: ["visualiseur", "visualizer", "cava", "spectre", "musique", "music"],
