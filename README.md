@@ -121,7 +121,7 @@ git clone https://github.com/SDcold/etea-shell.git ~/.config/etea-shell
 The installer walks you through it and asks before every change: it checks your Hyprland,
 installs what's missing (Arch and Fedora), points out other bars or notification daemons that
 would get in the way, adds ETEA to your `hyprland.lua` (backing it up first), can set up locking
-on idle and enrol a finger, then lifts off. Not sure? `install.sh --dry-run` shows everything it
+on idle, let kitty wear the world's colours and enrol a finger, then lifts off. Not sure? `install.sh --dry-run` shows everything it
 would do without touching anything, and `install.sh --uninstall` takes ETEA back out.
 
 ### By hand
@@ -157,7 +157,16 @@ would do without touching anything, and `install.sh --uninstall` takes ETEA back
    The script locks with ETEA, or with hyprlock if you picked it in Settings, and falls back to
    hyprlock if ETEA isn't answering. Never to nothing.
 
-4. **Log out and back in**, or just run `qs -p ~/.config/etea-shell` to try it right away.
+4. **kitty in the world's colours** (optional). At the end of `~/.config/kitty/kitty.conf`:
+
+   ```ini
+   include ~/.config/etea/kitty-colors.conf
+   ```
+
+   ETEA rewrites that file whenever you change worlds, and every open kitty picks it up. Turn
+   it off in Settings › Windows › Terminal.
+
+5. **Log out and back in**, or just run `qs -p ~/.config/etea-shell` to try it right away.
 
 ETEA takes over a handful of shortcuts while it runs (pages, launcher, lock…). Nothing is
 written to your Hyprland config: reload Hyprland and they're yours again, until the shell takes

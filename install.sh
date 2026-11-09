@@ -118,6 +118,11 @@ uninstall() {
         run pkill -f "qs -p $shell_dir"
         good "Stopped. Reload Hyprland to get your own shortcuts back."
     fi
+    if [[ -f "$kitty_conf" ]] && grep -qxF -e "$kitty_line" "$kitty_conf" && ask "Stop kitty from wearing the world's colours?" y; then
+        backup "$kitty_conf"
+        grep -vxF -e "$kitty_line" -e "# The world's colours, written by ETEA" "$kitty_conf" | write_file "$kitty_conf"
+        good "kitty keeps its own colours again."
+    fi
     note "Your settings stay in ~/.config/etea; delete that folder to forget them too."
     say ""
 }
@@ -390,6 +395,24 @@ EOF
     good "Locks after 5 minutes, screen off after 6."
 }
 
+# kitty in the world's colours: one include line at the end of kitty.conf
+kitty_conf="${XDG_CONFIG_HOME:-$HOME/.config}/kitty/kitty.conf"
+kitty_line="include ~/.config/etea/kitty-colors.conf"
+
+terminal_colours() {
+    command -v kitty >/dev/null || return 0
+    step "kitty"
+    if [[ -f "$kitty_conf" ]] && grep -qxF -e "$kitty_line" "$kitty_conf"; then
+        good "kitty already wears the world's colours."
+        return 0
+    fi
+    ask "Let kitty wear the world's colours? It adds one line to kitty.conf." y || return 0
+    run mkdir -p "$(dirname "$kitty_conf")"
+    backup "$kitty_conf"
+    { [[ -f "$kitty_conf" ]] && cat "$kitty_conf"; printf '\n# The world'"'"'s colours, written by ETEA\n%s\n' "$kitty_line"; } | write_file "$kitty_conf"
+    good "kitty follows the world. Turn it off in Settings › Windows."
+}
+
 fingerprint() {
     command -v fprintd-list >/dev/null || return 0
     step "Fingerprint"
@@ -448,6 +471,7 @@ install_packages
 check_rivals
 start_idle=0
 idle_lock
+terminal_colours
 autostart
 fingerprint
 start_now
