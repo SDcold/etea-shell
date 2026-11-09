@@ -8,6 +8,9 @@ RowLayout {
     id: root
 
     property string text: ""
+    property var words: [] // other words people would search it by
+
+    objectName: "section"
 
     Layout.fillWidth: true
     Layout.topMargin: 14

@@ -11,6 +11,7 @@ RowLayout {
     property string label: ""
     property string hint: ""
     property string key: "" // the saved value it changes, if it's one of Config's
+    property var words: [] // other words people would search it by, beside the key's own
     readonly property bool yours: key !== "" && Config.changed(key)
     // A search that brought you here lights the row for a moment
     property bool found: false

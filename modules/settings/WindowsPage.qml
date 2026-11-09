@@ -96,6 +96,7 @@ ColumnLayout {
 
     SettingSection {
         text: Lang.t("Verre")
+        words: ["flou", "blur", "transparence", "transparent", "opacité", "opacity", "glass"]
     }
 
     Text {

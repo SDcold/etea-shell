@@ -56,6 +56,7 @@ ColumnLayout {
 
     SettingSection {
         text: Lang.t("Clavier")
+        words: ["keyboard", "azerty", "qwerty", "disposition", "layout"]
     }
 
     Text {

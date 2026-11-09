@@ -454,7 +454,7 @@ Variants {
             Rectangle {
                 id: pageFrame
 
-                width: 800
+                width: pageCheck.width + 40
                 height: (pageCheck.item?.height ?? 0) + 20
                 color: Theme.cardDeep
 
@@ -467,12 +467,18 @@ Variants {
                     y: 10
                     width: 760
                     active: false
-                    onLoaded: grabLater.restart()
+                    property string address: ""
+
+                    onLoaded: {
+                        if (address && item.go)
+                            item.go(address);
+                        grabLater.restart();
+                    }
 
                     Timer {
                         id: grabLater
 
-                        interval: 400
+                        interval: 700
                         onTriggered: pageFrame.grabToImage(result => {
                             console.info(`ETEA settings grab: ${result.saveToFile(pageCheck.path) ? pageCheck.path : "failed"}`);
                             pageCheck.active = false;
@@ -489,6 +495,14 @@ Variants {
                 if (!stage.focused)
                     return;
                 pageCheck.path = path;
+                // "SettingsBody.qml#flou" opens the whole window on a search or a setting
+                const [file, address] = page.split("#");
+                page = file;
+                pageCheck.address = address ?? "";
+                // The whole window's content has the window's size, a page the page's width
+                const whole = page === "SettingsBody.qml";
+                pageCheck.width = whole ? 1040 : 760;
+                pageCheck.height = whole ? 700 : undefined;
                 pageCheck.source = Qt.resolvedUrl(`../settings/${page}`);
                 pageCheck.active = true;
             }

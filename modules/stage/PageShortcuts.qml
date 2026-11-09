@@ -53,6 +53,16 @@ Scope {
             Menus.pageWanted(page, path);
         }
 
+        // Opens Réglages on a setting (its key), a page (@barre) or a search (?flou)
+        function open(address: string): void {
+            Menus.openSettings(address);
+        }
+
+        // What a search for these words would find, best first
+        function find(text: string): string {
+            return Atlas.search(text, -1).slice(0, 8).map(entry => `${entry.label} (${entry.pageLabel}${entry.section ? " › " + entry.section : ""}${entry.key ? ", " + entry.key : ""})`).join("\n");
+        }
+
         // Which settings are yours, set away from how they come
         function changed(): string {
             return Object.keys(Config.defaults).filter(key => Config.changed(key)).join(", ") + ` (${Object.keys(Config.defaults).length} known)`;
