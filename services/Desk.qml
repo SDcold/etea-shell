@@ -66,6 +66,23 @@ Singleton {
             dark: darkInk,
             world: Theme.planet.light
         })[Config.widgetInk] ?? (skyBrightness > 0.62 ? darkInk : Theme.skyInk)
+    readonly property bool darkInked: Forge.oklchOf(Qt.color(ink)).l < 0.5
+
+    // The touch of colour for what the widgets light up (today, the song's progress, the
+    // words being sung, the weather): the picture's most striking colour, or the world's
+    // light. Deep on a light sky, pale on a dark one, so it reads like the ink does. A
+    // picture with no colour to give leaves the ink as it is.
+    readonly property color accent: {
+        const planet = Theme.planet;
+        const vivid = planet.vivid ?? (planet.sky ? (Palettes.version, Palettes.of({ path: planet.sky, mtime: "" })?.palette?.vivid) : "");
+        const source = Config.widgetAccent === "none" ? "" : Config.widgetAccent === "world" || !vivid ? planet.light : vivid;
+        const tone = source ? Forge.oklchOf(Qt.color(source)) : null;
+        if (!tone || tone.c < 0.03)
+            return ink;
+        return darkInked ? Forge.oklch(0.42, Math.max(0.09, Math.min(0.15, tone.c * 1.2)), tone.h) : Forge.oklch(0.86, Math.min(0.09, tone.c), tone.h);
+    }
+    // What's written over the accent, like today's date on its star
+    readonly property color accentInk: darkInked ? "#fffaf4" : "#1c1208"
 
     // Only changes when a widget comes or goes, so moving one doesn't rebuild the others
     property var shown: []

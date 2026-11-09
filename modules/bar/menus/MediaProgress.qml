@@ -8,6 +8,7 @@ ColumnLayout {
     id: root
 
     property color tint: Theme.windowLit
+    property color ink: Theme.text // the times under it
     property bool entering: true // false on the desktop, where it's simply there
     readonly property var player: Music.player
     readonly property bool known: (player?.lengthSupported ?? false) && player.length > 0
@@ -33,14 +34,14 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: Music.clockTime(root.player?.position)
-            color: Qt.alpha(Theme.text, 0.7)
+            color: Qt.alpha(root.ink, 0.7)
             font.family: Theme.font
             font.pixelSize: 10
         }
 
         Text {
             text: Music.clockTime(root.player?.length)
-            color: Qt.alpha(Theme.text, 0.7)
+            color: Qt.alpha(root.ink, 0.7)
             font.family: Theme.font
             font.pixelSize: 10
         }

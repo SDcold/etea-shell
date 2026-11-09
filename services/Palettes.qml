@@ -32,7 +32,7 @@ Singleton {
     function of(picture) {
         const found = known[keyOf(picture)];
         if (found?.colors && found.rules === rules) {
-            if (!found.palette)
+            if (found.palette?.made !== Forge.paletteMade)
                 found.palette = Forge.paletteOf(found.colors.map(color => Qt.color(color)));
             return found;
         }

@@ -44,7 +44,7 @@ Column {
             Icon {
                 name: root.now.icon
                 size: Math.round(root.sky * 0.036)
-                tint: Desk.ink
+                tint: Desk.accent
             }
 
             Text {
@@ -91,7 +91,7 @@ Column {
                     anchors.horizontalCenter: parent.horizontalCenter
                     name: Weather.look(modelData.code, modelData.day).icon
                     size: Math.round(root.sky * 0.02)
-                    tint: Desk.ink
+                    tint: Desk.accent
                 }
 
                 Text {

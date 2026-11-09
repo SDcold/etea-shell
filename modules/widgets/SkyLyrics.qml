@@ -90,6 +90,8 @@ Column {
         resting: Lyrics.index < 0 || Lyrics.line(0) === ""
         progress: Lyrics.progress
         ink: Desk.ink
+        light: Desk.accent
+        star: Desk.accent
         size: root.sky * 0.046
         opacity: 1 - root.enter * 0.7
 

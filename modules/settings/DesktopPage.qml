@@ -95,7 +95,7 @@ ColumnLayout {
         SettingChoice {
             key: "musicColor"
             label: Lang.t("Couleur")
-            options: [{ id: "light", label: Lang.t("Lumière du ciel") }, { id: "ink", label: Lang.t("Encre des widgets") }, { id: "world", label: Lang.t("Lumière du monde") }]
+            options: [{ id: "accent", label: Lang.t("Touche de couleur") }, { id: "light", label: Lang.t("Lumière du ciel") }, { id: "ink", label: Lang.t("Encre des widgets") }, { id: "world", label: Lang.t("Lumière du monde") }]
             current: Config.musicColor
             onPicked: id => Config.musicColor = id
         }
@@ -165,6 +165,16 @@ ColumnLayout {
         options: [{ id: "auto", label: Lang.t("Automatique") }, { id: "light", label: Lang.t("Claire") }, { id: "dark", label: Lang.t("Sombre") }, { id: "world", label: Lang.t("Lumière du monde") }]
         current: Config.widgetInk
         onPicked: id => Config.widgetInk = id
+    }
+
+    SettingChoice {
+        key: "widgetAccent"
+        label: Lang.t("Touche de couleur")
+        hint: Lang.t("Ce que les widgets mettent en lumière : le jour, la chanson, les paroles chantées, la météo. Automatique prend la couleur la plus marquante de l'image.")
+        words: ["accent", "couleur", "color", "rouge", "teinte"]
+        options: [{ id: "auto", label: Lang.t("Automatique") }, { id: "world", label: Lang.t("Lumière du monde") }, { id: "none", label: Lang.t("Aucune") }]
+        current: Config.widgetAccent
+        onPicked: id => Config.widgetAccent = id
     }
 
     // Every kind of widget, out in the sky or not. Where they stand is set on the desktop itself.

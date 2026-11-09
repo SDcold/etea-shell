@@ -18,6 +18,7 @@ Item {
     property color light: Theme.windowLit
     property real size: 30
     property real dim: 0.32 // how much of the ink the words still to sing keep
+    property color star: Theme.star // the one riding the thread
 
     readonly property color lit: Qt.tint(ink, Qt.alpha(light, 0.6))
     readonly property real inset: (width - base.contentWidth) / 2
@@ -98,6 +99,7 @@ Item {
             size: Math.max(4, root.size * 0.16)
             lit: true
             animated: false
+            fill: root.star
         }
     }
 
