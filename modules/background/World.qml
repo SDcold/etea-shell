@@ -359,7 +359,7 @@ Item {
         property vector4d l5: root.bands(20)
         property vector4d l6: root.bands(24)
         property color ink: ({ accent: Desk.accent, ink: Desk.ink, world: root.planet.light })[Config.musicColor] ?? root.tintA.skyLow
-        property color light: ({ accent: Desk.accent, ink: Desk.ink })[Config.musicColor] ?? "#fff8eb"
+        property color light: ({ accent: Desk.accentLight, ink: Desk.ink })[Config.musicColor] ?? "#fff8eb"
         property vector2d world: Qt.vector2d(root.width, root.height)
         property vector2d origin: Qt.vector2d(x, y)
         property vector2d size: Qt.vector2d(width, height)
