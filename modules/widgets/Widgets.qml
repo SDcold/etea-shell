@@ -5,8 +5,9 @@ import qs.modules.bar
 import qs.services
 
 // The widgets living in the sky. Which ones, where and how big is up to Desk.
-// On the desktop they answer Super: drag one to move it, Super + wheel resizes the one
-// under the pointer, and a right click opens its options. A right click on the empty sky
+// On the desktop they answer Super: drag one to move it, lined up by snap lines (Shift
+// lets it go free), Super + wheel resizes the one under the pointer, and a right click
+// opens its options. A right click on the empty sky
 // offers the ones that aren't out yet.
 Item {
     id: root
@@ -42,6 +43,59 @@ Item {
         return position + (left < margin ? margin - left : right > room - margin ? room - margin - right : 0);
     }
 
+    // Snap lines: while a widget is carried, its edges and middle are pulled onto the
+    // screen's middle and onto the edges and middles of the other widgets, and the lines
+    // it lines up on are drawn, from one widget to the other
+    readonly property real snapReach: 10
+    property var guides: [] // { vertical, at, from, to }
+
+    function snap(slot, x, y) {
+        const others = [];
+        for (let i = 0; i < slots.count; i++) {
+            const other = slots.itemAt(i);
+            if (other && other !== slot && other.width > 0)
+                others.push(other.drawn(other.x, other.y));
+        }
+        const whole = { l: 0, t: 0, r: width, b: height };
+        // The lines along one axis: the screen's middle, then each widget's three
+        const linesOf = (lo, hi) => [{ at: (whole[lo] + whole[hi]) / 2, span: whole }].concat(...others.map(o => [o[lo], (o[lo] + o[hi]) / 2, o[hi]].map(at => ({ at: at, span: o }))));
+        const pull = (lines, values) => {
+            let shift = null;
+            for (const line of lines)
+                for (const value of values)
+                    if (Math.abs(line.at - value) <= snapReach && (shift === null || Math.abs(line.at - value) < Math.abs(shift)))
+                        shift = line.at - value;
+            return shift ?? 0;
+        };
+        const valuesOf = (me, lo, hi) => [me[lo], (me[lo] + me[hi]) / 2, me[hi]];
+        let me = slot.drawn(x, y);
+        const across = linesOf("l", "r"), down = linesOf("t", "b");
+        x += pull(across, valuesOf(me, "l", "r"));
+        y += pull(down, valuesOf(me, "t", "b"));
+        me = slot.drawn(x, y);
+        // Every line it now sits on, each running across both widgets, a little past them
+        const found = [];
+        const note = (lines, values, vertical, lo, hi) => {
+            for (const line of lines) {
+                if (!values.some(value => Math.abs(line.at - value) < 0.5))
+                    continue;
+                const from = line.span === whole ? 0 : Math.min(me[lo], line.span[lo]) - 16;
+                const to = line.span === whole ? (vertical ? height : width) : Math.max(me[hi], line.span[hi]) + 16;
+                const same = found.find(guide => guide.vertical === vertical && Math.abs(guide.at - line.at) < 0.5);
+                if (same) {
+                    same.from = Math.min(same.from, from);
+                    same.to = Math.max(same.to, to);
+                } else {
+                    found.push({ vertical: vertical, at: line.at, from: from, to: to });
+                }
+            }
+        };
+        note(across, valuesOf(me, "l", "r"), true, "t", "b");
+        note(down, valuesOf(me, "t", "b"), false, "l", "r");
+        guides = found;
+        return Qt.point(x, y);
+    }
+
     function origin(ax, ay) {
         return [[Item.TopLeft, Item.Top, Item.TopRight], [Item.Left, Item.Center, Item.Right], [Item.BottomLeft, Item.Bottom, Item.BottomRight]][Math.round(ay * 2)][Math.round(ax * 2)];
     }
@@ -54,6 +108,8 @@ Item {
     }
 
     Repeater {
+        id: slots
+
         model: Desk.shown
 
         Item {
@@ -79,6 +135,13 @@ Item {
             // celestial ones are fixed cards and get scaled around the point they stand on.
             scale: root.skyStyle ? 1 : size
             transformOrigin: root.origin(place.ax, place.ay)
+
+            // The widget as it's drawn at a spot, scaled about its origin
+            function drawn(atX, atY) {
+                const left = atX + Math.round(place.ax * 2) / 2 * width * (1 - scale);
+                const top = atY + Math.round(place.ay * 2) / 2 * height * (1 - scale);
+                return { l: left, t: top, r: left + width * scale, b: top + height * scale };
+            }
 
             onSizeChanged: {
                 if (root.interactive)
@@ -179,14 +242,14 @@ Item {
                     if (!slot.dragging)
                         return;
                     const at = mapToItem(root, mouse.x, mouse.y);
-                    let x = slot.startedAt.x + at.x - slot.grabbedAt.x;
-                    let y = slot.startedAt.y + at.y - slot.grabbedAt.y;
-                    // The middle of the screen pulls a little, it's where the big pieces want to be
-                    if (Math.abs(x + slot.width / 2 - root.width / 2) < 14)
-                        x = root.width / 2 - slot.width / 2;
-                    if (Math.abs(y + slot.height / 2 - root.height / 2) < 14)
-                        y = root.height / 2 - slot.height / 2;
-                    slot.dragAt = Qt.point(x, y);
+                    const x = slot.startedAt.x + at.x - slot.grabbedAt.x;
+                    const y = slot.startedAt.y + at.y - slot.grabbedAt.y;
+                    if (mouse.modifiers & Qt.ShiftModifier) {
+                        root.guides = [];
+                        slot.dragAt = Qt.point(x, y);
+                    } else {
+                        slot.dragAt = root.snap(slot, x, y);
+                    }
                 }
                 onReleased: {
                     if (!slot.dragging)
@@ -195,10 +258,50 @@ Item {
                     Desk.move(slot.type, (slot.dragAt.x + slot.width * slot.place.ax) / root.width, (slot.dragAt.y + slot.height * slot.place.ay) / root.height);
                     slot.dragging = false;
                     Desk.carrying = false;
+                    root.guides = [];
                 }
                 onCanceled: {
                     slot.dragging = false;
                     Desk.carrying = false;
+                    root.guides = [];
+                }
+            }
+        }
+    }
+
+    // The snap lines, a thin line of ink with a star at each end
+    Repeater {
+        model: root.guides
+
+        Item {
+            id: guide
+
+            required property var modelData
+            readonly property real at: Math.round(modelData.at)
+
+            x: modelData.vertical ? at : modelData.from
+            y: modelData.vertical ? modelData.from : at
+            width: modelData.vertical ? 1 : modelData.to - modelData.from
+            height: modelData.vertical ? modelData.to - modelData.from : 1
+
+            Rectangle {
+                anchors.fill: parent
+                color: Qt.alpha(Desk.ink, 0.45)
+            }
+
+            Repeater {
+                model: [0, 1]
+
+                Star {
+                    required property var modelData
+
+                    x: (guide.modelData.vertical ? 0.5 : modelData * guide.width) - size
+                    y: (guide.modelData.vertical ? modelData * guide.height : 0.5) - size
+                    size: 4
+                    lit: true
+                    animated: false
+                    halo: false
+                    fill: Desk.ink
                 }
             }
         }
