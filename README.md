@@ -163,8 +163,9 @@ would do without touching anything, and `install.sh --uninstall` takes ETEA back
    include ~/.config/etea/kitty-colors.conf
    ```
 
-   ETEA rewrites that file whenever you change worlds, and every open kitty picks it up. Turn
-   it off in Settings › Windows › Terminal.
+   ETEA rewrites that file whenever you change worlds, and every open kitty picks it up. Without
+   that line, kitty is left alone. Settings › Windows › Terminal can add it for you, or turn it
+   all off.
 
 5. **Log out and back in**, or just run `qs -p ~/.config/etea-shell` to try it right away.
 
