@@ -10,17 +10,17 @@ import qs.config
 Singleton {
     id: root
 
-    // The pages, in the window's order
+    // The pages, in the window's order, each with an id that links use in any language
     readonly property var pages: [
-        { label: Lang.t("Monde"), page: "WorldPage.qml" },
-        { label: Lang.t("Bureau"), page: "DesktopPage.qml" },
-        { label: Lang.t("Barre"), page: "BarPage.qml" },
-        { label: Lang.t("Fenêtres"), page: "WindowsPage.qml" },
-        { label: Lang.t("Mouvement"), page: "MotionPage.qml" },
-        { label: Lang.t("Système"), page: "SystemPage.qml" },
-        { label: Lang.t("Verrouillage"), page: "LockPage.qml" },
-        { label: Lang.t("Langue"), page: "LanguagePage.qml" },
-        { label: Lang.t("À propos"), page: "AboutPage.qml" }
+        { id: "monde", label: Lang.t("Monde"), page: "WorldPage.qml" },
+        { id: "bureau", label: Lang.t("Bureau"), page: "DesktopPage.qml" },
+        { id: "barre", label: Lang.t("Barre"), page: "BarPage.qml" },
+        { id: "fenetres", label: Lang.t("Fenêtres"), page: "WindowsPage.qml" },
+        { id: "mouvement", label: Lang.t("Mouvement"), page: "MotionPage.qml" },
+        { id: "systeme", label: Lang.t("Système"), page: "SystemPage.qml" },
+        { id: "verrouillage", label: Lang.t("Verrouillage"), page: "LockPage.qml" },
+        { id: "langue", label: Lang.t("Langue"), page: "LanguagePage.qml" },
+        { id: "apropos", label: Lang.t("À propos"), page: "AboutPage.qml" }
     ]
 
     // The other words a setting goes by, in both languages
@@ -216,7 +216,7 @@ Singleton {
         build();
         if (address.startsWith("@")) {
             const name = fold(address.slice(1));
-            const index = pages.findIndex(page => fold(page.label).startsWith(name) || fold(page.page).startsWith(name));
+            const index = pages.findIndex(page => page.id === name.replace(/\s/g, "") || fold(page.label).startsWith(name) || fold(page.page).startsWith(name));
             return index >= 0 ? { page: index } : { search: address.slice(1) };
         }
         if (address.startsWith("?"))

@@ -39,7 +39,7 @@ ColumnLayout {
         label: Lang.t("Choisir les langues…")
         onPicked: {
             Menus.close();
-            Menus.settingsOpen = true;
+            Menus.openSettings("@langue"); // where the keyboard's languages are chosen
         }
     }
 }
