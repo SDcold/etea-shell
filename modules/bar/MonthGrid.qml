@@ -10,6 +10,12 @@ GridLayout {
     property date month: new Date()
     property color ink: Theme.text
     property color heading: ink
+    // Today's star, and the date written on it
+    property color mark: Theme.star
+    property color markGlow: Theme.starGlow
+    property bool markHalo: true
+    property color markInk: "#1c1208"
+    property real markOpacity: 0.55
     property real unit: 13 // the size of a day's number, everything else follows
 
     property date today: new Date() // widgets that stay up for days keep this current
@@ -64,13 +70,16 @@ GridLayout {
                 size: root.unit * 1.45
                 lit: true
                 animated: false
-                opacity: 0.55
+                fill: root.mark
+                glow: root.markGlow
+                halo: root.markHalo
+                opacity: root.markOpacity
             }
 
             Text {
                 anchors.centerIn: parent
                 text: cell.modelData.getDate()
-                color: cell.isToday ? "#1c1208" : Qt.alpha(root.ink, cell.modelData.getMonth() === root.month.getMonth() ? 0.9 : 0.3)
+                color: cell.isToday ? root.markInk : Qt.alpha(root.ink, cell.modelData.getMonth() === root.month.getMonth() ? 0.9 : 0.3)
                 font.family: Theme.font
                 font.pixelSize: root.unit
             }

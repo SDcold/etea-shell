@@ -73,6 +73,8 @@ Singleton {
     // scores best on how colourful it is and how much of the picture its hue covers, greys
     // left out; a picture with little colour gets the neutral scheme, the others a tonal
     // spot. Everything else is that one hue at chosen lightnesses, so it all belongs together.
+    readonly property int paletteMade: 2 // palettes worked out by older rules are worked out again
+
     function paletteOf(found) {
         if (found.length < 2)
             return null;
@@ -102,7 +104,23 @@ Singleton {
         const accent = neutral ? Math.min(sourceChroma, 0.034) : 0.1;
         const quiet = neutral ? Math.min(sourceChroma, 0.012) : 0.025;
 
+        // Its most striking colour, even in a picture the scheme calls neutral: the red sun
+        // on a grey poster. The clearly coloured ones are grouped by hue, and the group that
+        // is most vivid for how much of the picture it covers gives its most vivid member.
+        let vivid = null, strongest = 0;
+        for (const color of colors) {
+            if (color.c < 0.05)
+                continue;
+            const group = colors.filter(other => other.c >= 0.05 && Math.abs(((other.h - color.h) % 360 + 540) % 360 - 180) <= 25);
+            const score = Math.max(...group.map(other => other.c)) * Math.sqrt(group.length * share);
+            if (score > strongest) {
+                strongest = score;
+                vivid = group.reduce((most, other) => other.c > most.c ? other : most);
+            }
+        }
+
         return {
+            made: paletteMade,
             // How light the picture is overall, for what's written over it
             brightness: colors.reduce((sum, color) => sum + color.l, 0) / colors.length,
             skyTop: oklch(0.24, quiet, hue),
@@ -112,7 +130,8 @@ Singleton {
             skyLow: oklch(0.9, quiet * 1.5, hue),
             // The hills, back to front: lighter and a little quieter far off, darker close by
             terrain: [[0.64, 0.8], [0.52, 1], [0.4, 0.9], [0.27, 0.7]].map(([lightness, amount]) => oklch(lightness, accent * amount, hue)),
-            light: oklch(0.95, neutral ? quiet : 0.045, hue)
+            light: oklch(0.95, neutral ? quiet : 0.045, hue),
+            vivid: vivid ? oklch(vivid.l, vivid.c, vivid.h) : ""
         };
     }
 
@@ -156,7 +175,7 @@ Singleton {
     // The world's own sky and colours again
     function unwear(from) {
         const id = Config.theme;
-        Planet.changeLook(() => Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "deep", "brightness", "scenery", "ground"]), from);
+        Planet.changeLook(() => Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "deep", "brightness", "vivid", "scenery", "ground"]), from);
     }
 
     // Its colours, if they weren't known yet when it was picked

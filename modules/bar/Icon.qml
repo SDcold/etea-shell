@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Effects
 import Quickshell
 import qs.config
 
@@ -23,11 +22,12 @@ Item {
         source: root.name ? "file://" + Quickshell.shellPath(`assets/icons/${root.name}.svg`) : ""
     }
 
-    MultiEffect {
+    ShaderEffect {
         anchors.fill: parent
-        source: picture
-        colorization: 1
-        colorizationColor: root.tint
-        brightness: 1
+
+        property var source: picture
+        property color tint: root.tint
+
+        fragmentShader: Qt.resolvedUrl("../../shaders/tint.frag.qsb")
     }
 }

@@ -62,5 +62,11 @@ ColumnLayout {
         unit: root.sky * 0.016
         ink: Desk.ink
         heading: Qt.alpha(Desk.ink, 0.6)
+        // Today in the touch of colour, flat on a light sky, glowing on a dark one
+        mark: Desk.accent
+        markGlow: Desk.accent
+        markHalo: !Desk.darkInked
+        markInk: Desk.accentInk
+        markOpacity: 0.95
     }
 }

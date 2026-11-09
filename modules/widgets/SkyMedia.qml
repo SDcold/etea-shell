@@ -80,7 +80,8 @@ RowLayout {
             entering: false
             visible: known
             Layout.fillWidth: true
-            tint: Desk.ink
+            tint: Desk.accent
+            ink: Desk.ink
         }
 
         MediaControls {

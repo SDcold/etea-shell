@@ -531,6 +531,9 @@
     "Couleur": "Colour",
     "Lumière du ciel": "The sky's light",
     "Le sol": "The ground",
+    "Touche de couleur": "Touch of colour",
+    "Ce que les widgets mettent en lumière : le jour, la chanson, les paroles chantées, la météo. Automatique prend la couleur la plus marquante de l'image.": "What the widgets light up: today, the song, the words being sung, the weather. Automatic takes the picture's most striking colour.",
+    "Aucune": "None",
     "Vitesse de l'orbite": "Orbit speed",
     "La vitesse de la montée en orbite (balayage à quatre doigts vers le haut, Super + Tab).": "How fast you rise into orbit (four-finger swipe up, Super + Tab)."
 }

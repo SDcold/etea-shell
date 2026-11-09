@@ -10,6 +10,9 @@ Item {
     property bool lit: false
     property bool appear: true
     property bool animated: true // false for stars that are simply there, like on a frame
+    property color fill: Theme.star // when lit
+    property color glow: Theme.starGlow
+    property bool halo: true
 
     width: size * 2
     height: size * 2
@@ -59,6 +62,7 @@ Item {
         anchors.centerIn: parent
         width: radius * 2
         height: radius * 2
+        visible: root.halo
         opacity: root.lit ? 1 : 0
         preferredRendererType: Shape.CurveRenderer
 
@@ -76,9 +80,9 @@ Item {
                 focalY: centerY
                 centerRadius: halo.radius
 
-                GradientStop { position: 0; color: Qt.alpha(Theme.starGlow, 0.8) }
-                GradientStop { position: 0.4; color: Qt.alpha(Theme.starGlow, 0.24) }
-                GradientStop { position: 1; color: Qt.alpha(Theme.starGlow, 0) }
+                GradientStop { position: 0; color: Qt.alpha(root.glow, 0.8) }
+                GradientStop { position: 0.4; color: Qt.alpha(root.glow, 0.24) }
+                GradientStop { position: 1; color: Qt.alpha(root.glow, 0) }
             }
 
             PathAngleArc {
@@ -104,7 +108,7 @@ Item {
         ShapePath {
             strokeWidth: 0
             strokeColor: "transparent"
-            fillColor: root.lit ? Theme.star : Theme.starAsleep
+            fillColor: root.lit ? root.fill : Theme.starAsleep
             startX: root.size
             startY: 0
 
