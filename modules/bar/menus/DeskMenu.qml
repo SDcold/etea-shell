@@ -136,7 +136,7 @@ Scope {
                         visible: !Desk.frozen
                         Layout.fillWidth: true
                         value: (Desk.size(panel.shown) - 0.5) / 1.1
-                        onMoved: value => Desk.update(panel.shown, { size: Math.round((0.5 + value * 1.1) * 100) / 100 })
+                        onMoved: value => Desk.resize(panel.shown, 0.5 + value * 1.1)
                     }
 
                     MenuRow {

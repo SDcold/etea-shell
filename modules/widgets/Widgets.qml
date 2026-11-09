@@ -33,6 +33,15 @@ Item {
         lyrics: "LyricsWidget.qml"
     }
 
+    // A position moved just enough for the widget, scaled about its origin, to keep a
+    // little room from the screen's edges
+    function inside(position, length, origin, scale, room) {
+        const margin = 12, left = position + origin * length * (1 - scale), right = left + length * scale;
+        if (right - left > room - margin * 2)
+            return position;
+        return position + (left < margin ? margin - left : right > room - margin ? room - margin - right : 0);
+    }
+
     function origin(ax, ay) {
         return [[Item.TopLeft, Item.Top, Item.TopRight], [Item.Left, Item.Center, Item.Right], [Item.BottomLeft, Item.Bottom, Item.BottomRight]][Math.round(ay * 2)][Math.round(ax * 2)];
     }
@@ -60,9 +69,10 @@ Item {
             property point grabbedAt
             property point startedAt
 
-            // Where the widget sits: its saved spot, or under your hand while you carry it
-            x: dragging ? dragAt.x : place.x * root.width - width * place.ax
-            y: dragging ? dragAt.y : place.y * root.height - height * place.ay
+            // Where the widget sits: its saved spot, or under your hand while you carry it.
+            // Wherever the spot is, the widget as drawn stays on the screen.
+            x: dragging ? dragAt.x : root.inside(place.x * root.width - width * place.ax, width, Math.round(place.ax * 2) / 2, scale, root.width)
+            y: dragging ? dragAt.y : root.inside(place.y * root.height - height * place.ay, height, Math.round(place.ay * 2) / 2, scale, root.height)
             width: content.width
             height: content.height
             // Sky widgets are drawn from the screen's height, so they grow crisp. The

@@ -40,10 +40,10 @@ Singleton {
         system: { x: 0.14, y: 0.3, ax: 0.5, ay: 0.5 },
         media: { x: 0.84, y: 0.3, ax: 0.5, ay: 0.5 },
         weather: { x: 0.84, y: 0.6, ax: 0.5, ay: 0.5 },
-        calendar: { x: 0.68, y: 0.68, ax: 0.5, ay: 0.5 },
+        calendar: { x: 0.64, y: 0.68, ax: 0.5, ay: 0.5 },
         tasks: { x: 0.14, y: 0.62, ax: 0.5, ay: 0.5 },
         photo: { x: 0.32, y: 0.64, ax: 0.5, ay: 0.5 },
-        lyrics: { x: 0.5, y: 0.15, ax: 0.5, ay: 0.5 }
+        lyrics: { x: 0.5, y: 0.12, ax: 0.5, ay: 0.5 }
     }
 
     // Only changes when a widget comes or goes, so moving one doesn't rebuild the others
@@ -92,19 +92,35 @@ Singleton {
         return Config.widgets.find(widget => widget.type === type) ?? { type: type, shown: false };
     }
 
+    // Each style keeps its own place and size for every widget: sky widgets hang from the
+    // screen's edges, celestial cards stand on their middle, so one spot can't suit both
+    readonly property string style: Theme.widgetStyle === "sky" ? "sky" : "celestial"
+
+    // What this style remembers of a widget. Before styles kept their own, a widget moved by
+    // hand was moved under the sky style, and the file's first coordinates were celestial.
+    function own(type) {
+        const saved = entry(type);
+        if (saved.at?.[style])
+            return saved.at[style];
+        if (style === "sky")
+            return saved.placed ? { x: saved.x, y: saved.y, size: saved.size } : { size: saved.size };
+        return !saved.placed && saved.x !== undefined ? { x: saved.x, y: saved.y } : {};
+    }
+
     // Where it stands now: its own spot once moved, the style's default until then
     function place(type) {
-        const saved = entry(type), base = places[type] ?? { x: 0.5, y: 0.5, ax: 0.5, ay: 0.5 };
-        if (saved.placed)
-            return { x: saved.x, y: saved.y, ax: base.ax, ay: base.ay };
-        // The celestial style always read x and y from the file
-        if (Theme.widgetStyle !== "sky" && saved.x !== undefined)
-            return { x: saved.x, y: saved.y, ax: base.ax, ay: base.ay };
-        return base;
+        const mine = own(type), base = places[type] ?? { x: 0.5, y: 0.5, ax: 0.5, ay: 0.5 };
+        return mine.x !== undefined ? { x: mine.x, y: mine.y, ax: base.ax, ay: base.ay } : base;
     }
 
     function size(type) {
-        return entry(type).size ?? 1;
+        return own(type).size ?? 1;
+    }
+
+    // Keeps a place or a size for this style only
+    function keep(type, changes) {
+        const saved = entry(type);
+        update(type, { at: Object.assign({}, saved.at ?? {}, { [style]: Object.assign({}, own(type), changes) }) });
     }
 
     function update(type, changes) {
@@ -126,14 +142,18 @@ Singleton {
     }
 
     function move(type, x, y) {
-        update(type, { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), placed: true });
+        keep(type, { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) });
+    }
+
+    function resize(type, value) {
+        keep(type, { size: Math.round(Math.max(0.5, Math.min(1.6, value)) * 100) / 100 });
     }
 
     function grow(type, steps) {
         if (frozen)
             return;
         lastGesture = Date.now();
-        update(type, { size: Math.round(Math.max(0.5, Math.min(1.6, size(type) + steps * 0.05)) * 100) / 100 });
+        resize(type, size(type) + steps * 0.05);
     }
 
     // Only the click Hyprland just announced counts, the next plain click must stay plain
