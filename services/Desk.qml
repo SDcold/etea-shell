@@ -81,6 +81,13 @@ Singleton {
             return ink;
         return darkInked ? Forge.oklch(0.42, Math.max(0.09, Math.min(0.15, tone.c * 1.2)), tone.h) : Forge.oklch(0.86, Math.min(0.09, tone.c), tone.h);
     }
+    // The same touch, lighter, for what climbs toward the light, like the music's tops
+    readonly property color accentLight: {
+        const tone = Forge.oklchOf(Qt.color(accent));
+        if (tone.c < 0.03)
+            return accent;
+        return darkInked ? Forge.oklch(0.64, tone.c, tone.h) : Forge.oklch(0.96, tone.c * 0.45, tone.h);
+    }
     // What's written over the accent, like today's date on its star
     readonly property color accentInk: darkInked ? "#fffaf4" : "#1c1208"
 
