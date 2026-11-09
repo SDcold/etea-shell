@@ -70,6 +70,7 @@ layout(std140, binding = 0) uniform buf {
     // side from orbit, and with cut on, the faces turned to it are one flat step brighter.
     float sunAt;
     float cut;
+    float hills; // 1 draws the hills, 0 leaves only the music on the ground
 };
 
 // Tables: the swell cut into flat tops and short steep cliffs, a little grit on the tops
@@ -282,7 +283,7 @@ void main() {
         tone = mix(tone, arrivalLight.rgb, shine * mix(0.05, 0.95, crest));
         // The new day's rim lights the crests it crosses, and its line runs over the ground
         tone = mix(tone, dawnLight.rgb, max(dayLight * mix(0.05, 0.95, crest), dayLine));
-        color = mix(color, vec4(tone, 1.0), inside);
+        color = mix(color, vec4(tone, 1.0), inside * hills);
     }
 
     // From space it's a real planet: continents, a day side and a night side, and a

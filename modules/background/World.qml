@@ -328,8 +328,9 @@ Item {
 
         anchors.fill: parent
 
-        // Without hills the ground only shows once it has become a planet, up in orbit
-        opacity: root.groundOpacity * (root.ground || root.sinking ? 1 : Math.min(1, root.space * 3))
+        // Without hills, only the music stays on the ground until it has become a planet
+        opacity: root.groundOpacity
+        property real hills: root.ground || root.sinking ? 1 : Math.min(1, root.space * 3)
         visible: opacity > 0
 
         // planetAngle is what will spin the planet between pages
