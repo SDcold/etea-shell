@@ -182,6 +182,13 @@ void main() {
     float dance = music * (1.0 - orbit);
 
     // Most of the screen is sky, so skip all the work up there
+    // Without hills the music stands straight on the bottom of the screen, and stays
+    // short: rising from where the hills would be, it would fill the bottom of the picture.
+    // Its height is then measured up from the screen's edge, not from the planet's centre,
+    // so the bars stay standing out to the corners.
+    float reach = lift * mix(1.1, 1.5, hills);
+    float up = mix(height - p.y, r - (curve + maxAmp), hills); // how far above the floor
+
     if (orbit < 0.001 && r > curve + maxAmp + 72.0 + dance * lift * 1.6) {
         fragColor = vec4(0.0);
         return;
@@ -203,10 +210,10 @@ void main() {
         float heard = (sound(t - 0.03) + sound(t) * 2.0 + sound(t + 0.03)) * 0.25;
         heard = 1.0 - exp(-heard * (0.55 + 0.75 * t) * 1.9);
         float half_ = wide * 0.3;
-        float top = curve + maxAmp + 2.0 + heard * lift * 1.5;
-        float above = max(r - (top - half_), 0.0);
+        float top = 2.0 + heard * reach;
+        float above = max(up - (top - half_), 0.0);
         float shape = smoothstep(half_ + 0.7, half_ - 0.7, length(vec2(offset, above)));
-        float rise = clamp((r - curve) / (lift * 1.5), 0.0, 1.0);
+        float rise = clamp(mix(up, r - curve, hills) / reach, 0.0, 1.0);
         color = vec4(mix(rimColor.rgb, vec3(1.0, 0.97, 0.92), rise * 0.75), shape * (0.55 + 0.4 * rise) * dance);
     } else if (dance > 0.001) {
         float ridgeShape = heightOf(farA, seed, angle + planetAngle, sampleStep);
@@ -216,8 +223,8 @@ void main() {
             float t = 0.5 - 0.5 * cos(3.14159 * (p.x / 1600.0 * 1.3 + 0.17 + step * 0.012));
             float heard = (sound(t - 0.05) + sound(t) * 2.0 + sound(t + 0.05)) * 0.25;
             heard = 1.0 - exp(-heard * (0.55 + 0.75 * t) * 1.9);
-            float line = curve + maxAmp * ridgeShape * (1.0 - step * 0.14) + (step + 1.0) * (5.0 + heard * lift / 6.0);
-            glow += exp(-abs(r - line) / 0.8) * (1.0 - step / 6.5) * (0.22 + heard * 0.8);
+            float line = (step + 1.0) * (5.0 + heard * reach / 9.0) + (hills > 0.5 ? curve + maxAmp * ridgeShape * (1.0 - step * 0.14) : 0.0);
+            glow += exp(-abs((hills > 0.5 ? r : up) - line) / 0.8) * (1.0 - step / 6.5) * (0.22 + heard * 0.8);
         }
         float light = clamp(glow * dance, 0.0, 1.0);
         color = vec4(mix(rimColor.rgb, vec3(1.0, 0.97, 0.92), 0.7), light);
