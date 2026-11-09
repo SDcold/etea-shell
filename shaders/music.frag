@@ -30,6 +30,7 @@ layout(std140, binding = 0) uniform buf {
     float style; // 0 lines, 1 bars, 2 stars
     float reach; // how high it climbs, in units
     float density; // how many columns across the screen
+    float time; // seconds, for the stars to breathe and their sparks to rise
 };
 
 // The ridge and its forms, as terrain.frag draws them, for the lines to follow
@@ -86,10 +87,27 @@ float heardAt(float x) {
     return 1.0 - exp(-heard * (0.55 + 0.75 * t) * 1.9);
 }
 
+// What a star hears: its own note across the whole range, low on the left, lightly
+// smoothed so each star moves on its own, the quiet highs lifted
+float noteAt(float x) {
+    float t = 0.02 + 0.92 * clamp(x / 1600.0, 0.0, 1.0);
+    float heard = (sound(t - 0.015) + sound(t) * 2.0 + sound(t + 0.015)) * 0.25 * mix(1.0, 1.7, t);
+    return clamp(pow(heard, 0.85), 0.0, 1.0);
+}
+
 // ETEA's star as a distance: |x|^0.62 + |y|^0.62 = r^0.62
 float starShape(vec2 p) {
     vec2 a = abs(p);
     return pow(pow(a.x, 0.62) + pow(a.y, 0.62), 1.0 / 0.62);
+}
+
+float hash(float n) {
+    return fract(sin(n * 127.1) * 43758.5453);
+}
+
+// Over: a colour laid on what's below it
+vec4 over(vec4 top, vec4 below) {
+    return top + below * (1.0 - top.a);
 }
 
 // Distance from a point to a segment
@@ -141,33 +159,63 @@ void main() {
         float rise = clamp(up / reach, 0.0, 1.0);
         color = vec4(mix(ink.rgb, light.rgb, rise * 0.75), 1.0) * shape * (0.55 + 0.4 * rise);
     } else {
-        // Columns of stars, lit from the floor up to what's heard, the highest bigger and
-        // white; a thread of ink joins the tops from column to column
-        // Half as many columns as bars, so each star has room to be a star
-        float wide = 1600.0 / max(4.0, density * 0.5);
+        // A living constellation: one star per column riding on what it hears, bigger and
+        // whiter the louder it is, breathing on its own; on a loud beat it throws out its
+        // four rays; little sparks rise off the loud ones and go out as they climb; a thread
+        // of ink joins each star to the next, waving with the music.
+        float wide = 1600.0 / max(4.0, density * 0.4);
         float cell = floor(p.x / wide);
-        float x0 = (cell + 0.5) * wide;
-        float gap = wide * 0.7;
-        float heard = heardAt(x0);
-        float count = floor(heard * reach / gap); // stars above the first
-        float j = clamp(floor(up / gap), 0.0, count);
-        float topAt = count * gap + gap * 0.5;
-        float isTop = j >= count ? 1.0 : 0.0;
-        float size_ = mix(wide * 0.13, wide * 0.21, isTop);
-        float shape = starShape(vec2(p.x - x0, up - (j * gap + gap * 0.5)));
-        float star = clamp((size_ - shape) / px + 0.5, 0.0, 1.0);
-        // Sleeping stars fade toward the floor, the top one is lit
-        float tone = mix(0.45 + 0.4 * (j + 1.0) / (count + 1.0), 1.0, isTop);
-        color = vec4(mix(ink.rgb, light.rgb, isTop), 1.0) * star * tone;
-        // The thread to the tops either side
-        float thread = 1e4;
-        for (int side = -1; side <= 1; side += 2) {
-            float xn = x0 + float(side) * wide;
-            float topN = floor(heardAt(xn) * reach / gap) * gap + gap * 0.5;
-            thread = min(thread, toSegment(vec2(p.x, up), vec2(x0, topAt), vec2(xn, topN)));
+        float lift = reach * 1.6; // stars float higher than bars stand
+        vec2 at = vec2(p.x, up);
+        vec4 threads = vec4(0.0);
+        vec4 stars = vec4(0.0);
+        for (int n = -1; n <= 1; n++) {
+            float c = cell + float(n);
+            float x = (c + 0.5) * wide;
+            float heard = noteAt(x);
+            float seedC = hash(c + 17.0);
+            vec2 here = vec2(x, 10.0 + heard * lift);
+
+            // The thread to the next star along
+            float xn = x + wide, heardN = noteAt(xn);
+            vec2 next = vec2(xn, 10.0 + heardN * lift);
+            float d = toSegment(at, here, next) / px;
+            float thread = clamp(0.45 - d + 0.5, 0.0, 1.0) * (0.3 + 0.35 * (heard + heardN));
+            threads = over(vec4(ink.rgb, 1.0) * thread, threads);
+
+            // Breathing, each at its own pace
+            float breath = 1.0 + 0.14 * sin(time * (1.6 + seedC) + seedC * 6.283);
+            float size_ = (3.5 + 13.0 * heard) * breath;
+            vec2 q = at - here;
+
+            // On a loud beat, four long thin rays in two flat steps
+            float flare = smoothstep(0.35, 0.9, heard);
+            if (flare > 0.0) {
+                float len = size_ * (1.3 + 3.0 * flare);
+                float wRay = 0.5 * px + 0.04 * size_;
+                float h = abs(q.y) < wRay ? (abs(q.x) < len * 0.5 ? 0.6 : abs(q.x) < len ? 0.28 : 0.0) : 0.0;
+                float v = abs(q.x) < wRay ? (abs(q.y) < len * 0.5 ? 0.6 : abs(q.y) < len ? 0.28 : 0.0) : 0.0;
+                stars = over(vec4(light.rgb, 1.0) * max(h, v) * flare, stars);
+            }
+
+            // The star itself, from asleep to lit
+            float body = clamp((size_ - starShape(q)) / px + 0.5, 0.0, 1.0);
+            vec3 tone = mix(ink.rgb, light.rgb, smoothstep(0.2, 0.8, heard));
+            stars = over(vec4(tone, 1.0) * body * (0.5 + 0.5 * heard), stars);
+
+            // Sparks rising off the loud ones, shrinking and going out as they climb
+            if (heard > 0.15) {
+                for (int k = 0; k < 4; k++) {
+                    float seedK = hash(c * 7.0 + float(k) * 3.1);
+                    float phase = fract(time * (0.3 + 0.35 * seedK) + seedK);
+                    vec2 spark = here + vec2(sin(phase * 5.0 + seedK * 6.283) * wide * 0.2, size_ + 4.0 + phase * lift * 0.9);
+                    float s = (1.0 - phase) * (1.2 + 3.2 * heard);
+                    float lit = clamp((s - starShape(at - spark)) / px + 0.5, 0.0, 1.0);
+                    stars = over(vec4(light.rgb, 1.0) * lit * (1.0 - phase) * heard, stars);
+                }
+            }
         }
-        float line = clamp(0.4 - thread / px + 0.5, 0.0, 1.0) * 0.55;
-        color = color + vec4(light.rgb, 1.0) * line * (1.0 - color.a);
+        color = over(stars, threads);
     }
     fragColor = color * qt_Opacity;
 }

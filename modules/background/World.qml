@@ -336,7 +336,9 @@ Item {
         readonly property real climb: Theme.groundLift * (hillsShown > 0.5 ? 1.5 : 1.1) // how high, in units
         readonly property real maxAmp: Math.min(root.radius * 0.024, 34) * Config.terrainRelief * (root.planet.relief ?? 1) * (1 - root.space)
         // From just above the highest it can climb, down to the bottom of the screen
-        readonly property real stripTop: hillsShown > 0.5 ? root.height * root.horizon - (maxAmp + climb + 12) * root.unit : root.height - (climb + 12) * root.unit
+        // Stars float higher, and their sparks higher still
+        readonly property real tallest: climb * (Config.groundMusic === "stars" ? 2.6 : 1)
+        readonly property real stripTop: hillsShown > 0.5 ? root.height * root.horizon - (maxAmp + tallest + 12) * root.unit : root.height - (tallest + 12) * root.unit
 
         Behavior on dance {
             NumberAnimation { duration: 1800; easing.type: Easing.InOutSine }
@@ -373,6 +375,16 @@ Item {
         property real style: ({ lines: 0, bars: 1, stars: 2 })[Config.groundMusic] ?? 0
         property real reach: climb
         property real density: Config.musicDensity
+        // Its own clock, only running while it shows, for the stars to breathe and sparkle
+        property real time: 0
+
+        NumberAnimation on time {
+            running: music.visible
+            from: 0
+            to: 3600
+            duration: 3600000
+            loops: Animation.Infinite
+        }
 
         fragmentShader: Qt.resolvedUrl("../../shaders/music.frag.qsb")
     }
