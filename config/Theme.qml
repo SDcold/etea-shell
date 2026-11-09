@@ -111,7 +111,7 @@ Singleton {
     readonly property int openCover: 200 // how long Hyprland hides a new window while the screen freezes
 
     // Going up: the ground curves away until it's a planet with your pages around it
-    readonly property int orbitRise: 760 * pace
+    readonly property int orbitRise: 760 * pace / Math.max(0.25, Config.orbitSpeed)
     readonly property real orbitRadius: 190 // size of the planet, on a 1600 wide screen
     readonly property real orbitCard: 0.145 // how small a page gets up there
 

@@ -530,5 +530,7 @@
     "À quelle vitesse elle redescend après un coup.": "How quickly it comes back down after a beat.",
     "Couleur": "Colour",
     "Lumière du ciel": "The sky's light",
-    "Le sol": "The ground"
+    "Le sol": "The ground",
+    "Vitesse de l'orbite": "Orbit speed",
+    "La vitesse de la montée en orbite (balayage à quatre doigts vers le haut, Super + Tab).": "How fast you rise into orbit (four-finger swipe up, Super + Tab)."
 }

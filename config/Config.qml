@@ -70,6 +70,7 @@ Singleton {
     property alias planetTweaks: saved.planetTweaks // { id: what you changed on that world }
     property alias ownStyles: saved.ownStyles // the last style you picked yourself for each setting, worn where a world brings none
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
+    property alias orbitSpeed: saved.orbitSpeed // 1 is normal, higher rises into orbit faster
     property alias livePages: saved.livePages // windows keep playing while the page turns
     property alias pageTransition: saved.pageTransition // "planet", or "slide" for Hyprland's own
     property alias status: saved.status
@@ -191,6 +192,7 @@ Singleton {
             property var planetTweaks: ({})
             property var ownStyles: ({})
             property string pace: "daily"
+            property real orbitSpeed: 1
             property bool livePages: true
             property string pageTransition: "planet"
             property var status: ["notifications", "keyboard", "network", "bluetooth", "volume", "battery", "settings", "session"]
