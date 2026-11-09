@@ -470,7 +470,7 @@ Variants {
                     property string address: ""
 
                     onLoaded: {
-                        if (address && item.go)
+                        if (address && item.go !== undefined)
                             item.go(address);
                         grabLater.restart();
                     }
@@ -503,7 +503,11 @@ Variants {
                 const whole = page === "SettingsBody.qml";
                 pageCheck.width = whole ? 1040 : 760;
                 pageCheck.height = whole ? 700 : undefined;
-                pageCheck.source = Qt.resolvedUrl(`../settings/${page}`);
+                // The world editor needs a world: "WorldEditor.qml#ocre"
+                if (page === "WorldEditor.qml")
+                    pageCheck.setSource(Qt.resolvedUrl(`../settings/${page}`), { planetId: pageCheck.address || Theme.planet.id });
+                else
+                    pageCheck.source = Qt.resolvedUrl(`../settings/${page}`);
                 pageCheck.active = true;
             }
         }

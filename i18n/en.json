@@ -511,5 +511,9 @@
     "Automatique lit le ciel : claire sur un ciel sombre, sombre sur une image claire, dans la teinte du monde.": "Automatic reads the sky: light on a dark sky, dark on a light picture, in the world's own hue.",
     "Claire": "Light",
     "Sombre": "Dark",
-    "Lumière du monde": "The world's light"
+    "Lumière du monde": "The world's light",
+    "Mondes": "Worlds",
+    "Prendre à…": "Take from…",
+    "Le même, pris à un autre de tes mondes.": "The same, taken from another of your worlds.",
+    "Tout le monde": "The whole world"
 }

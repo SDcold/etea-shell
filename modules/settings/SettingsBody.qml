@@ -21,10 +21,20 @@ Item {
     readonly property string query: search.text.trim()
     readonly property var results: query ? Atlas.search(query, section).slice(0, 40) : []
 
-    // Somewhere to go: a setting's key, "@page", or "?words"
+    // Somewhere to go: a setting's key, "@page", "?words", or "world@id" (":tab" after it
+    // opens one of its strata) for a world's editor
+    property string world: ""
+
     function go(address) {
         if (!address)
             return;
+        if (address.startsWith("world@")) {
+            world = address.slice(6);
+            open(0, "");
+            if (shown === 0)
+                openWorld();
+            return;
+        }
         const place = Atlas.resolve(address);
         if (place.search !== undefined) {
             search.text = place.search;
@@ -39,6 +49,33 @@ Item {
         section = page;
         if (shown === page)
             light();
+    }
+
+    // A world's editor, once the worlds' page is in
+    function openWorld() {
+        if (!world || !page.item)
+            return;
+        const [id, tab] = world.split(":");
+        world = "";
+        page.item.editing = id;
+        scroller.contentY = 0;
+        if (tab)
+            Qt.callLater(() => {
+                const editor = find(page.item, node => node.tabs !== undefined && node.planetId !== undefined);
+                if (editor)
+                    editor.tab = tab;
+            });
+    }
+
+    function find(node, wanted) {
+        for (const child of node.children ?? []) {
+            if (wanted(child))
+                return child;
+            const found = find(child, wanted);
+            if (found)
+                return found;
+        }
+        return null;
     }
 
     // The row a search or a link was for: scrolled into view, its star lit a moment
@@ -284,7 +321,10 @@ Item {
                 y: scroller.room
                 width: parent.width - scroller.room * 2
                 source: window.sections[window.shown].page
-                onLoaded: lightLater.restart()
+                onLoaded: {
+                lightLater.restart();
+                window.openWorld();
+            }
             }
         }
 
