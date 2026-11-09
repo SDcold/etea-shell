@@ -59,6 +59,10 @@ Singleton {
     property int chosen: -1
     property real chosenAt: 0
     property bool committed: false
+    // Whether the world has hills before and after the sky being landed: a picture of yours
+    // leaves none, the world's own sky brings them back
+    property bool hadHills: true
+    property bool landsWithHills: true
     property bool rehearsal: false // lands it all the way without wearing it, to check how it goes
     // Asked for a path, the chosen moon folds into a star and flies home to the control
     // that asked, `request.from` on the screen, as your page comes back down
@@ -343,6 +347,12 @@ Singleton {
         chosenAt = at ?? 0;
         landing = true;
         committed = false;
+        hadHills = Planets.groundOf(planet);
+        const after = Object.assign({}, planet, { sky: item.special === "world" ? (Planets.original(planet.id)?.sky ?? "") : (copyOf(item) || item.path) });
+        delete after.ground;
+        if (item.special === "world" && Planets.original(planet.id)?.ground !== undefined)
+            after.ground = Planets.original(planet.id).ground;
+        landsWithHills = Planets.groundOf(after);
 
         sweepOut(paletteOf(item), chosenAt, Theme.skyLand * 0.4);
         wantCopy(item);

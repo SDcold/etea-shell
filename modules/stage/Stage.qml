@@ -39,6 +39,8 @@ Variants {
             return orbit + (screenHeight * 0.44 - planetRadius - (screenHeight / 2 - Theme.orbitRadius)) * beyond;
         }
 
+        readonly property bool hillsChange: Skies.landing && Skies.hadHills !== Skies.landsWithHills
+
         // The planet's centre on screen, and how big the moons of the belt are drawn: they
         // grow and shrink with the planet, and are their true size at the edge
         readonly property point planetCenter: Qt.point(width / 2, (planetTop + planetRadius) * unit)
@@ -220,6 +222,17 @@ Variants {
                     tryOn: stage.tryOn
                     cached: false
                     listening: Planet.ceiling === 1 // choosing a sky, the ground doesn't dance
+                    // Landing a sky that changes the hills: they sink past the bottom on the
+                    // way down, gone before it's worn, or rise as the world's own sky comes back
+                    ground: stage.hillsChange ? true : Planets.groundOf(Theme.planet)
+                    landSink: {
+                        if (!stage.hillsChange)
+                            return 0;
+                        const u = 1 - Math.max(0, Math.min(1, Planet.altitude / Planet.ceiling));
+                        const t = Math.max(0, Math.min(1, Skies.landsWithHills ? (u - 0.3) / 0.6 : (u - 0.05) / 0.65));
+                        const eased = t * t * (3 - 2 * t);
+                        return Skies.landsWithHills ? 1 - eased : eased;
+                    }
 
                     belt: Component {
                         SkyBelt {

@@ -45,6 +45,8 @@ Item {
     readonly property bool reshaping: morphing && Morph.reshaped
     readonly property bool sinking: morphing && Morph.sinking
     readonly property bool restaging: morphing && Morph.restaged
+    // Set by the stage while a sky lands: how far the hills have sunk on the way down
+    property real landSink: 0
     readonly property var formA: reshaping ? Morph.from : planet
     readonly property var formB: reshaping ? Morph.to : planet
     readonly property real dawnEdge: {
@@ -419,7 +421,7 @@ Item {
         property real reformAt: Morph.reformAt
         // The front runs out over the whole screen and a little more, slowing as it goes
         property real reformFront: root.reshaping ? (1 - (1 - Morph.front) * (1 - Morph.front)) * 2140 : -1
-        property real sink: root.sinking ? Morph.sink : 0
+        property real sink: Math.max(root.sinking ? Morph.sink : 0, root.landSink)
         property real sunAt: root.planet.sun ?? 0.25
         property real cut: root.planet.cut ? 1 : 0
         property color next0: root.sweeping?.terrain[0] ?? layer0
