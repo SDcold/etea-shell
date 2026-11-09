@@ -58,15 +58,34 @@ Singleton {
     property bool inSystem: false
     property real systemLevel: 0
     property real systemScroll: 0 // how far along the row of planets we are, between two of them while dragging
+    readonly property bool systemSliding: systemSlide.running
     readonly property int systemChoice: {
         const count = Planets.all.length;
         return (Math.round(systemScroll) % count + count) % count;
     }
 
-    // Whatever comes to the front gets tried on by the whole shell
-    onSystemChoiceChanged: {
-        if (inSystem)
-            Config.preview = Planets.all[systemChoice].id;
+    // Whatever comes to the front gets tried on by the whole shell, once the row has come
+    // to rest: a world costs a few frames to put on, never in the middle of a slide, and
+    // the ones passed on the way aren't put on at all
+    onSystemChoiceChanged: tryOn.restart()
+
+    function tryOnFront() {
+        if (!inSystem)
+            return;
+        if (systemSlide.running || Math.abs(systemScroll - Math.round(systemScroll)) > 0.01) {
+            tryOn.restart();
+            return;
+        }
+        const id = Planets.all[systemChoice].id;
+        if (Config.preview !== id)
+            Config.preview = id;
+    }
+
+    Timer {
+        id: tryOn
+
+        interval: 60
+        onTriggered: root.tryOnFront()
     }
 
     // Setting foot on another world: light runs along the ridges from where we touched
@@ -718,6 +737,7 @@ Singleton {
 
         target: root
         property: "systemScroll"
+        onStopped: root.tryOnFront()
         duration: 520
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Theme.expressive

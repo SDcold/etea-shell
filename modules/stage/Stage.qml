@@ -455,6 +455,11 @@ Variants {
         }
 
         FrameMeter {
+            name: "worlds"
+            running: stage.focused && Planet.systemSliding
+        }
+
+        FrameMeter {
             name: "climb"
             running: stage.focused && ((Planet.altitude > 0 && Planet.altitude < Planet.ceiling) || (Planet.systemLevel > 0 && Planet.systemLevel < 1))
         }
