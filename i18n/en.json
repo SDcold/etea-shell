@@ -506,5 +506,10 @@
     "Chercher un réglage": "Search a setting",
     "Rien de ce nom ici. Essaie un autre mot.": "Nothing by that name here. Try another word.",
     "Collines sur les images": "Hills over pictures",
-    "Un fond d'écran à toi laisse l'image seule. Avec ceci, les collines du monde restent devant.": "A wallpaper of your own is left alone. With this, the world's hills stay in front of it."
+    "Un fond d'écran à toi laisse l'image seule. Avec ceci, les collines du monde restent devant.": "A wallpaper of your own is left alone. With this, the world's hills stay in front of it.",
+    "Encre des widgets": "Widget ink",
+    "Automatique lit le ciel : claire sur un ciel sombre, sombre sur une image claire, dans la teinte du monde.": "Automatic reads the sky: light on a dark sky, dark on a light picture, in the world's own hue.",
+    "Claire": "Light",
+    "Sombre": "Dark",
+    "Lumière du monde": "The world's light"
 }

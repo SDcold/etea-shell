@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell.Widgets
 import qs.config
+import qs.services
 import qs.modules.bar
 
 // A picture of your own, hung in the sky like one more window. It melts away towards
@@ -49,13 +50,13 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             name: "image"
             size: Math.round(root.sky * 0.034)
-            tint: Qt.alpha(Theme.skyInk, 0.7)
+            tint: Qt.alpha(Desk.ink, 0.7)
         }
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Lang.t("Clic droit pour choisir une image.")
-            color: Qt.alpha(Theme.skyInk, 0.7)
+            color: Qt.alpha(Desk.ink, 0.7)
             font.family: Theme.font
             font.pixelSize: root.sky * 0.014
         }

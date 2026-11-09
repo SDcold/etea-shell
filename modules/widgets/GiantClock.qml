@@ -20,7 +20,7 @@ Item {
         anchors.bottom: digits.top
         anchors.bottomMargin: -root.sky * 0.085
         text: Qt.locale(Config.locale).toString(Time.now, Lang.t("dddd d MMMM"))
-        color: Theme.skyInk
+        color: Desk.ink
         font.family: Theme.font
         font.pixelSize: root.sky * 0.03
         font.weight: Font.Medium
@@ -30,7 +30,7 @@ Item {
         id: digits
 
         text: Config.time(Time.now, { suffix: false })
-        color: Theme.skyInk
+        color: Desk.ink
         font.family: Theme.font
         font.pixelSize: root.sky * 0.54
         font.weight: Font.Medium

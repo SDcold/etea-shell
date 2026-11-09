@@ -50,7 +50,7 @@ RowLayout {
             horizontalAlignment: Text.AlignRight
             text: root.player ? root.player.trackArtist || Lang.t("En écoute") : Lang.t("En attente")
             elide: Text.ElideRight
-            color: Theme.skyInk
+            color: Desk.ink
             font.family: Theme.font
             font.pixelSize: root.sky * 0.016
             font.weight: Font.Medium
@@ -61,7 +61,7 @@ RowLayout {
             horizontalAlignment: Text.AlignRight
             text: root.player?.trackTitle ?? Lang.t("Silence radio.")
             elide: Text.ElideRight
-            color: Theme.skyInk
+            color: Desk.ink
             font.family: Theme.font
             font.pixelSize: root.sky * 0.044
             font.weight: Font.Medium
@@ -80,13 +80,13 @@ RowLayout {
             entering: false
             visible: known
             Layout.fillWidth: true
-            tint: Theme.skyInk
+            tint: Desk.ink
         }
 
         MediaControls {
             visible: root.player !== null
             Layout.alignment: Qt.AlignRight
-            tint: Theme.skyInk
+            tint: Desk.ink
         }
     }
 }

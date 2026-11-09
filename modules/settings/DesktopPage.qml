@@ -85,6 +85,16 @@ ColumnLayout {
         onPicked: id => Config.widgetStyle = id
     }
 
+    SettingChoice {
+        key: "widgetInk"
+        label: Lang.t("Encre des widgets")
+        hint: Lang.t("Automatique lit le ciel : claire sur un ciel sombre, sombre sur une image claire, dans la teinte du monde.")
+        words: ["couleur", "color", "texte", "lisible", "contraste"]
+        options: [{ id: "auto", label: Lang.t("Automatique") }, { id: "light", label: Lang.t("Claire") }, { id: "dark", label: Lang.t("Sombre") }, { id: "world", label: Lang.t("Lumière du monde") }]
+        current: Config.widgetInk
+        onPicked: id => Config.widgetInk = id
+    }
+
     // Every kind of widget, out in the sky or not. Where they stand is set on the desktop itself.
     Repeater {
         model: Desk.catalog

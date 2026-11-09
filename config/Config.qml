@@ -119,6 +119,7 @@ Singleton {
     property alias focusMinutes: saved.focusMinutes // the focus timer's work time
     property alias restMinutes: saved.restMinutes // and its break
     property alias hillsOnPictures: saved.hillsOnPictures // a picture worn as the sky keeps the world's hills
+    property alias widgetInk: saved.widgetInk // "auto" reads the sky, or "light", "dark", "world"
 
     // A style you pick yourself is remembered, so following the planet later doesn't lose it
     function remember(setting) {
@@ -244,6 +245,7 @@ Singleton {
             property int focusMinutes: 25
             property int restMinutes: 5
             property bool hillsOnPictures: false
+            property string widgetInk: "auto"
             // kitty and Zen are see-through on their own and only need the blur
             property var glassApps: [
                 { class: "kitty" },

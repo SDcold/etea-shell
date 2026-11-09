@@ -112,9 +112,9 @@ Item {
                 Rectangle {
                     anchors.fill: parent
                     radius: 20
-                    color: Qt.alpha(Theme.skyInk, 0.04)
+                    color: Qt.alpha(Desk.ink, 0.04)
                     border.width: 1
-                    border.color: Qt.alpha(Theme.skyInk, 0.32)
+                    border.color: Qt.alpha(Desk.ink, 0.32)
                 }
 
                 Repeater {

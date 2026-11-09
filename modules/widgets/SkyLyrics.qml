@@ -77,7 +77,7 @@ Column {
         horizontalAlignment: Text.AlignHCenter
         text: Lyrics.line(-1)
         elide: Text.ElideRight
-        color: Qt.alpha(Theme.skyInk, 0.3)
+        color: Qt.alpha(Desk.ink, 0.3)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.02
     }
@@ -89,7 +89,7 @@ Column {
         text: Lyrics.line(0)
         resting: Lyrics.index < 0 || Lyrics.line(0) === ""
         progress: Lyrics.progress
-        ink: Theme.skyInk
+        ink: Desk.ink
         size: root.sky * 0.046
         opacity: 1 - root.enter * 0.7
 
@@ -104,7 +104,7 @@ Column {
         horizontalAlignment: Text.AlignHCenter
         text: Lyrics.line(1)
         elide: Text.ElideRight
-        color: Qt.alpha(Theme.skyInk, 0.5)
+        color: Qt.alpha(Desk.ink, 0.5)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.022
     }
@@ -114,7 +114,7 @@ Column {
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
         text: root.waiting
-        color: Qt.alpha(Theme.skyInk, 0.6)
+        color: Qt.alpha(Desk.ink, 0.6)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.018
     }

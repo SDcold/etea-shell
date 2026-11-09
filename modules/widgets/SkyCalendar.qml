@@ -22,7 +22,7 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: Qt.locale(Config.locale).toString(Time.now, "MMMM")
-            color: Theme.skyInk
+            color: Desk.ink
             font.family: Theme.font
             font.pixelSize: root.sky * 0.034
             font.weight: Font.Medium
@@ -43,14 +43,14 @@ ColumnLayout {
             Layout.preferredWidth: Math.round(root.sky * 0.028)
             Layout.preferredHeight: Math.round(root.sky * 0.028)
             at: Time.now
-            dark: Qt.alpha(Theme.skyInk, 0.18)
-            light: Theme.skyInk
+            dark: Qt.alpha(Desk.ink, 0.18)
+            light: Desk.ink
         }
     }
 
     Text {
         text: moon.phaseName
-        color: Qt.alpha(Theme.skyInk, 0.7)
+        color: Qt.alpha(Desk.ink, 0.7)
         font.family: Theme.font
         font.pixelSize: root.sky * 0.013
     }
@@ -60,7 +60,7 @@ ColumnLayout {
         month: Time.now
         today: Time.now
         unit: root.sky * 0.016
-        ink: Theme.skyInk
-        heading: Qt.alpha(Theme.skyInk, 0.6)
+        ink: Desk.ink
+        heading: Qt.alpha(Desk.ink, 0.6)
     }
 }

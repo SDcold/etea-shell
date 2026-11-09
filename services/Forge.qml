@@ -103,6 +103,8 @@ Singleton {
         const quiet = neutral ? Math.min(sourceChroma, 0.012) : 0.025;
 
         return {
+            // How light the picture is overall, for what's written over it
+            brightness: colors.reduce((sum, color) => sum + color.l, 0) / colors.length,
             skyTop: oklch(0.24, quiet, hue),
             skyMid: oklch(0.62, accent, hue),
             skyLow: oklch(0.9, quiet * 1.5, hue),

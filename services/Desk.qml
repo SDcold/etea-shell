@@ -46,6 +46,27 @@ Singleton {
         lyrics: { x: 0.5, y: 0.12, ax: 0.5, ay: 0.5 }
     }
 
+    // What the widgets write with, so they read on any sky: light on a dark one, and on a
+    // light picture of yours, a dark ink in the world's own hue. Or as you choose.
+    readonly property real skyBrightness: {
+        const planet = Theme.planet;
+        if (!planet.sky) {
+            // A painted sky, where the widgets stand: its top and its middle
+            const l = color => Forge.oklchOf(Qt.color(color)).l;
+            return (l(planet.skyTop) + l(planet.skyMid)) / 2;
+        }
+        return planet.brightness ?? (Palettes.version, Palettes.of({ path: planet.sky, mtime: "" })?.palette?.brightness) ?? 0.3;
+    }
+    readonly property color darkInk: {
+        const tone = Forge.oklchOf(Qt.color(Theme.planet.skyTop));
+        return Forge.oklch(0.24, Math.min(tone.c, 0.05), tone.h);
+    }
+    readonly property color ink: ({
+            light: Theme.skyInk,
+            dark: darkInk,
+            world: Theme.planet.light
+        })[Config.widgetInk] ?? (skyBrightness > 0.62 ? darkInk : Theme.skyInk)
+
     // Only changes when a widget comes or goes, so moving one doesn't rebuild the others
     property var shown: []
 
