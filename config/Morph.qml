@@ -21,7 +21,7 @@ import Quickshell
 Singleton {
     id: root
 
-    readonly property var tints: ["skyTop", "skyMid", "skyLow", "terrain", "light"]
+    readonly property var tints: ["skyTop", "skyMid", "skyLow", "terrain", "light", "deep", "brightness"]
     // A world is strata stacked by altitude, each a named group of its keys, so any world
     // can take any stratum from any other
     readonly property var strata: [
@@ -29,7 +29,7 @@ Singleton {
         { id: "astres", label: Lang.t("Astres"), keys: ["scenery"] },
         { id: "ciel", label: Lang.t("Ciel"), keys: ["sky"] },
         { id: "soleil", label: Lang.t("Soleil"), keys: ["sun", "cut"] },
-        { id: "teintes", label: Lang.t("Teintes"), keys: ["skyTop", "skyMid", "skyLow", "terrain", "light"] },
+        { id: "teintes", label: Lang.t("Teintes"), keys: ["skyTop", "skyMid", "skyLow", "terrain", "light", "deep", "brightness"] },
         { id: "relief", label: Lang.t("Relief"), keys: ["form", "seed", "relief", "rough", "ground"] }
     ]
     readonly property var forms: ["ridges", "tables", "dunes"]

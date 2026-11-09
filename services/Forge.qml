@@ -106,11 +106,13 @@ Singleton {
             // How light the picture is overall, for what's written over it
             brightness: colors.reduce((sum, color) => sum + color.l, 0) / colors.length,
             skyTop: oklch(0.24, quiet, hue),
+            // The night of its cards, the bar's and the panels': deep, in the picture's hue
+            deep: oklch(0.17, neutral ? Math.min(sourceChroma, 0.02) : 0.035, hue),
             skyMid: oklch(0.62, accent, hue),
             skyLow: oklch(0.9, quiet * 1.5, hue),
             // The hills, back to front: lighter and a little quieter far off, darker close by
             terrain: [[0.64, 0.8], [0.52, 1], [0.4, 0.9], [0.27, 0.7]].map(([lightness, amount]) => oklch(lightness, accent * amount, hue)),
-            light: oklch(0.96, neutral ? quiet : 0.03, hue)
+            light: oklch(0.95, neutral ? quiet : 0.045, hue)
         };
     }
 
@@ -154,7 +156,7 @@ Singleton {
     // The world's own sky and colours again
     function unwear(from) {
         const id = Config.theme;
-        Planet.changeLook(() => Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery", "ground"]), from);
+        Planet.changeLook(() => Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "deep", "brightness", "scenery", "ground"]), from);
     }
 
     // Its colours, if they weren't known yet when it was picked

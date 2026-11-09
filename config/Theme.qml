@@ -131,7 +131,18 @@ Singleton {
     readonly property int launcherSpacing: 170 // distance between two stars
 
     // Notifications: comets that land and open up
-    readonly property color cardDeep: "#0d0f1c"
+    // The night inside every card: the bar, the panels, the menus. A world made from a
+    // picture brings its own, in its hue; one wearing a picture from before that takes its
+    // sky's top, darkened. The worlds as they came keep their deep blue.
+    readonly property color cardDeep: {
+        if (planet.deep)
+            return planet.deep;
+        if (planet.sky && planet.sky !== Planets.original(planet.id)?.sky) {
+            const top = Qt.color(planet.skyTop);
+            return Qt.hsla(Math.max(0, top.hslHue), Math.min(top.hslSaturation, 0.35), 0.085, 1);
+        }
+        return "#0d0f1c";
+    }
 
     // Colours a card can take when its content has none of its own
     readonly property var tones: ["#ffc98a", "#f59a7a", "#e98fb0", "#b9a2f0", "#8fc7e8", "#8fd6b4"]

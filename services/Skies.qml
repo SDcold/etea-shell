@@ -387,7 +387,7 @@ Singleton {
         const item = items[chosen];
         const id = planet.id;
         if (item.special === "world") {
-            Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "scenery", "ground"]);
+            Planets.untweak(id, ["sky", "skyTop", "skyMid", "skyLow", "terrain", "light", "deep", "brightness", "scenery", "ground"]);
             return;
         }
         const palette = paletteOf(item);
