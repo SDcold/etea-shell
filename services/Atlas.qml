@@ -36,6 +36,8 @@ Singleton {
         clockSeconds: ["secondes", "seconds", "horloge"],
         dateFormat: ["date", "jour"],
         pageStyle: ["workspaces", "bureaux virtuels", "espaces de travail"],
+        animations: ["animation", "animations", "instantané", "instant", "désactiver", "disable", "off"],
+        animSpeed: ["vitesse", "speed", "animation", "instantané", "instant"],
         pace: ["vitesse", "animations", "lent", "rapide", "speed"],
         orbitSpeed: ["orbite", "orbit", "montée", "vitesse", "speed", "super tab"],
         livePages: ["vidéo", "lecture", "live"],

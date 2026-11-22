@@ -8,7 +8,10 @@ Singleton {
     // The world you're on, as shown: while its colours are changing, the shell keeps the
     // old light until the new day's edge reaches the bar
     readonly property var planet: Morph.shown(Planets.find(Config.preview || Config.theme))
-    readonly property real pace: Config.pace === "ceremony" ? 1.7 : 1 // stretches the big movements
+    readonly property real animSpeedMax: 5 // the top of the slider: no transition at all
+    // 1 is normal, 0 is instant. Every duration that goes through pace, fast or normal follows it
+    readonly property real motionScale: !Config.animations || Config.animSpeed >= animSpeedMax ? 0 : 1 / Math.max(0.1, Config.animSpeed)
+    readonly property real pace: (Config.pace === "ceremony" ? 1.7 : 1) * motionScale // stretches the big movements
 
     // A setting left on "planet" wears what the planet brings, or what you last picked
     // yourself if the planet brings nothing. Whatever you pick yourself stays yours.
@@ -73,8 +76,8 @@ Singleton {
     readonly property int textSize: Math.round(14 * barScale)
 
     // The everyday pace: quick enough to never keep you waiting
-    readonly property int fast: 160
-    readonly property int normal: 280
+    readonly property int fast: Math.round(160 * motionScale)
+    readonly property int normal: Math.round(280 * motionScale)
     readonly property int pageSpin: 380 * pace
     readonly property int pageReveal: 90
 

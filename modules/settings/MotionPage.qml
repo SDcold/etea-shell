@@ -13,6 +13,28 @@ ColumnLayout {
         font.pixelSize: 20
     }
 
+    SettingSwitch {
+        key: "animations"
+        label: Lang.t("Animations")
+        hint: Lang.t("Coupe-les toutes d'un coup : les changements deviennent instantanés.")
+        on: Config.animations
+        onToggled: Config.animations = !Config.animations
+    }
+
+    SettingSlider {
+        key: "animSpeed"
+        visible: Config.animations
+        label: Lang.t("Vitesse des animations")
+        hint: Lang.t("Toutes les transitions du shell. Au maximum, plus aucune animation : tout est instantané.")
+        value: Config.animSpeed
+        minimum: 0.5
+        maximum: Theme.animSpeedMax
+        shownAs: 100
+        unit: " %"
+        notch: 1 // as it comes
+        onMoved: value => Config.animSpeed = Math.round(value * 20) / 20
+    }
+
     SettingChoice {
         key: "pace"
         label: Lang.t("Rythme")

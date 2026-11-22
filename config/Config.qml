@@ -71,6 +71,8 @@ Singleton {
     property alias planetTweaks: saved.planetTweaks // { id: what you changed on that world }
     property alias ownStyles: saved.ownStyles // the last style you picked yourself for each setting, worn where a world brings none
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
+    property alias animations: saved.animations // false turns every transition into a cut
+    property alias animSpeed: saved.animSpeed // 1 is normal, the top of the slider is instant
     property alias orbitSpeed: saved.orbitSpeed // 1 is normal, higher rises into orbit faster
     property alias livePages: saved.livePages // windows keep playing while the page turns
     property alias pageTransition: saved.pageTransition // "planet", or "slide" for Hyprland's own
@@ -201,6 +203,8 @@ Singleton {
             property var planetTweaks: ({})
             property var ownStyles: ({})
             property string pace: "daily"
+            property bool animations: true
+            property real animSpeed: 1
             property real orbitSpeed: 1
             property bool livePages: true
             property string pageTransition: "planet"
