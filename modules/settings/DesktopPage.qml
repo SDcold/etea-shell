@@ -26,7 +26,7 @@ ColumnLayout {
         key: "groundMusic"
         label: Lang.t("Style")
         hint: Lang.t("Visible sur les pages vides, pendant qu'un lecteur joue.")
-        options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "stars", label: Lang.t("Étoiles") }, { id: "astrolabe", label: Lang.t("Astrolabe") }, { id: "greatstar", label: Lang.t("Grande étoile") }, { id: "aurora", label: Lang.t("Aurore") }, { id: "off", label: Lang.t("Rien") }]
+        options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "stars", label: Lang.t("Étoiles") }, { id: "astrolabe", label: Lang.t("Astrolabe") }, { id: "greatstar", label: Lang.t("Grande étoile") }, { id: "aurora", label: Lang.t("Aurore") }, { id: "veils", label: Lang.t("Voiles") }, { id: "mirror", label: Lang.t("Miroir") }, { id: "dots", label: Lang.t("Points") }, { id: "halo", label: Lang.t("Halo") }, { id: "ring", label: Lang.t("Anneau") }, { id: "off", label: Lang.t("Rien") }]
         current: Config.groundMusic
         onPicked: id => Config.groundMusic = id
     }

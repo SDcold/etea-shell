@@ -42,7 +42,7 @@ Singleton {
         orbitSpeed: ["orbite", "orbit", "montée", "vitesse", "speed", "super tab"],
         livePages: ["vidéo", "lecture", "live"],
         pageTransition: ["rotation", "glissement", "slide", "workspace animation"],
-        groundMusic: ["visualiseur", "visualizer", "cava", "spectre", "musique", "music"],
+        groundMusic: ["visualiseur", "visualizer", "cava", "spectre", "musique", "music", "aurora", "mirror", "miroir", "dots", "points", "halo", "ring", "anneau", "voiles", "end4"],
         groundLift: ["musique", "danse"],
         terrainHeight: ["terrain", "collines", "sol", "ground", "hills"],
         terrainRelief: ["montagnes", "collines", "relief", "mountains"],
