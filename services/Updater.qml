@@ -138,6 +138,9 @@ Singleton {
         id: applier
 
         command: ["bash", Quickshell.shellPath("scripts/update.sh"), "apply"]
+        stdout: StdioCollector {
+            id: applied
+        }
         onExited: code => {
             if (code !== 0) {
                 root.state = root.trouble(code);
@@ -146,6 +149,13 @@ Singleton {
             root.behind = 0;
             root.changes = [];
             root.state = "updated";
+            // New shaders: Qt keeps the old ones for as long as the process lives, so the shell
+            // is started again, from outside it, instead of reloaded
+            if (applied.text.includes("restart")) {
+                const shell = Quickshell.shellPath("").replace(/\/$/, "");
+                Quickshell.execDetached(["sh", "-c", 'sleep 0.5; qs kill -p "$1" >/dev/null 2>&1; sleep 1; setsid -f qs -p "$1" >/dev/null 2>&1', "sh", shell]);
+                return;
+            }
             // Quickshell reloads on its own as files change, but that can land halfway through
             // the merge, before a new folder is there, and leave the old version running.
             // Everything is in place now, so reload once more.
