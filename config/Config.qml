@@ -72,6 +72,7 @@ Singleton {
     property alias ownStyles: saved.ownStyles // the last style you picked yourself for each setting, worn where a world brings none
     property alias pace: saved.pace // "daily" is quick, "ceremony" takes its time
     property alias orbitBackdrop: saved.orbitBackdrop // "sky": your sky blurred and dimmed behind the stars up there, or "space"
+    property alias orbitBlur: saved.orbitBlur // how soft the sky behind the stars is, 0 to 1
     property alias orbitSpeed: saved.orbitSpeed // 1 is normal, higher rises into orbit faster
     property alias livePages: saved.livePages // windows keep playing while the page turns
     property alias pageTransition: saved.pageTransition // "planet", or "slide" for Hyprland's own
@@ -203,6 +204,7 @@ Singleton {
             property var ownStyles: ({})
             property string pace: "daily"
             property string orbitBackdrop: "sky"
+            property real orbitBlur: 0.6
             property real orbitSpeed: 1
             property bool livePages: true
             property string pageTransition: "planet"

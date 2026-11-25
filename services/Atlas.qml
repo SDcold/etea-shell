@@ -38,6 +38,7 @@ Singleton {
         pageStyle: ["workspaces", "bureaux virtuels", "espaces de travail"],
         pace: ["vitesse", "animations", "lent", "rapide", "speed"],
         orbitBackdrop: ["fond", "flou", "blur", "background", "orbite", "orbit", "espace", "space", "wallpaper"],
+        orbitBlur: ["flou", "blur", "orbite", "orbit", "fond", "background", "wallpaper"],
         orbitSpeed: ["orbite", "orbit", "montée", "vitesse", "speed", "super tab"],
         livePages: ["vidéo", "lecture", "live"],
         pageTransition: ["rotation", "glissement", "slide", "workspace animation"],

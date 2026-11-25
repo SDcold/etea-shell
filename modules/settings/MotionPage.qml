@@ -32,6 +32,18 @@ ColumnLayout {
     }
 
     SettingSlider {
+        key: "orbitBlur"
+        visible: Config.orbitBackdrop !== "space"
+        label: Lang.t("Flou du ciel en orbite")
+        value: Config.orbitBlur
+        minimum: 0
+        maximum: 1
+        shownAs: 100
+        unit: " %"
+        onMoved: value => Config.orbitBlur = Math.round(value * 100) / 100
+    }
+
+    SettingSlider {
         key: "orbitSpeed"
         label: Lang.t("Vitesse de l'orbite")
         hint: Lang.t("La vitesse des allers-retours en orbite et vers les planètes (balayage à quatre doigts, Super + Tab).")
