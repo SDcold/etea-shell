@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import qs.config
 import qs.modules.widgets
@@ -89,6 +90,7 @@ Item {
         property vector2d resolution: Qt.vector2d(width, height)
         property real grain: Theme.grain
         property real space: root.space
+        property real veil: Config.orbitBackdrop === "space" ? 0 : 1
 
         layer.enabled: root.cached && !root.morphing
         fragmentShader: Qt.resolvedUrl("../../shaders/sky.frag.qsb")
@@ -105,16 +107,49 @@ Item {
         source: root.skyImage ? Pictures.url(root.skyImage) : ""
     }
 
+    // Seen from orbit, your picture stays behind the stars, blurred and dimmed: a small copy,
+    // cropped to the screen and blurred once, which the sky shader stretches back up
+    Item {
+        id: blurredSky
+
+        width: 320
+        height: Math.max(1, Math.round(320 * root.height / Math.max(1, root.width)))
+        visible: false
+        layer.enabled: root.skyImage !== ""
+
+        Image {
+            id: smallPicture
+
+            anchors.fill: parent
+            visible: false
+            asynchronous: true
+            fillMode: Image.PreserveAspectCrop
+            sourceSize: Qt.size(parent.width * 2, parent.height * 2)
+            source: root.skyImage && Config.orbitBackdrop !== "space" ? Pictures.url(root.skyImage) : ""
+        }
+
+        MultiEffect {
+            anchors.fill: parent
+            source: smallPicture
+            blurEnabled: true
+            blur: 1
+            blurMax: 48
+            autoPaddingEnabled: false
+        }
+    }
+
     ShaderEffect {
         anchors.fill: parent
 
         visible: !root.edge && root.skyImage !== "" && pictureSource.status === Image.Ready
 
         property var picture: pictureSource
+        property var blurred: blurredSky
         property vector2d pictureSize: Qt.vector2d(pictureSource.implicitWidth, pictureSource.implicitHeight)
         property vector2d resolution: Qt.vector2d(width, height)
         property real grain: Theme.grain
         property real space: root.space
+        property real veil: Config.orbitBackdrop === "space" ? 0 : 1
 
         layer.enabled: root.cached && !root.morphing
         property vector2d dawnCenter: Qt.vector2d(root.dawnFrom.x, root.dawnFrom.y)

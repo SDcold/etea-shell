@@ -12,6 +12,7 @@ layout(std140, binding = 0) uniform buf {
     vec2 resolution;
     float grain;
     float space; // 0 on the ground, 1 once we've left the atmosphere
+    float veil; // up there: 1 keeps this sky, dimmed, behind the stars, 0 black space
     vec4 colorTopB;
     vec4 colorMidB;
     vec4 colorLowB;
@@ -63,9 +64,11 @@ void main() {
     // The faint lift stays at zero grain, so the colours don't shift
     color = mix(color, overlay(color, n), grain) + 0.011 + (n - 0.5) * grain * 0.065;
 
-    // Above the atmosphere the sky goes dark and the stars come out
+    // Above the atmosphere the sky goes dark, or dims if it stays, and the stars come out.
+    // A painted sky is already as smooth as a blurred one.
     vec2 cell = floor(qt_TexCoord0 * resolution / 2.0);
     float star = step(0.9972, hash(cell + 3.7)) * (0.35 + 0.65 * hash(cell + 11.0));
-    color = mix(color, vec3(0.02, 0.024, 0.05) + n * 0.012, space) + star * space;
+    vec3 night = mix(vec3(0.02, 0.024, 0.05), color * 0.42, veil) + n * 0.012;
+    color = mix(color, night, space) + star * space;
     fragColor = vec4(color, 1.0) * qt_Opacity;
 }
