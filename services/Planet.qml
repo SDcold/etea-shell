@@ -25,7 +25,14 @@ Singleton {
     // The group of pages the bar shows, and the one carried around the planet in orbit
     readonly property int groupStart: groupOf(current)
     property int orbitStart: 1
-    readonly property bool pageEmpty: Hyprland.toplevels.values.every(t => t.workspace?.id !== current)
+    // The special workspace shown over the page on the focused screen (Super+S), by name like
+    // "special:special", "" when none. While it's open, its windows are the ones on screen.
+    property string special: ""
+    readonly property bool pageEmpty: Hyprland.toplevels.values.every(t => !shows(t))
+
+    function shows(window) {
+        return special ? window?.workspace?.name === special : window?.workspace?.id === current;
+    }
 
     property int phase: Planet.Phase.Idle
     // The orbit plugin turns the windows in Hyprland: no stand-ins, no photos, the shell
@@ -989,6 +996,13 @@ Singleton {
 
         // The swipe's start, moves and end, sent by the gesture scripts/dev.sh sets up
         function onRawEvent(event) {
+            // "id,name,monitor" as it opens, ",,monitor" as it closes
+            if (event.name === "activespecialv2") {
+                const [, name, monitor] = event.data.split(",");
+                if (!monitor || monitor === Hyprland.focusedMonitor?.name)
+                    root.special = name ?? "";
+                return;
+            }
             if (event.name === "orbit") {
                 root.followTurn(event.data);
                 return;
