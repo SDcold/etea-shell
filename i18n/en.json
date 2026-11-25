@@ -631,5 +631,15 @@
     "Tous les réglages d'écran…": "All screen settings…",
     "Garder cet affichage ?": "Keep this display?",
     "L'ancien revient dans {0} s.": "The old one comes back in {0} s.",
-    "Garder": "Keep"
+    "Garder": "Keep",
+    "Fond de l'orbite": "Orbit backdrop",
+    "En orbite et parmi les mondes : le ciel du monde, flouté et assombri derrière les étoiles, ou le noir de l'espace.": "In orbit and among the worlds: the world's sky, blurred and dimmed behind the stars, or the black of space.",
+    "Le ciel flouté": "Blurred sky",
+    "L'espace noir": "Black space",
+    "Flou du ciel en orbite": "Blur of the sky in orbit",
+    "Voiles": "Veils",
+    "Miroir": "Mirror",
+    "Points": "Dots",
+    "Halo": "Halo",
+    "Anneau": "Ring"
 }

@@ -60,6 +60,9 @@ Item {
     readonly property real unit: width / 1600
     readonly property point center: Qt.point(width / 2, height * horizon + radius * unit)
 
+    // The styles brought over from end4-pC, drawn as light over everything by LightMusic
+    readonly property bool lightMusic: ["veils", "mirror", "dots", "halo", "ring"].includes(Config.groundMusic)
+
     // Four sound levels at a time, the way the shader wants them, or the slower copy's. Only
     // read while the ground dances: otherwise every level another listener hears would redraw
     // the music strip.
@@ -68,6 +71,20 @@ Item {
             return Qt.vector4d(0, 0, 0, 0);
         const levels = late ? Beat.trail : Beat.shown;
         return Qt.vector4d(levels[first] ?? 0, levels[first + 1] ?? 0, levels[first + 2] ?? 0, levels[first + 3] ?? 0);
+    }
+
+    // Up in orbit, behind the stars: the world's sky blurred and dimmed, which the sky above
+    // lets through as it leaves the air. Only made on the way up.
+    Loader {
+        anchors.fill: parent
+        active: root.space > 0.01 && Config.orbitBackdrop !== "space"
+
+        sourceComponent: OrbitBackdrop {
+            image: root.skyImage
+            skyTop: root.tintA.skyTop
+            skyMid: root.tintA.skyMid
+            skyLow: root.tintA.skyLow
+        }
     }
 
     ShaderEffect {
@@ -89,6 +106,7 @@ Item {
         property vector2d resolution: Qt.vector2d(width, height)
         property real grain: Theme.grain
         property real space: root.space
+        property real veil: Config.orbitBackdrop === "space" ? 0 : 1
 
         layer.enabled: root.cached && !root.morphing
         fragmentShader: Qt.resolvedUrl("../../shaders/sky.frag.qsb")
@@ -115,6 +133,7 @@ Item {
         property vector2d resolution: Qt.vector2d(width, height)
         property real grain: Theme.grain
         property real space: root.space
+        property real veil: Config.orbitBackdrop === "space" ? 0 : 1
 
         layer.enabled: root.cached && !root.morphing
         property vector2d dawnCenter: Qt.vector2d(root.dawnFrom.x, root.dawnFrom.y)
@@ -351,7 +370,7 @@ Item {
         width: root.width
         height: root.height - y
         opacity: dance * (1 - root.space) * root.groundOpacity
-        visible: opacity > 0 && Config.groundMusic !== "off"
+        visible: opacity > 0 && Config.groundMusic !== "off" && !root.lightMusic
 
         property vector4d l0: root.bands(0)
         property vector4d l1: root.bands(4)
@@ -600,5 +619,17 @@ Item {
         horizon: root.horizon
         visible: root.space < 0.33 && root.groundOpacity > 0
         opacity: (1 - root.space * 3) * root.groundOpacity
+    }
+
+    // The music as light, end4-pC's way, over the hills; gone up in the air
+    LightMusic {
+        anchors.fill: parent
+        visible: root.lightMusic && root.space < 0.99 && root.groundOpacity > 0
+        opacity: (1 - root.space) * root.groundOpacity
+        style: Config.groundMusic
+        listening: root.listening
+        color1: music.ink
+        color2: music.light
+        color3: Theme.planet.vivid || Theme.planet.light
     }
 }

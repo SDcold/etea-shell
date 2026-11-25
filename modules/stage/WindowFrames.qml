@@ -21,7 +21,8 @@ Item {
     property bool paging: false // Hyprland is sliding a page in, the stars wait for it
     property string lastShape: ""
 
-    readonly property var pageWindows: Hyprland.toplevels.values.filter(t => t.workspace?.id === root.page)
+    // The special workspace, while it's open over this page, is what's on screen
+    readonly property var pageWindows: Hyprland.toplevels.values.filter(t => root.page === Planet.current ? Planet.shows(t) : t.workspace?.id === root.page)
     readonly property var lastLit: leavingPage ? pageWindows.reduce((best, t) => (t.lastIpcObject?.focusHistoryID ?? 1e9) < (best?.lastIpcObject?.focusHistoryID ?? 1e9) ? t : best, null) : null
 
     // Quiet when nothing moves. As soon as something does, we ask every other frame.

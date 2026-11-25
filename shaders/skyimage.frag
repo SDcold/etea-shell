@@ -10,6 +10,7 @@ layout(std140, binding = 0) uniform buf {
     vec2 pictureSize;
     float grain;
     float space; // 0 on the ground, 1 once we've left the atmosphere
+    float veil; // up there: 1 lets the backdrop behind show through the stars, 0 black space
     // A new day: inside an ellipse rising from under the horizon at the sun's place, 2.6
     // times as wide as tall, the colours are B; outside they stay as they were. An edge of
     // 0 changes nothing. Its rim is a line of the new light, three flat steps behind it on
@@ -61,6 +62,10 @@ void main() {
 
     vec2 cell = floor(qt_TexCoord0 * resolution / 2.0);
     float star = step(0.9972, hash(cell + 3.7)) * (0.35 + 0.65 * hash(cell + 11.0));
-    color = mix(color, vec3(0.02, 0.024, 0.05) + n * 0.012, space) + star * space;
-    fragColor = vec4(color, 1.0) * qt_Opacity;
+    // Above the atmosphere: black space, or the backdrop behind showing through (the sky
+    // goes see-through, premultiplied), and the stars on it
+    vec3 night = vec3(0.02, 0.024, 0.05) + n * 0.012;
+    float through = space * veil;
+    color = color * (1.0 - space) + night * space * (1.0 - veil) + star * space;
+    fragColor = vec4(color, 1.0 - through) * qt_Opacity;
 }

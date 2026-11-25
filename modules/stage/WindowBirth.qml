@@ -57,8 +57,9 @@ Item {
             }
             return;
         }
-        // Opening on another page or in fullscreen: nothing to show here
-        if (found.workspace?.id !== Planet.current || info.fullscreen === 2) {
+        // Opening on another page or in fullscreen: nothing to show here. Over the page, the
+        // special workspace is what's on screen.
+        if (!Planet.shows(found) || info.fullscreen === 2) {
             reset();
             return;
         }

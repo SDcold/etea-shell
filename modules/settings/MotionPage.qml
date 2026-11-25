@@ -22,6 +22,27 @@ ColumnLayout {
         onPicked: id => Config.pace = id
     }
 
+    SettingChoice {
+        key: "orbitBackdrop"
+        label: Lang.t("Fond de l'orbite")
+        hint: Lang.t("En orbite et parmi les mondes : le ciel du monde, flouté et assombri derrière les étoiles, ou le noir de l'espace.")
+        options: [{ id: "sky", label: Lang.t("Le ciel flouté") }, { id: "space", label: Lang.t("L'espace noir") }]
+        current: Config.orbitBackdrop
+        onPicked: id => Config.orbitBackdrop = id
+    }
+
+    SettingSlider {
+        key: "orbitBlur"
+        visible: Config.orbitBackdrop !== "space"
+        label: Lang.t("Flou du ciel en orbite")
+        value: Config.orbitBlur
+        minimum: 0
+        maximum: 1
+        shownAs: 100
+        unit: " %"
+        onMoved: value => Config.orbitBlur = Math.round(value * 100) / 100
+    }
+
     SettingSlider {
         key: "orbitSpeed"
         label: Lang.t("Vitesse de l'orbite")

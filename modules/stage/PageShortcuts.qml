@@ -80,9 +80,15 @@ Scope {
             Planet.goDown();
         }
 
+        // Up among the worlds, a number of them along, as the arrows do
+        function step(worlds: int): void {
+            if (Planet.inSystem)
+                Planet.chooseStep(worlds);
+        }
+
         // Where the planet is up to, handy when something looks wrong
         function state(): string {
-            return `phase ${Planet.phase}, page ${Planet.current}, group from ${Planet.groupStart}, resting ${Planet.resting.toFixed(2)}, altitude ${Planet.altitude}`;
+            return `phase ${Planet.phase}, page ${Planet.current}${Planet.special ? ` (${Planet.special} over it)` : ""}, group from ${Planet.groupStart}, resting ${Planet.resting.toFixed(2)}, altitude ${Planet.altitude}`;
         }
 
         function land(page: int): void {
