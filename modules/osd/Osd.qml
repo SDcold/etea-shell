@@ -23,10 +23,10 @@ Scope {
     readonly property real volume: sink?.audio?.volume ?? 0
     readonly property bool muted: sink?.audio?.muted ?? false
     readonly property bool micMuted: source?.audio?.muted ?? false
-    readonly property real level: kind === "volume" ? (muted ? 0 : Math.min(1, volume)) : kind === "microphone" ? (micMuted ? 0 : Math.min(1, source?.audio?.volume ?? 0)) : dimming ? (Brightness.dim - Brightness.darkest) / (1 - Brightness.darkest) : Brightness.value
-    // Past the lowest backlight, the gamma takes over and the porthole reads it instead
-    readonly property bool dimming: kind === "brightness" && Brightness.dim < 1
-    readonly property string icon: kind === "keyboard" ? "keyboard" : kind === "brightness" ? (dimming ? "moon" : "brightness") : kind === "microphone" ? (micMuted ? "microphone-off" : "microphone") : muted ? "speaker-x" : volume > 0.5 ? "speaker-high" : "speaker-low"
+    readonly property real level: kind === "volume" ? (muted ? 0 : Math.min(1, volume)) : kind === "microphone" ? (micMuted ? 0 : Math.min(1, source?.audio?.volume ?? 0)) : Brightness.value
+    // Past the lowest backlight the gamma takes over, and the porthole sinks into night with it
+    readonly property real dusk: kind === "brightness" ? (1 - Brightness.dim) / (1 - Brightness.darkest) : 0
+    readonly property string icon: kind === "keyboard" ? "keyboard" : kind === "brightness" ? "brightness" : kind === "microphone" ? (micMuted ? "microphone-off" : "microphone") : muted ? "speaker-x" : volume > 0.5 ? "speaker-high" : "speaker-low"
 
     function show(what) {
         if (!awake)
@@ -118,6 +118,7 @@ Scope {
                 seed: root.kind
                 tint: root.kind === "volume" ? "#e98fb0" : root.kind === "microphone" ? "#f59a7a" : root.kind === "keyboard" ? "#a6c8e8" : "#ffd08a"
                 rise: 0.05 + root.level * 0.22
+                dusk: root.dusk
                 alive: panel.visible
             }
 
@@ -152,7 +153,7 @@ Scope {
                 Text {
                     Layout.preferredWidth: 42
                     horizontalAlignment: Text.AlignRight
-                    text: root.kind === "keyboard" ? Keyboard.code.toUpperCase() : Math.round((root.kind === "volume" ? root.volume : root.dimming ? Brightness.dim : root.level) * 100)
+                    text: root.kind === "keyboard" ? Keyboard.code.toUpperCase() : Math.round((root.kind === "volume" ? root.volume : root.level) * 100)
                     color: Theme.text
                     font.family: Theme.font
                     font.pixelSize: 15
