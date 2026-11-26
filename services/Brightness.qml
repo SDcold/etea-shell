@@ -19,10 +19,9 @@ Singleton {
     property real dim: 1 // hyprsunset's gamma, 1 when it isn't dimming anything
     readonly property bool canDim: !Compositor.niri && NightLight.available
 
-    // -n keeps at least one raw step lit, on panels where 2% rounds down to nothing
     function set(level) {
         value = Math.max(floor, Math.min(1, level));
-        writer.exec(["brightnessctl", "-n", "s", `${Math.round(value * 100)}%`]);
+        push(writer, backlightCommand);
         // Picking a brightness by hand lifts the extra dimming
         if (dim < 1)
             setDim(1);
@@ -49,10 +48,7 @@ Singleton {
         if (!canDim)
             return;
         dim = Math.round(Math.max(darkest, Math.min(1, level)) * 100) / 100;
-        const gamma = String(Math.round(dim * 100));
-        dimmer.exec(["sh", "-c", `if pidof -q hyprsunset; then
-            for i in 1 2 3 4 5 6 7 8 9 10; do hyprctl hyprsunset gamma ${gamma} >/dev/null && break; sleep 0.1; done
-        else setsid -f hyprsunset -i -g ${gamma} >/dev/null 2>&1; fi`]);
+        push(dimmer, gammaCommand);
         NightLight.running = true;
     }
 
@@ -60,12 +56,45 @@ Singleton {
         current.reload();
     }
 
+    // A held key asks faster than the last command finishes: only the newest value is
+    // written, as soon as the one before it is done
+    function push(process, command) {
+        if (process.running) {
+            process.pending = true;
+            return;
+        }
+        process.pending = false;
+        process.exec(command());
+    }
+
+    // -n keeps at least one raw step lit, on panels where 2% rounds down to nothing
+    function backlightCommand() {
+        return ["brightnessctl", "-n", "s", `${Math.round(root.value * 100)}%`];
+    }
+
+    function gammaCommand() {
+        const gamma = Math.round(root.dim * 100);
+        return ["sh", "-c", `if pidof -q hyprsunset; then
+            for i in 1 2 3 4 5 6 7 8 9 10; do hyprctl hyprsunset gamma ${gamma} >/dev/null && break; sleep 0.1; done
+        else setsid -f hyprsunset -i -g ${gamma} >/dev/null 2>&1; fi`];
+    }
+
     Process {
         id: writer
+
+        property bool pending: false
+
+        onExited: if (pending)
+            Qt.callLater(() => root.push(writer, root.backlightCommand))
     }
 
     Process {
         id: dimmer
+
+        property bool pending: false
+
+        onExited: if (pending)
+            Qt.callLater(() => root.push(dimmer, root.gammaCommand))
     }
 
     // The screen's backlight, found once
@@ -90,7 +119,8 @@ Singleton {
         path: root.device ? `/sys/class/backlight/${root.device}/brightness` : ""
         onLoaded: {
             const most = Number(highest.text());
-            if (most > 0) {
+            // Mid-write the file still holds the old level, which would undo the new one
+            if (most > 0 && !writer.running && !writer.pending) {
                 root.value = Number(text()) / most;
                 root.known = true;
             }
