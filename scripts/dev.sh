@@ -90,6 +90,16 @@ take_pages() {
         hl.bind("SUPER + mouse_down", hl.dsp.global("etea:wheelDown"), { description = "Shell: Previous page, or shrink a widget" })
     ' | grep -v '^ok$' || true
 
+    # The brightness keys go through ETEA, which keeps the backlight from going out and
+    # dims further with the gamma. brightnessctl answers when the shell isn't running.
+    local call="qs -p '$ROOT' ipc call brightness"
+    hyprctl eval "
+        hl.unbind(\"XF86MonBrightnessUp\")
+        hl.unbind(\"XF86MonBrightnessDown\")
+        hl.bind(\"XF86MonBrightnessUp\", hl.dsp.exec_cmd([[$call up || brightnessctl -n s 5%+]]), { locked = true, repeating = true })
+        hl.bind(\"XF86MonBrightnessDown\", hl.dsp.exec_cmd([[$call down || brightnessctl -n s 5%-]]), { locked = true, repeating = true })
+    " | grep -v '^ok$' || true
+
     # Up and down go to the orbit. Sideways belongs to the page transition, which ETEA
     # sets up itself (modules/stage/Illumination.qml) since it depends on the settings.
     # Hyprland complains when removing a gesture that isn't there, which is fine here.

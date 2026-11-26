@@ -24,6 +24,8 @@ Scope {
     readonly property bool muted: sink?.audio?.muted ?? false
     readonly property bool micMuted: source?.audio?.muted ?? false
     readonly property real level: kind === "volume" ? (muted ? 0 : Math.min(1, volume)) : kind === "microphone" ? (micMuted ? 0 : Math.min(1, source?.audio?.volume ?? 0)) : Brightness.value
+    // Past the lowest backlight the gamma takes over, and the porthole sinks into night with it
+    readonly property real dusk: kind === "brightness" ? (1 - Brightness.dim) / (1 - Brightness.darkest) : 0
     readonly property string icon: kind === "keyboard" ? "keyboard" : kind === "brightness" ? "brightness" : kind === "microphone" ? (micMuted ? "microphone-off" : "microphone") : muted ? "speaker-x" : volume > 0.5 ? "speaker-high" : "speaker-low"
 
     function show(what) {
@@ -72,6 +74,11 @@ Scope {
             if (Brightness.known)
                 root.show("brightness");
         }
+
+        function onDimChanged() {
+            if (Brightness.known)
+                root.show("brightness");
+        }
     }
 
     PanelWindow {
@@ -111,6 +118,7 @@ Scope {
                 seed: root.kind
                 tint: root.kind === "volume" ? "#e98fb0" : root.kind === "microphone" ? "#f59a7a" : root.kind === "keyboard" ? "#a6c8e8" : "#ffd08a"
                 rise: 0.05 + root.level * 0.22
+                dusk: root.dusk
                 alive: panel.visible
             }
 

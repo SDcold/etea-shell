@@ -17,6 +17,21 @@ Item {
     property bool alive: visible && (Window.window?.visible ?? false)
     property real starSpacing: 130 // one star every so often along the sides, 0 keeps only the corners
     property real starScale: 1
+    property real dusk: 0 // how far the sky has sunk into night, its stars stay lit
+
+    // The tint eases on its own, so dusk can darken it every frame without restarting that
+    property color shownTint: tint
+    Behavior on shownTint {
+        ColorAnimation { duration: 600 }
+    }
+    Behavior on dusk {
+        NumberAnimation { duration: 600; easing.type: Easing.OutCubic }
+    }
+
+    function darker(colour) {
+        const k = 1 - root.dusk * 0.8;
+        return Qt.rgba(colour.r * k, colour.g * k, colour.b * k, colour.a);
+    }
 
     readonly property alias hovered: hoverWatch.hovered
 
@@ -105,8 +120,8 @@ Item {
     ShaderEffect {
         id: sky
 
-        property color deep: Theme.cardDeep
-        property color tint: root.tint
+        property color deep: root.darker(Theme.cardDeep)
+        property color tint: root.darker(root.shownTint)
         property vector2d resolution: Qt.vector2d(width, height)
         property vector2d pointer: Qt.vector2d(handler.point.position.x, handler.point.position.y)
         property real time: 0
@@ -133,9 +148,6 @@ Item {
         }
         Behavior on rise {
             NumberAnimation { duration: 700; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
-        }
-        Behavior on tint {
-            ColorAnimation { duration: 600 }
         }
     }
 
